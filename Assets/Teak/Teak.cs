@@ -468,6 +468,11 @@ public partial class Teak : MonoBehaviour
         JavaScriptSDK = 1
     }
 
+    protected void getDeepLinkResult(object fbResult)
+    {
+        mLaunchURL = mFBResultPropertyText.GetValue(fbResult, null) as string;
+    }
+
     Teak()
     {
         mTeakCache = new TeakCache();
@@ -492,6 +497,16 @@ public partial class Teak : MonoBehaviour
                mFacebookDelegateType != null)
             {
                 mFacebookSDKType = FacebookSDKType.OfficialUnitySDK;
+
+                // Get deep link via FB SDK
+                MethodInfo getDeepLink = t.GetMethod("GetDeepLink", BindingFlags.Static | BindingFlags.Public);
+
+                if(getDeepLink != null)
+                {
+                    MethodInfo mi1 = typeof(Teak).GetMethod("getDeepLinkResult", BindingFlags.NonPublic | BindingFlags.Instance);
+                    object fbDelegate = Delegate.CreateDelegate(mFacebookDelegateType, this, mi1);
+                    getDeepLink.Invoke(null, new object[] { fbDelegate });
+                }
             }
         }
 #if UNITY_WEBPLAYER
@@ -501,7 +516,8 @@ public partial class Teak : MonoBehaviour
             Application.ExternalEval("if(window.__teakUnityInstance == null || window.__teakUnityInstance == undefined) {" +
                                      "    window.__teakUnityInstance = UnityObject2.instances[0];" +
                                      "}" +
-                                     "window.__teakUnityInstance.getUnity().SendMessage('TeakGameObject', 'assignUnityObject2Instance', 'window.__teakUnityInstance');"
+                                     "window.__teakUnityInstance.getUnity().SendMessage('TeakGameObject', 'assignUnityObject2Instance', 'window.__teakUnityInstance');" +
+                                     "window.__teakUnityInstance.getUnity().SendMessage('TeakGameObject', 'assignLaunchURL', 'document.URL');" +
             );
         }
 #endif
@@ -512,6 +528,11 @@ public partial class Teak : MonoBehaviour
     {
         mFacebookSDKType = FacebookSDKType.JavaScriptSDK;
         mUnityObject2Instance = message;
+    }
+
+    private void assignLaunchURL(string message)
+    {
+        mLaunchURL = message;
     }
 #endif
 
@@ -671,15 +692,25 @@ public partial class Teak : MonoBehaviour
 
     #region Teak request coroutines
     /// @cond hide_from_doxygen
+    delegate void PayloadUrlParamsHelperDelegate(string key, string value);
     private void addCommonPayloadFields(UnityEngine.WWWForm payload, Dictionary<string, object> urlParams)
     {
-        payload.AddField("app_version", mBundleVersion);
-        if(urlParams != null) urlParams.Add("app_version", mBundleVersion);
-        if(!string.IsNullOrEmpty(this.Tag))
-        {
-            payload.AddField("tag", this.Tag);
-            if(urlParams != null) urlParams.Add("tag", this.Tag);
-        }
+        // Helper
+        PayloadUrlParamsHelperDelegate addKeyValue = (string key, string value) => {
+            if(payload != null)   payload.AddField(key, value);
+            if(urlParams != null) urlParams.Add(key, UnityEngine.WWW.EscapeURL(value));
+        };
+
+        // Common
+        addKeyValue("sdk_version", Teak.SDKVersion);
+        addKeyValue("sdk_platform", SystemInfo.operatingSystem.Replace(" ", "_").ToLower());
+        addKeyValue("sdk_type", "unity");
+        addKeyValue("app_id", mFacebookAppId);
+        addKeyValue("app_version", mBundleVersion);
+        addKeyValue("app_build_id", "TODO: USER SPECIFIED BUILD ID");
+        if(!string.IsNullOrEmpty(this.Tag)) addKeyValue("api_key", mUserId);
+        if(!string.IsNullOrEmpty(this.Tag)) addKeyValue("tag", this.Tag);
+        if(!string.IsNullOrEmpty(mLaunchURL)) addKeyValue("launch_url", mLaunchURL);
     }
 
     private IEnumerator servicesDiscoveryCoroutine()
@@ -1077,6 +1108,7 @@ public partial class Teak : MonoBehaviour
     private string mTeakAppSecret;
     private string mBundleVersion;
     private string mAccessTokenOrFacebookId;
+    private string mLaunchURL;
     private TeakCache mTeakCache;
     private long mSessionStartTime;
     private FacebookSDKType mFacebookSDKType = FacebookSDKType.None;
