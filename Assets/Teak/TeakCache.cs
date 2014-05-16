@@ -143,15 +143,14 @@ public class TeakCache : IDisposable
         return ret;
     }
 
-    public List<CachedRequest> RequestsInCache(Teak.AuthStatus authStatus)
+    public List<CachedRequest> RequestsInCache()
     {
         List<CachedRequest> cachedRequests = new List<CachedRequest>();
 #if CACHE_ENABLED
         IntPtr sqlStatement = IntPtr.Zero;
         lock(this)
         {
-            string sql = string.Format(kCacheReadSQL, (int)authStatus);
-            if(sqlite3_prepare_v2(mDBPtr, sql, -1, out sqlStatement, IntPtr.Zero) == SQLITE_OK)
+            if(sqlite3_prepare_v2(mDBPtr, kCacheReadSQL, -1, out sqlStatement, IntPtr.Zero) == SQLITE_OK)
             {
                 while(sqlite3_step(sqlStatement) == SQLITE_ROW)
                 {
@@ -178,11 +177,7 @@ public class TeakCache : IDisposable
         {
             foreach(TeakCache.CachedRequest crequest in mCachedRequests)
             {
-                if((int)crequest.ServiceType <= (int)authStatus)
-                {
-                    //Debug.Log("Somethingsomething: " + crequest);
-                    cachedRequests.Add(crequest);
-                }
+                cachedRequests.Add(crequest);
             }
         }
 #endif
@@ -314,7 +309,7 @@ public class TeakCache : IDisposable
     private const int SQLITE_DONE = 101;
 
     private const string kCacheCreateSQL = "CREATE TABLE IF NOT EXISTS cache(request_servicetype INTEGER, request_endpoint TEXT, request_payload TEXT, request_id TEXT, request_date REAL, retry_count INTEGER)";
-    private const string kCacheReadSQL = "SELECT rowid, request_servicetype, request_endpoint, request_payload, request_id, request_date, retry_count FROM cache WHERE request_servicetype<={0} ORDER BY retry_count LIMIT 10";
+    private const string kCacheReadSQL = "SELECT rowid, request_servicetype, request_endpoint, request_payload, request_id, request_date, retry_count FROM cache ORDER BY retry_count LIMIT 10";
     private const string kCacheInsertSQL = "INSERT INTO cache (request_servicetype, request_endpoint, request_payload, request_id, request_date, retry_count) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}')";
     private const string kCacheUpdateSQL = "UPDATE cache SET retry_count='{0}' WHERE rowid='{1}'";
     private const string kCacheDeleteSQL = "DELETE FROM cache WHERE rowid='{0}'";

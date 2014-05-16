@@ -198,7 +198,7 @@ public partial class Teak : MonoBehaviour
                     AuthenticationStatusChanged(this, mAuthStatus);
                 }
 
-                foreach(TeakCache.CachedRequest request in mTeakCache.RequestsInCache(mAuthStatus))
+                foreach(TeakCache.CachedRequest request in mTeakCache.RequestsInCache())
                 {
                     StartCoroutine(signedRequestCoroutine(request, cachedRequestHandler(request, null)));
                 }
@@ -747,7 +747,7 @@ public partial class Teak : MonoBehaviour
                 }
                 else
                 {
-                    foreach(TeakCache.CachedRequest crequest in mTeakCache.RequestsInCache(mAuthStatus))
+                    foreach(TeakCache.CachedRequest crequest in mTeakCache.RequestsInCache())
                     {
                         StartCoroutine(signedRequestCoroutine(crequest, cachedRequestHandler(crequest, null)));
                     }
@@ -838,15 +838,7 @@ public partial class Teak : MonoBehaviour
                                                TeakRequestResponse callback = null)
     {
         TeakCache.CachedRequest cachedRequest = mTeakCache.CacheRequest(serviceType, endpoint, parameters);
-        if((int)serviceType <= (int)mAuthStatus)
-        {
-            yield return StartCoroutine(signedRequestCoroutine(cachedRequest, cachedRequestHandler(cachedRequest, callback)));
-        }
-        else
-        {
-            if(callback != null) callback(Response.OK, authStatusString(mAuthStatus), null);
-            yield return null;
-        }
+        yield return StartCoroutine(signedRequestCoroutine(cachedRequest, cachedRequestHandler(cachedRequest, callback)));
     }
 
     public static string signParams(string hostname, string endpoint, string secret, Dictionary<string, object> urlParams)
