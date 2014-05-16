@@ -17,13 +17,14 @@
 
 #region References
 using System;
-using GoCarrotInc.MiniJSON;
 using System.Net;
 using UnityEngine;
+using System.Text;
 using System.Security;
 using System.Reflection;
 using System.Collections;
 using System.Net.Security;
+using GoCarrotInc.MiniJSON;
 using GoCarrotInc.Amazon.Util;
 using System.Collections.Generic;
 using System.Security.Cryptography;
@@ -62,7 +63,8 @@ public partial class Teak : MonoBehaviour
 
                 mInstance.mFacebookAppId = TeakSettings.AppId;
                 mInstance.mTeakAppSecret = TeakSettings.AppSecret;
-                mInstance.mBundleVersion = "TODO";
+                mInstance.mBundleVersion = TeakSettings.BundleVersion;
+                Debug.Log("Bundle Version: " + mInstance.mBundleVersion);
 
                 if(string.IsNullOrEmpty(mInstance.mFacebookAppId))
                 {
@@ -682,13 +684,25 @@ public partial class Teak : MonoBehaviour
 
     #region Teak request coroutines
     /// @cond hide_from_doxygen
+    private string buildURLParamsFromDictionary(Dictionary<string, object> urlParams)
+    {
+        StringBuilder builder = new StringBuilder();
+        foreach(KeyValuePair<string, object> entry in urlParams)
+        {
+            builder.AppendFormat("{0}={1}&", entry.Key,
+                UnityEngine.WWW.EscapeURL(entry.Value.ToString()));
+        }
+        builder.Remove(builder.Length - 1, 1);
+        return builder.ToString();
+    }
+
     delegate void PayloadUrlParamsHelperDelegate(string key, string value);
     private void addCommonPayloadFields(UnityEngine.WWWForm payload, Dictionary<string, object> urlParams)
     {
         // Helper
         PayloadUrlParamsHelperDelegate addKeyValue = (string key, string value) => {
             if(payload != null)   payload.AddField(key, value);
-            if(urlParams != null) urlParams.Add(key, UnityEngine.WWW.EscapeURL(value));
+            if(urlParams != null) urlParams.Add(key, value);
         };
 
         // Common
@@ -698,7 +712,7 @@ public partial class Teak : MonoBehaviour
         addKeyValue("app_id", mFacebookAppId);
         addKeyValue("app_version", mBundleVersion);
         addKeyValue("app_build_id", "TODO: USER SPECIFIED BUILD ID");
-        if(!string.IsNullOrEmpty(this.Tag)) addKeyValue("api_key", mUserId);
+        if(!string.IsNullOrEmpty(mUserId)) addKeyValue("api_key", mUserId);
         if(!string.IsNullOrEmpty(this.Tag)) addKeyValue("tag", this.Tag);
         if(!string.IsNullOrEmpty(mLaunchURL)) addKeyValue("launch_url", mLaunchURL);
     }
@@ -712,12 +726,10 @@ public partial class Teak : MonoBehaviour
         }
         else
         {
-            string urlString = String.Format("http://{0}/services.json?sdk_version={1}&sdk_platform={2}&game_id={3}&app_version={4}",
-                mServicesDiscoveryHost,
-                UnityEngine.WWW.EscapeURL(Teak.SDKVersion),
-                UnityEngine.WWW.EscapeURL(SystemInfo.operatingSystem.Replace(" ", "_").ToLower()),
-                UnityEngine.WWW.EscapeURL(mFacebookAppId),
-                UnityEngine.WWW.EscapeURL(mBundleVersion));
+            Dictionary<string, object> payload = new Dictionary<string, object>();
+            addCommonPayloadFields(null, payload);
+            string urlString = String.Format("https://{0}/services.json?{1}", mServicesDiscoveryHost,
+                buildURLParamsFromDictionary(payload));
 
             UnityEngine.WWW request = new UnityEngine.WWW(urlString);
             yield return request;
@@ -884,8 +896,6 @@ public partial class Teak : MonoBehaviour
         ServicePointManager.ServerCertificateValidationCallback = TeakCertValidator;
 
         Dictionary<string, object> urlParams = new Dictionary<string, object> {
-            {"api_key", mUserId},
-            {"game_id", mFacebookAppId},
             {"request_date", teakRequest.RequestDate},
             {"request_id", teakRequest.RequestId}
         };

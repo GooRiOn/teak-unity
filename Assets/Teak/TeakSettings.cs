@@ -60,7 +60,8 @@ public class TeakSettings : ScriptableObject
     public static string AppId
     {
         get { return Instance.appId; }
-        private set
+#if UNITY_EDITOR
+        set
         {
             string appId = value.Trim();
             if(appId != Instance.appId)
@@ -71,11 +72,13 @@ public class TeakSettings : ScriptableObject
                 DirtyEditor();
             }
         }
+#endif
     }
 
     public static string AppSecret
     {
         get { return Instance.appSecret; }
+#if UNITY_EDITOR
         set
         {
             string appSecret = value.Trim();
@@ -87,11 +90,13 @@ public class TeakSettings : ScriptableObject
                 DirtyEditor();
             }
         }
+#endif
     }
 
     public static bool AppValid
     {
         get { return Instance.mAppValid; }
+#if UNITY_EDITOR
         set
         {
             if(value != Instance.mAppValid)
@@ -100,11 +105,13 @@ public class TeakSettings : ScriptableObject
                 DirtyEditor();
             }
         }
+#endif
     }
 
     public static string AppStatus
     {
         get { return Instance.mAppStatus; }
+#if UNITY_EDITOR
         set
         {
             string appStatus = value.Trim();
@@ -114,6 +121,12 @@ public class TeakSettings : ScriptableObject
                 DirtyEditor();
             }
         }
+#endif
+    }
+
+    public static string BundleVersion
+    {
+        get { return Instance.mBundleVersion; }
     }
 
 #if UNITY_EDITOR
@@ -122,14 +135,13 @@ public class TeakSettings : ScriptableObject
     {
         Selection.activeObject = Instance;
     }
-#endif
 
     private static void DirtyEditor()
     {
-#if UNITY_EDITOR
+        Instance.mBundleVersion = PlayerSettings.bundleVersion.ToString();
         EditorUtility.SetDirty(Instance);
-#endif
     }
+#endif
 
     [SerializeField]
     private string appId = "";
@@ -138,6 +150,7 @@ public class TeakSettings : ScriptableObject
     
     private bool mAppValid = false;
     private string mAppStatus = "";
+    private string mBundleVersion = "";
 
     private static TeakSettings mInstance;
 }
