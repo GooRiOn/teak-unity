@@ -22,11 +22,11 @@ public class TeakPostProcessScene
     [PostProcessScene]
     public static void OnPostprocessScene()
     {
-        if(string.IsNullOrEmpty(TeakSettings.TeakAppId))
+        if(string.IsNullOrEmpty(TeakSettings.AppId))
         {
             Debug.LogError("Teak App Id needs to be assigned in the Edit/Teak menu.");
         }
-        if(string.IsNullOrEmpty(TeakSettings.TeakAppSecret))
+        if(string.IsNullOrEmpty(TeakSettings.AppSecret))
         {
             Debug.LogError("Teak App Secret needs to be assigned in the Edit/Teak menu.");
         }

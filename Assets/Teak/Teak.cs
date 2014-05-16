@@ -60,23 +60,13 @@ public partial class Teak : MonoBehaviour
                     mInstance = teakGameObject.GetComponent<Teak>();
                 }
 
-                TextAsset teakJson = Resources.Load("teak") as TextAsset;
-                if(teakJson == null)
-                {
-                    throw new NullReferenceException("Teak text asset not found. Use the configuration tool in the 'Edit/Teak' menu to generate it.");
-                }
-                else
-                {
-                    Dictionary<string, object> teakConfig = null;
-                    teakConfig = Json.Deserialize(teakJson.text) as Dictionary<string, object>;
-                    mInstance.mFacebookAppId = teakConfig["teakAppId"] as string;
-                    mInstance.mTeakAppSecret = teakConfig["teakAppSecret"] as string;
-                    mInstance.mBundleVersion = teakConfig["appBundleVersion"] as string;
+                mInstance.mFacebookAppId = TeakSettings.AppId;
+                mInstance.mTeakAppSecret = TeakSettings.AppSecret;
+                mInstance.mBundleVersion = "TODO";
 
-                    if(string.IsNullOrEmpty(mInstance.mFacebookAppId))
-                    {
-                        throw new ArgumentException("Teak App Id has not been configured. Use the configuration tool in the 'Edit/Teak' menu to assign your Teak App Id and Secret.");
-                    }
+                if(string.IsNullOrEmpty(mInstance.mFacebookAppId))
+                {
+                    throw new ArgumentException("Teak App Id has not been configured. Use the configuration tool in the 'Edit/Teak' menu to assign your Teak App Id and Secret.");
                 }
             }
             return mInstance;
