@@ -318,7 +318,7 @@ public partial class Teak : MonoBehaviour
             {"action_properties", actionProperties == null ? new Dictionary<string, object>() : actionProperties},
             {"object_properties", new Dictionary<string, object>()}
         };
-        if(objectInstanceId != null) parameters["object_instance_id"] = objectInstanceId;
+        parameters["object_instance_id"] = objectInstanceId;
 
         StartCoroutine(cachedRequestCoroutine(ServiceType.Post, "/me/actions.json", parameters, callback));
     }
@@ -327,23 +327,27 @@ public partial class Teak : MonoBehaviour
     /// Sends an Open Graph action which will create a new object.
     /// </summary>
     /// <param name="actionId">Teak action id.</param>
-    /// <param name="viralObject">A <see cref="ViralObject"/> describing the object to be created.</param>
+    /// <param name="templateId">Teak template instance id.</param>
+    /// <param name="objectProperties">Properties used to fill in the object template.</param>
     /// <param name="callback">Optional <see cref="TeakRequestResponse"/> which will be used to deliver the reply.</param>
-    public void postAction(string actionId, ViralObject viralObject,
+    public void postAction(string actionId, string templateId,
+                           IDictionary objectProperties,
                            TeakRequestResponse callback = null)
     {
-        postAction(actionId, null, viralObject, callback);
+        postAction(actionId, templateId, null, objectProperties, callback);
     }
 
     /// <summary>
     /// Sends an Open Graph action which will create a new object.
     /// </summary>
     /// <param name="actionId">Teak action id.</param>
+    /// <param name="templateId">Teak template instance id.</param>
     /// <param name="actionProperties">Parameters to be submitted with the action.</param>
-    /// <param name="viralObject">A <see cref="ViralObject"/> describing the object to be created.</param>
+    /// <param name="objectProperties">Properties used to fill in the object template.</param>
     /// <param name="callback">Optional <see cref="TeakRequestResponse"/> which will be used to deliver the reply.</param>
-    public void postAction(string actionId, IDictionary actionProperties,
-                           ViralObject viralObject,
+    public void postAction(string actionId, string templateId,
+                           IDictionary actionProperties,
+                           IDictionary objectProperties,
                            TeakRequestResponse callback = null)
     {
         if(string.IsNullOrEmpty(actionId))
@@ -351,16 +355,23 @@ public partial class Teak : MonoBehaviour
             throw new ArgumentNullException("actionId must not be null or empty string.", "actionId");
         }
 
-        if(viralObject == null)
+        if(string.IsNullOrEmpty(templateId))
         {
-            throw new ArgumentNullException("viralObject must not be null.", "viralObject");
+            throw new ArgumentNullException("templateId must not be null or empty string.", "templateId");
+        }
+
+        if(objectProperties == null)
+        {
+            throw new ArgumentNullException("objectProperties must not be null.", "objectProperties");
         }
 
         Dictionary<string, object> parameters = new Dictionary<string, object>() {
             {"action_id", actionId},
             {"action_properties", actionProperties == null ? new Dictionary<string, object>() : actionProperties},
-            {"object_properties", viralObject.toDictionary()}
+            {"object_properties", objectProperties}
         };
+        parameters["object_instance_id"] = templateId;
+
         StartCoroutine(cachedRequestCoroutine(ServiceType.Post, "/me/actions.json", parameters, callback));
     }
 

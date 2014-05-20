@@ -80,9 +80,11 @@ public class MainMenu : MonoBehaviour
         tex.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
         tex.Apply();
 
-        Teak.ViralObject newObject = new Teak.ViralObject("feature", "Dynamic Objects",
-            "A screenshot uploaded from Unity.", tex);
-        Teak.Instance.postAction("demo", null, newObject);
+        Teak.Instance.postAction("demo", "template", new Dictionary<string, object>() {
+            {"title", "Test Title"},
+            {"description", "Test Description"},
+            //{"image", tex}
+        });
         Destroy(tex);
     }
 }
