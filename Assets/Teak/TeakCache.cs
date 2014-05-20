@@ -208,7 +208,7 @@ public class TeakCache : IDisposable
 
         public override string ToString()
         {
-            return string.Format("[{0}] {1} {2} - {3}: {4}", this.CacheId, this.ServiceType, this.RequestId, this.Endpoint, this.Parameters);
+            return string.Format("[{0}] {1} {2} - {3}: {4}", this.CacheId, this.ServiceType, this.RequestId, this.Endpoint, Json.Serialize(this.Parameters));
         }
 
         public bool RemoveFromCache()

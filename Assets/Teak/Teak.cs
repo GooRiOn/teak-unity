@@ -1082,7 +1082,7 @@ public partial class Teak : MonoBehaviour
 
         public override string ToString()
         {
-            return string.Format("[{0}] {1} {2} - {3}: {4}", '-', this.ServiceType, this.RequestId, this.Endpoint, this.Parameters);
+            return string.Format("[{0}] {1} {2} - {3}: {4}", '-', this.ServiceType, this.RequestId, this.Endpoint, Json.Serialize(this.Parameters));
         }
     }
     /// @endcond
