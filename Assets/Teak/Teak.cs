@@ -634,6 +634,63 @@ public partial class Teak : MonoBehaviour
     void Start()
     {
         DontDestroyOnLoad(this);
+
+        // Get attribution id so we can generate a custom audience id via graph call
+        // to app_id/custom_audience_third_party_id
+#if !UNITY_EDITOR
+#   if UNITY_ANDROID
+        AndroidJavaClass unityPlayerClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+        AndroidJavaObject currentActivity = unityPlayerClass.GetStatic<AndroidJavaObject>("currentActivity");
+
+        // New Android SDK method
+        try
+        {
+            AndroidJavaClass AttributionIdentifiersClass = new AndroidJavaClass("com.facebook.internal.AttributionIdentifiers");
+            AndroidJavaObject attributionIdentifiers = AttributionIdentifiersClass.CallStatic<AndroidJavaObject>("getAttributionIdentifiers", new object[] { currentActivity });
+            mAttributionId = attributionIdentifiers.Call<string>("getAttributionId");
+        }
+        catch { Debug.Log("com.facebook.internal.AttributionIdentifiers is not available."); }
+
+        // Try old Android SDK
+        if(string.IsNullOrEmpty(mAttributionId))
+        {
+            // Old Android SDK method
+            try
+            {
+                AndroidJavaClass FacebookSettingsClass = new AndroidJavaClass("com.facebook.Settings");
+                AndroidJavaObject contentResolver = currentActivity.Call<AndroidJavaObject>("getContentResolver");
+                mAttributionId = FacebookSettingsClass.CallStatic<string>("getAttributionId", new object[] { contentResolver });
+            }
+            catch { Debug.Log("com.facebook.Settings is not available."); }
+        }
+
+        // Check for Google Advertising Id
+        if(string.IsNullOrEmpty(mAttributionId))
+        {
+            try
+            {
+                AndroidJavaClass GooglePlayServicesUtilClass = new AndroidJavaClass("com.google.android.gms.common.GooglePlayServicesUtil");
+                if(GooglePlayServicesUtilClass.CallStatic<int>("isGooglePlayServicesAvailable", new object[] { currentActivity }) == 0)
+                {
+                    Debug.Log("isGooglePlayServicesAvailable == TRUE");
+                }
+            }
+            catch { Debug.Log("Google Play Services are not available."); }
+        }
+#   elif UNITY_IPHONE
+        // TODO: C-call in to native code
+#   endif
+        if(string.IsNullOrEmpty(mAttributionId))
+        {
+            Debug.Log("Attribution Id for Advertising not found.");
+        }
+        else
+        {
+            Debug.Log("Advertising identifier: " + mAttributionId);
+        }
+#endif
+
+        // Do services discovery
         StartCoroutine(servicesDiscoveryCoroutine());
 
 #if UNITY_IPHONE || UNITY_ANDROID
@@ -1111,6 +1168,7 @@ public partial class Teak : MonoBehaviour
     private string mBundleVersion;
     private string mAccessTokenOrFacebookId;
     private string mLaunchURL;
+    private string mAttributionId;
     private TeakCache mTeakCache;
     private long mSessionStartTime;
     private FacebookSDKType mFacebookSDKType = FacebookSDKType.None;
