@@ -64,7 +64,6 @@ public partial class Teak : MonoBehaviour
                 mInstance.mFacebookAppId = TeakSettings.AppId;
                 mInstance.mTeakAppSecret = TeakSettings.AppSecret;
                 mInstance.mBundleVersion = TeakSettings.BundleVersion;
-                Debug.Log("Bundle Version: " + mInstance.mBundleVersion);
 
                 if(string.IsNullOrEmpty(mInstance.mFacebookAppId))
                 {
