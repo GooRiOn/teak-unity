@@ -782,6 +782,7 @@ public partial class Teak : MonoBehaviour
         if(!string.IsNullOrEmpty(mUserId)) addKeyValue("api_key", mUserId);
         if(!string.IsNullOrEmpty(this.Tag)) addKeyValue("tag", this.Tag);
         if(!string.IsNullOrEmpty(mLaunchURL)) addKeyValue("launch_url", mLaunchURL);
+        if(!string.IsNullOrEmpty(mSessionId)) addKeyValue("session_id", mSessionId);
     }
 
     private IEnumerator servicesDiscoveryCoroutine()
@@ -807,6 +808,11 @@ public partial class Teak : MonoBehaviour
                 mPostHostname = reply["post"] as string;
                 mAuthHostname = reply["auth"] as string;
                 mMetricsHostname = reply["metrics"] as string;
+
+                if(reply.ContainsKey("session_id"))
+                {
+                    mSessionId = reply["session_id"] as string;
+                }
 
                 if(!string.IsNullOrEmpty(mAccessTokenOrFacebookId))
                 {
@@ -1180,6 +1186,7 @@ public partial class Teak : MonoBehaviour
     private string mAccessTokenOrFacebookId;
     private string mLaunchURL;
     private string mAttributionId;
+    private string mSessionId;
     private TeakCache mTeakCache;
     private long mSessionStartTime;
     private FacebookSDKType mFacebookSDKType = FacebookSDKType.None;
