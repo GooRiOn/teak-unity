@@ -951,6 +951,12 @@ public partial class Teak : MonoBehaviour
             throw new NullReferenceException("UserId is empty. Assign a UserId before using Teak.");
         }
 
+        // Delay if needed
+        if(teakRequest.DelayInSeconds > 0.0f)
+        {
+            yield return new WaitForSeconds(teakRequest.DelayInSeconds);
+        }
+
         ServicePointManager.ServerCertificateValidationCallback = TeakCertValidator;
 
         Dictionary<string, object> urlParams = new Dictionary<string, object> {
@@ -1135,6 +1141,12 @@ public partial class Teak : MonoBehaviour
             internal set;
         }
 
+        public float DelayInSeconds
+        {
+            get;
+            internal set;
+        }
+
         public Request() {}
 
         public Request(ServiceType serviceType, string endpoint, Dictionary<string, object> parameters)
@@ -1144,6 +1156,7 @@ public partial class Teak : MonoBehaviour
             this.Parameters = parameters;
             this.RequestDate = (long)((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000);
             this.RequestId = System.Guid.NewGuid().ToString();
+            this.DelayInSeconds = 0.0f;
         }
 
         public override string ToString()

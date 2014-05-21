@@ -246,6 +246,7 @@ public class TeakCache : IDisposable
         public bool AddRetryInCache()
         {
             bool ret = true;
+            this.DelayInSeconds = (this.DelayInSeconds > 0.0f ? this.DelayInSeconds * 2.0f : 1.0f) + UnityEngine.Random.Range(0.0f, 3.0f);
 #if CACHE_ENABLED
             IntPtr sqlStatement = IntPtr.Zero;
             string sql = string.Format(kCacheUpdateSQL, this.Retries + 1, this.CacheId);
