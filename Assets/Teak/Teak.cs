@@ -781,7 +781,6 @@ public partial class Teak : MonoBehaviour
         addKeyValue("app_build_id", "TODO: USER SPECIFIED BUILD ID");
         if(!string.IsNullOrEmpty(mUserId)) addKeyValue("api_key", mUserId);
         if(!string.IsNullOrEmpty(this.Tag)) addKeyValue("tag", this.Tag);
-        if(!string.IsNullOrEmpty(mLaunchURL)) addKeyValue("launch_url", mLaunchURL);
         if(!string.IsNullOrEmpty(mSessionId)) addKeyValue("session_id", mSessionId);
     }
 
@@ -796,6 +795,8 @@ public partial class Teak : MonoBehaviour
         {
             Dictionary<string, object> payload = new Dictionary<string, object>();
             addCommonPayloadFields(null, payload);
+            if(!string.IsNullOrEmpty(mLaunchURL)) payload.Add("launch_url", mLaunchURL);
+
             string urlString = String.Format("https://{0}/services.json?{1}", mServicesDiscoveryHost,
                 buildURLParamsFromDictionary(payload));
 
