@@ -822,9 +822,8 @@ public partial class Teak : MonoBehaviour
             }
             else
             {
-                // Log error and retry in 10 seconds
                 Debug.Log(request.error);
-                yield return new WaitForSeconds(10);
+                yield return new WaitForSeconds(UnityEngine.Random.Range(5.0f, 15.0f));
                 StartCoroutine(servicesDiscoveryCoroutine());
             }
         }
