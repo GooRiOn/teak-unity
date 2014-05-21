@@ -67,10 +67,7 @@ public static class TeakPostProcessBuild
                 }
             }
         }
-        catch(Exception e)
-        {
-            if(e == null) Debug.Log("Ignore this.");
-        }
+        catch {}
     }
 
     static string Load(string fullPath)
