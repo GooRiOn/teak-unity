@@ -854,8 +854,9 @@ public partial class Teak : MonoBehaviour
         ServicePointManager.ServerCertificateValidationCallback = TeakCertValidator;
 
         UnityEngine.WWWForm payload = new UnityEngine.WWWForm();
-        payload.AddField("access_token", mAccessTokenOrFacebookId);
         addCommonPayloadFields(payload, null);
+        payload.AddField("access_token", mAccessTokenOrFacebookId);
+        if(!string.IsNullOrEmpty(mAttributionId)) payload.AddField("attribution_id", mAttributionId);
 
         UnityEngine.WWW request = new UnityEngine.WWW(String.Format("https://{0}/games/{1}/users.json", hostname, mFacebookAppId), payload);
         yield return request;
