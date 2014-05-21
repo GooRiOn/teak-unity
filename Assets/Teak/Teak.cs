@@ -849,7 +849,6 @@ public partial class Teak : MonoBehaviour
 
         UnityEngine.WWWForm payload = new UnityEngine.WWWForm();
         payload.AddField("access_token", mAccessTokenOrFacebookId);
-        payload.AddField("api_key", mUserId);
         addCommonPayloadFields(payload, null);
 
         UnityEngine.WWW request = new UnityEngine.WWW(String.Format("https://{0}/games/{1}/users.json", hostname, mFacebookAppId), payload);
