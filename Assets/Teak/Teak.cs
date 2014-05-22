@@ -764,18 +764,20 @@ public partial class Teak : MonoBehaviour
     /// @cond hide_from_doxygen
     public enum ServiceType : int
     {
-        Auth    = -2,
-        Metrics = -1,
-        Post    = 2
+        Discovery   = -3,
+        Auth        = -2,
+        Metrics     = -1,
+        Post        = 2
     }
 
     private string hostForServiceType(ServiceType type)
     {
         switch(type)
         {
-            case ServiceType.Auth: return mAuthHostname;
-            case ServiceType.Metrics: return mMetricsHostname;
-            case ServiceType.Post: return mPostHostname;
+            case ServiceType.Discovery:     return mServicesDiscoveryHost;
+            case ServiceType.Auth:          return mAuthHostname;
+            case ServiceType.Metrics:       return mMetricsHostname;
+            case ServiceType.Post:          return mPostHostname;
         }
         return null;
     }
@@ -817,55 +819,54 @@ public partial class Teak : MonoBehaviour
         if(!string.IsNullOrEmpty(mSessionId)) addKeyValue("session_id", mSessionId);
     }
 
-    private IEnumerator servicesDiscoveryCoroutine()
+    private IEnumerator servicesDiscoveryCoroutine(float delay = 0.0f)
     {
+        if(delay > 0.0f)
+        {
+            yield return new WaitForSeconds(delay);
+        }
+
         if(string.IsNullOrEmpty(mFacebookAppId))
         {
-            yield return new WaitForSeconds(1);
-            StartCoroutine(servicesDiscoveryCoroutine());
+            StartCoroutine(servicesDiscoveryCoroutine(1.0f));
         }
         else
         {
             Dictionary<string, object> payload = new Dictionary<string, object>();
-            addCommonPayloadFields(null, payload);
             if(!string.IsNullOrEmpty(mLaunchURL)) payload.Add("launch_url", mLaunchURL);
+            payload.Add("_method", "GET");
 
-            string urlString = String.Format("https://{0}/services.json?{1}", mServicesDiscoveryHost,
-                buildURLParamsFromDictionary(payload));
-
-            UnityEngine.WWW request = new UnityEngine.WWW(urlString);
-            yield return request;
-
-            if(request.error == null)
-            {
-                Dictionary<string, object> reply = Json.Deserialize(request.text) as Dictionary<string, object>;
-                mPostHostname = reply["post"] as string;
-                mAuthHostname = reply["auth"] as string;
-                mMetricsHostname = reply["metrics"] as string;
-
-                if(reply.ContainsKey("session_id"))
+            Request servicesRequest = new Request(ServiceType.Discovery, "/services.json", payload);
+            StartCoroutine(signedRequestCoroutine(servicesRequest, (Response response, string errorText, Dictionary<string, object> reply) => {
+                if(string.IsNullOrEmpty(errorText))
                 {
-                    mSessionId = reply["session_id"] as string;
-                }
+                    mPostHostname = reply["post"] as string;
+                    mAuthHostname = reply["auth"] as string;
+                    mMetricsHostname = reply["metrics"] as string;
 
-                if(!string.IsNullOrEmpty(mAccessTokenOrFacebookId))
-                {
-                    validateUser(mAccessTokenOrFacebookId);
+                    if(reply.ContainsKey("session_id"))
+                    {
+                        mSessionId = reply["session_id"] as string;
+                    }
+
+                    if(!string.IsNullOrEmpty(mAccessTokenOrFacebookId))
+                    {
+                        validateUser(mAccessTokenOrFacebookId);
+                    }
+                    else
+                    {
+                        foreach(TeakCache.CachedRequest crequest in mTeakCache.RequestsInCache())
+                        {
+                            StartCoroutine(signedRequestCoroutine(crequest, cachedRequestHandler(crequest, null)));
+                        }
+                    }
                 }
                 else
                 {
-                    foreach(TeakCache.CachedRequest crequest in mTeakCache.RequestsInCache())
-                    {
-                        StartCoroutine(signedRequestCoroutine(crequest, cachedRequestHandler(crequest, null)));
-                    }
+                    Debug.Log(errorText);
+                    StartCoroutine(servicesDiscoveryCoroutine(UnityEngine.Random.Range(5.0f, 15.0f)));
                 }
-            }
-            else
-            {
-                Debug.Log(request.error);
-                yield return new WaitForSeconds(UnityEngine.Random.Range(5.0f, 15.0f));
-                StartCoroutine(servicesDiscoveryCoroutine());
-            }
+            }));
         }
     }
 
