@@ -175,7 +175,7 @@ public partial class Teak : MonoBehaviour
     /// <summary>
     /// The callback delegate type for Teak requests.
     /// </summary>
-    public delegate void TeakRequestResponse(Response response, string errorText, Dictionary<string, object> reply);
+    public delegate void RequestResponse(Response response, string errorText, Dictionary<string, object> reply);
 
     /// <summary>
     /// Check the authentication status of the current Teak user.
@@ -257,8 +257,8 @@ public partial class Teak : MonoBehaviour
     /// Post an achievement to Teak.
     /// </summary>
     /// <param name="achievementId">Teak achievement id.</param>
-    /// <param name="callback">Optional <see cref="TeakRequestResponse"/> which will be used to deliver the reply.</param>
-    public void postAchievement(string achievementId, TeakRequestResponse callback = null)
+    /// <param name="callback">Optional <see cref="RequestResponse"/> which will be used to deliver the reply.</param>
+    public void postAchievement(string achievementId, RequestResponse callback = null)
     {
         if(string.IsNullOrEmpty(achievementId))
         {
@@ -274,8 +274,8 @@ public partial class Teak : MonoBehaviour
     /// Post a high score to Teak.
     /// </summary>
     /// <param name="score">Score.</param>
-    /// <param name="callback">Optional <see cref="TeakRequestResponse"/> which will be used to deliver the reply.</param>
-    public void postHighScore(uint score, TeakRequestResponse callback = null)
+    /// <param name="callback">Optional <see cref="RequestResponse"/> which will be used to deliver the reply.</param>
+    public void postHighScore(uint score, RequestResponse callback = null)
     {
         StartCoroutine(cachedRequestCoroutine(ServiceType.Post, "/me/scores.json", new Dictionary<string, object>() {
                 {"value", score}
@@ -287,8 +287,8 @@ public partial class Teak : MonoBehaviour
     /// </summary>
     /// <param name="actionId">Teak action id.</param>
     /// <param name="objectInstanceId">Teak object instance id.</param>
-    /// <param name="callback">Optional <see cref="TeakRequestResponse"/> which will be used to deliver the reply.</param>
-    public void postAction(string actionId, string objectInstanceId, TeakRequestResponse callback = null)
+    /// <param name="callback">Optional <see cref="RequestResponse"/> which will be used to deliver the reply.</param>
+    public void postAction(string actionId, string objectInstanceId, RequestResponse callback = null)
     {
         postAction(actionId, null, objectInstanceId, callback);
     }
@@ -299,9 +299,9 @@ public partial class Teak : MonoBehaviour
     /// <param name="actionId">Teak action id.</param>
     /// <param name="actionProperties">Parameters to be submitted with the action.</param>
     /// <param name="objectInstanceId">Teak object instance id.</param>
-    /// <param name="callback">Optional <see cref="TeakRequestResponse"/> which will be used to deliver the reply.</param>
+    /// <param name="callback">Optional <see cref="RequestResponse"/> which will be used to deliver the reply.</param>
     public void postAction(string actionId, IDictionary actionProperties, string objectInstanceId,
-                           TeakRequestResponse callback = null)
+                           RequestResponse callback = null)
     {
         if(string.IsNullOrEmpty(objectInstanceId))
         {
@@ -329,10 +329,10 @@ public partial class Teak : MonoBehaviour
     /// <param name="actionId">Teak action id.</param>
     /// <param name="templateId">Teak template instance id.</param>
     /// <param name="objectProperties">Properties used to fill in the object template.</param>
-    /// <param name="callback">Optional <see cref="TeakRequestResponse"/> which will be used to deliver the reply.</param>
+    /// <param name="callback">Optional <see cref="RequestResponse"/> which will be used to deliver the reply.</param>
     public void postAction(string actionId, string templateId,
                            IDictionary objectProperties,
-                           TeakRequestResponse callback = null)
+                           RequestResponse callback = null)
     {
         postAction(actionId, templateId, null, objectProperties, callback);
     }
@@ -344,11 +344,11 @@ public partial class Teak : MonoBehaviour
     /// <param name="templateId">Teak template instance id.</param>
     /// <param name="actionProperties">Parameters to be submitted with the action.</param>
     /// <param name="objectProperties">Properties used to fill in the object template.</param>
-    /// <param name="callback">Optional <see cref="TeakRequestResponse"/> which will be used to deliver the reply.</param>
+    /// <param name="callback">Optional <see cref="RequestResponse"/> which will be used to deliver the reply.</param>
     public void postAction(string actionId, string templateId,
                            IDictionary actionProperties,
                            IDictionary objectProperties,
-                           TeakRequestResponse callback = null)
+                           RequestResponse callback = null)
     {
         if(string.IsNullOrEmpty(actionId))
         {
@@ -380,8 +380,8 @@ public partial class Teak : MonoBehaviour
     /// </summary>
     /// <param name="amount">The amount of real money spent.</param>
     /// <param name="currency">The type of real money spent (eg. USD).</param>
-    /// <param name="callback">Optional <see cref="TeakRequestResponse"/> which will be used to deliver the reply.</param>
-    public void postPremiumCurrencyPurchase(float amount, string currency, TeakRequestResponse callback = null)
+    /// <param name="callback">Optional <see cref="RequestResponse"/> which will be used to deliver the reply.</param>
+    public void postPremiumCurrencyPurchase(float amount, string currency, RequestResponse callback = null)
     {
         StartCoroutine(cachedRequestCoroutine(ServiceType.Metrics, "/purchase.json", new Dictionary<string, object>() {
             {"amount", amount},
@@ -394,9 +394,9 @@ public partial class Teak : MonoBehaviour
     /// </summary>
     /// <param name="objectInstanceId">The instance id of the feed post.</param>
     /// <param name="objectProperties">The properties required to fill in data templating in the feed post.</param>
-    /// <param name="callback">Optional <see cref="TeakRequestResponse"/> which will be used to deliver the reply.</param>
+    /// <param name="callback">Optional <see cref="RequestResponse"/> which will be used to deliver the reply.</param>
     public void popupFeedPost(string objectInstanceId, Dictionary<string, object> objectProperties = null,
-                              TeakRequestResponse callback = null)
+                              RequestResponse callback = null)
     {
         if(string.IsNullOrEmpty(objectInstanceId))
         {
@@ -544,8 +544,8 @@ public partial class Teak : MonoBehaviour
     }
 #endif
 
-    private TeakRequestResponse cachedRequestHandler(TeakCache.CachedRequest cachedRequest,
-                                                       TeakRequestResponse callback)
+    private RequestResponse cachedRequestHandler(TeakCache.CachedRequest cachedRequest,
+                                                       RequestResponse callback)
     {
         return (Response ret, string errorText, Dictionary<string, object> reply) => {
                 switch(ret)
@@ -914,7 +914,7 @@ public partial class Teak : MonoBehaviour
     private IEnumerator cachedRequestCoroutine(ServiceType serviceType,
                                                string endpoint,
                                                Dictionary<string, object> parameters,
-                                               TeakRequestResponse callback = null)
+                                               RequestResponse callback = null)
     {
         TeakCache.CachedRequest cachedRequest = mTeakCache.CacheRequest(serviceType, endpoint, parameters);
         yield return StartCoroutine(signedRequestCoroutine(cachedRequest, cachedRequestHandler(cachedRequest, callback)));
@@ -947,7 +947,7 @@ public partial class Teak : MonoBehaviour
     }
 
     private IEnumerator signedRequestCoroutine(Request teakRequest,
-                                               TeakRequestResponse callback = null)
+                                               RequestResponse callback = null)
     {
         Response ret = Response.UnknownError;
         string errorText = null;
