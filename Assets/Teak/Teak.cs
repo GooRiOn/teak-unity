@@ -1025,7 +1025,7 @@ public partial class Teak : MonoBehaviour
             formPayload.AddBinaryData("image_bytes", imageBytes);
         }
 
-        UnityEngine.WWW request = new UnityEngine.WWW(String.Format("https://{0}{1}", hostname, teakRequest.Endpoint), formPayload);
+        UnityEngine.WWW request = new UnityEngine.WWW(String.Format("{0}://{1}{2}", mURLScheme, hostname, teakRequest.Endpoint), formPayload);
         yield return request;
 
         Dictionary<string, object> reply = null;
@@ -1174,6 +1174,7 @@ public partial class Teak : MonoBehaviour
     private string mLaunchURL;
     private string mAttributionId;
     private string mSessionId;
+    private string mURLScheme = "https";
     private TeakCache mTeakCache;
     private long mSessionStartTime;
     private FacebookSDKType mFacebookSDKType = FacebookSDKType.None;
