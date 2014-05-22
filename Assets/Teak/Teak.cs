@@ -178,6 +178,11 @@ public partial class Teak : MonoBehaviour
     public delegate void RequestResponse(Response response, string errorText, Dictionary<string, object> reply);
 
     /// <summary>
+    /// The callback delegate for canMakeFeedPost.
+    /// </summary>
+    public delegate void CanMakeFeedPostResponse(bool canMakeFeedPost);
+
+    /// <summary>
     /// Check the authentication status of the current Teak user.
     /// </summary>
     /// <value>The <see cref="Teak.AuthStatus"/> of the current Teak user.</value>
@@ -463,6 +468,28 @@ public partial class Teak : MonoBehaviour
             {
                 // Something-something danger zone
             }
+        }));
+    }
+
+    /// <summary>
+    /// Query the Teak server to see if a user should be offered the option of making a feed post.
+    /// </summary>
+    /// <param name="objectInstanceId">The instance id of the feed post.</param>
+    /// <param name="canMakeFeedPostResponse">The response from the server saying if the user should be given the option to share this post.</param>
+    public void canMakeFeedPost(string objectInstanceId, CanMakeFeedPostResponse canMakeFeedPostResponse)
+    {
+        if(string.IsNullOrEmpty(objectInstanceId))
+        {
+            throw new ArgumentNullException("objectInstanceId must not be null or empty string.", "objectInstanceId");
+        }
+
+        Dictionary<string, object> parameters = new Dictionary<string, object>() {
+            {"object_instance_id", objectInstanceId}
+        };
+
+        Request request = new Request(ServiceType.Post, "/me/can_post.json", parameters);
+        StartCoroutine(signedRequestCoroutine(request, (Response response, string errorText, Dictionary<string, object> reply) => {
+            canMakeFeedPostResponse(response == Response.OK);
         }));
     }
 
