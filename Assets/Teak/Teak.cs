@@ -958,8 +958,6 @@ public partial class Teak : MonoBehaviour
             yield return new WaitForSeconds(teakRequest.DelayInSeconds);
         }
 
-        ServicePointManager.ServerCertificateValidationCallback = TeakCertValidator;
-
         Dictionary<string, object> urlParams = new Dictionary<string, object> {
             {"request_date", teakRequest.RequestDate},
             {"request_id", teakRequest.RequestId}
@@ -1097,17 +1095,6 @@ public partial class Teak : MonoBehaviour
                 break;
         }
         if(callback != null) callback(ret, errorText, reply);
-    }
-    /// @endcond
-    #endregion
-
-    #region SSL Cert Validator
-    /// @cond hide_from_doxygen
-    private static bool TeakCertValidator(object sender, X509Certificate certificate,
-                                            X509Chain chain, SslPolicyErrors sslPolicyErrors)
-    {
-        // This is not ideal
-        return true;
     }
     /// @endcond
     #endregion

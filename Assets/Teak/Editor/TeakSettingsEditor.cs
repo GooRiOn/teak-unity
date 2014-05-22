@@ -54,7 +54,6 @@ public class TeakSettingsEditor : Editor
         string sig = Teak.signParams(hostname, endpoint, TeakSettings.AppSecret, urlParams);
 
         // Use System.Net.WebRequest due to crossdomain.xml bug in Unity Editor mode
-        ServicePointManager.ServerCertificateValidationCallback = TeakCertValidator;
         string postData = String.Format("app_version={0}&id={1}&sig={2}",
             WWW.EscapeURL(versionString),
             WWW.EscapeURL(TeakSettings.AppId),
@@ -113,12 +112,5 @@ public class TeakSettingsEditor : Editor
             }
             TeakSettings.AppValid = false;
         }
-    }
-
-    private static bool TeakCertValidator(object sender, X509Certificate certificate,
-                                            X509Chain chain, SslPolicyErrors sslPolicyErrors)
-    {
-        // This is not ideal
-        return true;
     }
 }
