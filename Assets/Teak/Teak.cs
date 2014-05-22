@@ -389,7 +389,12 @@ public partial class Teak : MonoBehaviour
         }, callback));
     }
 
-    /// 
+    /// <summary>
+    /// Pop-up a feed post dialog.
+    /// </summary>
+    /// <param name="objectInstanceId">The instance id of the feed post.</param>
+    /// <param name="objectProperties">The properties required to fill in data templating in the feed post.</param>
+    /// <param name="callback">Optional <see cref="TeakRequestResponse"/> which will be used to deliver the reply.</param>
     public void popupFeedPost(string objectInstanceId, Dictionary<string, object> objectProperties = null,
                               TeakRequestResponse callback = null)
     {
