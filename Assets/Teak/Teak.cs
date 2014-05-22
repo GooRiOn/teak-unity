@@ -1089,7 +1089,7 @@ public partial class Teak : MonoBehaviour
             if(!string.IsNullOrEmpty(request.text))
             {
                 reply = Json.Deserialize(request.text) as Dictionary<string, object>;
-                statusCode = (int)((long)reply["code"]);
+                if(reply.ContainsKey("code")) statusCode = (int)((long)reply["code"]);
             }
         }
 
