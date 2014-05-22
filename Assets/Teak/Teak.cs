@@ -705,6 +705,7 @@ public partial class Teak : MonoBehaviour
                 AndroidJavaClass GooglePlayServicesUtilClass = new AndroidJavaClass("com.google.android.gms.common.GooglePlayServicesUtil");
                 if(GooglePlayServicesUtilClass.CallStatic<int>("isGooglePlayServicesAvailable", new object[] { currentActivity }) == 0)
                 {
+                    // TODO: Retrieve advertising id
                     Debug.Log("isGooglePlayServicesAvailable == TRUE");
                 }
             }
@@ -856,7 +857,6 @@ public partial class Teak : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log(errorText);
                     StartCoroutine(servicesDiscoveryCoroutine(UnityEngine.Random.Range(5.0f, 15.0f)));
                 }
             }));
