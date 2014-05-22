@@ -482,6 +482,7 @@ public partial class Teak : MonoBehaviour
 
     Teak()
     {
+        mAttributionId = null;
         mTeakCache = new TeakCache();
         this.InstallDate = new DateTime(1970, 1, 1, 0, 0, 0, 0).AddSeconds(mTeakCache.InstallDate);
 
