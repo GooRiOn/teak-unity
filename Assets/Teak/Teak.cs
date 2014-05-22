@@ -798,25 +798,18 @@ public partial class Teak : MonoBehaviour
         return builder.ToString();
     }
 
-    delegate void PayloadUrlParamsHelperDelegate(string key, string value);
-    private void addCommonPayloadFields(UnityEngine.WWWForm payload, Dictionary<string, object> urlParams)
+    private void addCommonPayloadFields(Dictionary<string, object> payload)
     {
-        // Helper
-        PayloadUrlParamsHelperDelegate addKeyValue = (string key, string value) => {
-            if(payload != null)   payload.AddField(key, value);
-            if(urlParams != null) urlParams.Add(key, value);
-        };
-
         // Common
-        addKeyValue("sdk_version", Teak.SDKVersion);
-        addKeyValue("sdk_platform", SystemInfo.operatingSystem.Replace(" ", "_").ToLower());
-        addKeyValue("sdk_type", "unity");
-        addKeyValue("app_id", mFacebookAppId);
-        addKeyValue("app_version", mBundleVersion);
-        addKeyValue("app_build_id", "TODO: USER SPECIFIED BUILD ID");
-        if(!string.IsNullOrEmpty(mUserId)) addKeyValue("api_key", mUserId);
-        if(!string.IsNullOrEmpty(this.Tag)) addKeyValue("tag", this.Tag);
-        if(!string.IsNullOrEmpty(mSessionId)) addKeyValue("session_id", mSessionId);
+        payload.Add("sdk_version", Teak.SDKVersion);
+        payload.Add("sdk_platform", SystemInfo.operatingSystem.Replace(" ", "_").ToLower());
+        payload.Add("sdk_type", "unity");
+        payload.Add("app_id", mFacebookAppId);
+        payload.Add("app_version", mBundleVersion);
+        payload.Add("app_build_id", "TODO: USER SPECIFIED BUILD ID");
+        if(!string.IsNullOrEmpty(mUserId)) payload.Add("api_key", mUserId);
+        if(!string.IsNullOrEmpty(this.Tag)) payload.Add("tag", this.Tag);
+        if(!string.IsNullOrEmpty(mSessionId)) payload.Add("session_id", mSessionId);
     }
 
     private IEnumerator servicesDiscoveryCoroutine(float delay = 0.0f)
@@ -872,71 +865,38 @@ public partial class Teak : MonoBehaviour
 
     private IEnumerator validateUserCoroutine(string accessTokenOrFacebookId)
     {
-        AuthStatus ret = AuthStatus.Undetermined;
-        string hostname = hostForServiceType(ServiceType.Auth);
-        mAccessTokenOrFacebookId = accessTokenOrFacebookId;
-
-        if(string.IsNullOrEmpty(hostname))
-        {
-            return false;
-        }
-
         if(string.IsNullOrEmpty(mUserId))
         {
             throw new NullReferenceException("UserId is empty. Assign a UserId before calling validateUser");
         }
 
-        ServicePointManager.ServerCertificateValidationCallback = TeakCertValidator;
+        mAccessTokenOrFacebookId = accessTokenOrFacebookId;
 
-        UnityEngine.WWWForm payload = new UnityEngine.WWWForm();
-        addCommonPayloadFields(payload, null);
-        payload.AddField("access_token", mAccessTokenOrFacebookId);
-        if(!string.IsNullOrEmpty(mAttributionId)) payload.AddField("attribution_id", mAttributionId);
+        Dictionary<string, object> payload = new Dictionary<string, object>();
+        payload.Add("access_token", mAccessTokenOrFacebookId);
+        if(!string.IsNullOrEmpty(mAttributionId)) payload.Add("attribution_id", mAttributionId);
 
-        UnityEngine.WWW request = new UnityEngine.WWW(String.Format("https://{0}/games/{1}/users.json", hostname, mFacebookAppId), payload);
-        yield return request;
-
-        int statusCode = 0;
-        if(request.error != null)
-        {
-            Match match = Regex.Match(request.error, "^([0-9]+)");
-            if(match.Success)
+        Request request = new Request(ServiceType.Auth, string.Format("/games/{0}/users.json", mFacebookAppId), payload);
+        yield return StartCoroutine(signedRequestCoroutine(request, (Response response, string errorText, Dictionary<string, object> reply) => {
+            switch(response)
             {
-                statusCode = int.Parse(match.Value);
+                case Response.NetworkError:
+                    StartCoroutine(validateUserCoroutine(accessTokenOrFacebookId));
+                    break;
+
+                case Response.OK:
+                    this.Status = AuthStatus.Ready;
+                    break;
+
+                case Response.ReadOnly:
+                    this.Status = AuthStatus.ReadOnly;
+                    break;
+
+                default:
+                    this.Status = AuthStatus.NotAuthorized;
+                    break;
             }
-            else
-            {
-                Debug.Log(request.error);
-            }
-        }
-        else
-        {
-            // TODO: Change if JSON updates to include code
-            // Dictionary<string, object> reply = Json.Deserialize(request.text) as Dictionary<string, object>;
-            // statusCode = (int)((long)reply["code"]);
-            statusCode = 200;
-        }
-
-        switch(statusCode)
-        {
-            case 201:
-            case 200: // Successful
-                ret = AuthStatus.Ready;
-                break;
-
-            case 401: // User has not authorized 'publish_actions', read only
-                ret = AuthStatus.ReadOnly;
-                break;
-
-            case 404:
-            case 405: // User is not authorized for Facebook App
-            case 422: // User was not created
-                ret = AuthStatus.NotAuthorized;
-                break;
-        }
-        this.Status = ret;
-
-        yield return ret;
+        }));
     }
 
     private IEnumerator cachedRequestCoroutine(ServiceType serviceType,
@@ -1039,9 +999,9 @@ public partial class Teak : MonoBehaviour
             }
         }
 
-        UnityEngine.WWWForm formPayload = new UnityEngine.WWWForm();
-        addCommonPayloadFields(formPayload, urlParams);
+        addCommonPayloadFields(urlParams);
 
+        UnityEngine.WWWForm formPayload = new UnityEngine.WWWForm();
         string[] keys = new string[urlParams.Keys.Count];
         urlParams.Keys.CopyTo(keys, 0);
         foreach(string key in keys)
