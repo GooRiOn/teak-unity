@@ -1072,17 +1072,21 @@ public partial class Teak : MonoBehaviour
 
         Dictionary<string, object> reply = null;
         int statusCode = 0;
-        if(request.error != null)
+        if(!string.IsNullOrEmpty(request.error))
         {
-            Match match = Regex.Match(request.error, "^([0-9]+)");
+            errorText = request.error;
+            Match match = Regex.Match(errorText, "^([0-9]+)");
             if(match.Success)
             {
                 statusCode = int.Parse(match.Value);
             }
+            else if(errorText.StartsWith("Resolving host timed out:"))
+            {
+                ret = Response.NetworkError;
+            }
             else
             {
-                errorText = request.error;
-                Debug.Log(request.error);
+                Debug.Log(errorText);
             }
         }
         else
