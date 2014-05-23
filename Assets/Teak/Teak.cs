@@ -980,7 +980,7 @@ public partial class Teak : MonoBehaviour
                     imageBytes = imageTex2D.EncodeToPNG();
                     using(SHA256 sha256 = SHA256Managed.Create())
                     {
-                        objectProperties["image_sha"] = System.Text.Encoding.UTF8.GetString(sha256.ComputeHash(imageBytes));
+                        objectProperties["image_sha"] = BitConverter.ToString(sha256.ComputeHash(imageBytes)).Replace("-", string.Empty);
                     }
                 }
                 else if(image is string)
@@ -1164,6 +1164,7 @@ public partial class Teak : MonoBehaviour
     private AuthStatus mAuthStatus;
     private string mUserId;
     private string mServicesDiscoveryHost = "services.gocarrot.com";
+    private string mURLScheme = "https";
     private string mPostHostname;
     private string mAuthHostname;
     private string mMetricsHostname;
@@ -1174,7 +1175,6 @@ public partial class Teak : MonoBehaviour
     private string mLaunchURL;
     private string mAttributionId;
     private string mSessionId;
-    private string mURLScheme = "https";
     private TeakCache mTeakCache;
     private long mSessionStartTime;
     private FacebookSDKType mFacebookSDKType = FacebookSDKType.None;
