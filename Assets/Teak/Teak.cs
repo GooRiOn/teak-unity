@@ -920,16 +920,16 @@ public partial class Teak : MonoBehaviour
             string asStr;
             if((asStr = urlParams[key] as string) != null)
             {
-                kvList.Add(String.Format("{0}={1}", key, asStr));
+                kvList.Add(string.Format("{0}={1}", key, asStr));
             }
             else
             {
-                kvList.Add(String.Format("{0}={1}", key,
+                kvList.Add(string.Format("{0}={1}", key,
                     Json.Serialize(urlParams[key])));
             }
         }
-        string payload = String.Join("&", kvList.ToArray());
-        string signString = String.Format("{0}\n{1}\n{2}\n{3}", "POST", hostname.Split(new char[]{':'})[0], endpoint, payload);
+        string payload = string.Join("&", kvList.ToArray());
+        string signString = string.Format("{0}\n{1}\n{2}\n{3}", "POST", hostname.Split(new char[]{':'})[0], endpoint, payload);
         string sig = AWSSDKUtils.HMACSign(signString, secret, KeyedHashAlgorithm.Create("HMACSHA256"));
         return sig;
     }
@@ -1025,7 +1025,7 @@ public partial class Teak : MonoBehaviour
             formPayload.AddBinaryData("image_bytes", imageBytes);
         }
 
-        UnityEngine.WWW request = new UnityEngine.WWW(String.Format("{0}://{1}{2}", mURLScheme, hostname, teakRequest.Endpoint), formPayload);
+        UnityEngine.WWW request = new UnityEngine.WWW(string.Format("{0}://{1}{2}", mURLScheme, hostname, teakRequest.Endpoint), formPayload);
         yield return request;
 
         Dictionary<string, object> reply = null;
