@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using System.Collections;
 using GoCarrotInc.MiniJSON;
 using System.Collections.Generic;
 
@@ -7,72 +8,47 @@ public partial class Teak
 {
     #region Request
     /// @cond hide_from_doxygen
-    public class Request : Dictionary<string, object>
+    public class Request : IDictionary
     {
         public Dictionary<string, object> Parameters
         {
-            get
-            {
-                return this["parameters"] as Dictionary<string, object>;
-            }
-            internal set
-            {
-                this["parameters"] = value;
-            }
+            get;
+            internal set;
         }
 
         public Teak.ServiceType ServiceType
         {
-            get
-            {
-                return (Teak.ServiceType)this["service_type"];
-            }
-            internal set
-            {
-                this["service_type"] = value;
-            }
+            get;
+            internal set;
         }
 
         public string Endpoint
         {
-            get
-            {
-                return this["endpoint"] as string;
-            }
-            internal set
-            {
-                this["endpoint"] = value;
-            }
+            get;
+            internal set;
         }
 
         public string RequestId
         {
-            get
-            {
-                return this["request_id"] as string;
-            }
-            internal set
-            {
-                this["request_id"] = value;
-            }
+            get;
+            internal set;
         }
 
         public long RequestDate
         {
-            get
-            {
-                return (long)this["request_date"];
-            }
-            internal set
-            {
-                this["request_date"] = value;
-            }
+            get;
+            internal set;
         }
 
         public float DelayInSeconds
         {
             get;
             internal set;
+        }
+
+        protected int NumKeys
+        {
+            get { return 5; }
         }
 
         public Request() {}
@@ -91,6 +67,74 @@ public partial class Teak
         {
             return string.Format("[{0}] {1} {2} - {3}: {4}", '-', this.ServiceType, this.RequestId, this.Endpoint, Json.Serialize(this.Parameters));
         }
+
+        #region IDictionary Members
+        public object this[object keyObj]
+        {
+            get
+            {
+                string key = keyObj as string;
+                switch(key)
+                {
+                    case "parameters":      return this.Parameters;
+                    case "service_type":    return (int)this.ServiceType;
+                    case "endpoint":        return this.Endpoint;
+                    case "request_id":      return this.RequestId;
+                    case "request_date":    return this.RequestDate;
+                    default:                return null;
+                }
+            }
+            set { throw new NotImplementedException(); }
+        }
+
+        public ICollection Keys
+        {
+            get
+            {
+                return new object[] {
+                    "parameters",
+                    "service_type",
+                    "endpoint",
+                    "request_id",
+                    "request_date",
+                };
+            }
+        }
+
+        public ICollection Values
+        {
+            get
+            {
+                return new object[] {
+                    this.Parameters,
+                    (int)this.ServiceType,
+                    this.Endpoint,
+                    this.RequestId,
+                    this.RequestId,
+                    this.RequestDate
+                };
+            }
+        }
+
+        public bool IsReadOnly { get { return true; } }
+        public bool IsFixedSize { get { return true; } }
+        public IDictionaryEnumerator GetEnumerator() { throw new NotImplementedException(); }
+        public void Clear() { throw new NotImplementedException(); }
+        public void Remove(object key) { throw new NotImplementedException(); }
+        public bool Contains(object key) { throw new NotImplementedException(); }
+        public void Add(object key, object value) { throw new NotImplementedException(); }
+        #endregion
+
+        #region ICollection Members
+        public bool IsSynchronized { get { return false; } }
+        public object SyncRoot { get { throw new NotImplementedException(); } }
+        public int Count { get { return this.NumKeys; } }
+        public void CopyTo(Array array, int index) { throw new NotImplementedException(); }
+        #endregion
+
+        #region IEnumerable Members
+        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
+        #endregion
     }
     /// @endcond
     #endregion
@@ -100,32 +144,25 @@ public partial class Teak
     {
         public int Retries
         {
-            get
-            {
-                return (int)this["retries"];
-            }
-            internal set
-            {
-                this["retries"] = value;
-            }
+            get;
+            internal set;
         }
 
         internal long CacheId
         {
-            get
-            {
-                return (long)this["cache_id"];
-            }
-            set
-            {
-                this["cache_id"] = value;
-            }
+            get;
+            set;
         }
 
         internal TeakCache Cache
         {
             get;
             set;
+        }
+
+        protected new int NumKeys
+        {
+            get { return base.NumKeys + 2; }
         }
 
         internal CachedRequest() {}
@@ -157,6 +194,50 @@ public partial class Teak
 #endif
             return ret;
         }
+
+        #region IDictionary Members
+        public new object this[object keyObj]
+        {
+            get
+            {
+                object ret = base[keyObj];
+                if(ret == null)
+                {
+                    string key = keyObj as string;
+                    switch(key)
+                    {
+                        case "retries":     return this.Retries;
+                        case "cache_id":    return this.CacheId;
+                    }
+                }
+                return ret;
+            }
+        }
+
+        public new ICollection Keys
+        {
+            get
+            {
+                object[] keys = new object[this.NumKeys];
+                Array.Copy(base.Keys as object[], keys, base.NumKeys);
+                keys[base.NumKeys + 0] = "retries";
+                keys[base.NumKeys + 1] = "cache_id";
+                return keys;
+            }
+        }
+
+        public new ICollection Values
+        {
+            get
+            {
+                object[] values = new object[this.NumKeys];
+                Array.Copy(base.Values as object[], values, base.NumKeys);
+                values[base.NumKeys + 0] = this.Retries;
+                values[base.NumKeys + 1] = this.CacheId;
+                return values;
+            }
+        }
+        #endregion
     }
     #endregion
 }
