@@ -10,6 +10,12 @@ public partial class Teak
     /// @cond hide_from_doxygen
     public class Request : IDictionary
     {
+        public const string PARAMETERS_KEY = "parameters";
+        public const string SERVICE_TYPE_KEY = "service_type";
+        public const string ENDPOINT_KEY = "endpoint";
+        public const string REQUEST_ID_KEY = "request_id";
+        public const string REQUEST_DATE_KEY = "request_date";
+
         public Dictionary<string, object> Parameters
         {
             get;
@@ -63,6 +69,16 @@ public partial class Teak
             this.DelayInSeconds = 0.0f;
         }
 
+        public Request(Dictionary<string, object> fromJson)
+        {
+            this.ServiceType = (Teak.ServiceType)fromJson[SERVICE_TYPE_KEY];
+            this.Endpoint = fromJson[ENDPOINT_KEY] as string;
+            this.Parameters = fromJson[PARAMETERS_KEY] as Dictionary<string, object>;
+            this.RequestDate = (long)fromJson[REQUEST_DATE_KEY];
+            this.RequestId = fromJson[REQUEST_ID_KEY] as string;
+            this.DelayInSeconds = 0.0f;
+        }
+
         public override string ToString()
         {
             return string.Format("[{0}] {1} {2} - {3}: {4}", '-', this.ServiceType, this.RequestId, this.Endpoint, Json.Serialize(this.Parameters));
@@ -76,11 +92,11 @@ public partial class Teak
                 string key = keyObj as string;
                 switch(key)
                 {
-                    case "parameters":      return this.Parameters;
-                    case "service_type":    return (int)this.ServiceType;
-                    case "endpoint":        return this.Endpoint;
-                    case "request_id":      return this.RequestId;
-                    case "request_date":    return this.RequestDate;
+                    case PARAMETERS_KEY:    return this.Parameters;
+                    case SERVICE_TYPE_KEY:  return (int)this.ServiceType;
+                    case ENDPOINT_KEY:      return this.Endpoint;
+                    case REQUEST_ID_KEY:    return this.RequestId;
+                    case REQUEST_DATE_KEY:  return this.RequestDate;
                     default:                return null;
                 }
             }
@@ -92,11 +108,11 @@ public partial class Teak
             get
             {
                 return new object[] {
-                    "parameters",
-                    "service_type",
-                    "endpoint",
-                    "request_id",
-                    "request_date",
+                    PARAMETERS_KEY,
+                    SERVICE_TYPE_KEY,
+                    ENDPOINT_KEY,
+                    REQUEST_ID_KEY,
+                    REQUEST_DATE_KEY,
                 };
             }
         }
@@ -142,16 +158,12 @@ public partial class Teak
     #region CachedRequest
     public class CachedRequest : Request
     {
+        public const string RETRIES_KEY = "retries";
+
         public int Retries
         {
             get;
             internal set;
-        }
-
-        internal long CacheId
-        {
-            get;
-            set;
         }
 
         internal TeakCache Cache
@@ -162,14 +174,19 @@ public partial class Teak
 
         protected new int NumKeys
         {
-            get { return base.NumKeys + 2; }
+            get { return base.NumKeys + 1; }
         }
 
         internal CachedRequest() {}
 
+        public CachedRequest(Dictionary<string, object> fromJson) : base(fromJson)
+        {
+            this.Retries = (int)fromJson[RETRIES_KEY];
+        }
+
         public override string ToString()
         {
-            return string.Format("[{0}] {1} {2} - {3}: {4}", this.CacheId, this.ServiceType, this.RequestId, this.Endpoint, Json.Serialize(this.Parameters));
+            return string.Format("[{0}] {1} {2} - {3}: {4}", "#", this.ServiceType, this.RequestId, this.Endpoint, Json.Serialize(this.Parameters));
         }
 
         public bool RemoveFromCache()
@@ -206,8 +223,7 @@ public partial class Teak
                     string key = keyObj as string;
                     switch(key)
                     {
-                        case "retries":     return this.Retries;
-                        case "cache_id":    return this.CacheId;
+                        case RETRIES_KEY:   return this.Retries;
                     }
                 }
                 return ret;
@@ -220,8 +236,7 @@ public partial class Teak
             {
                 object[] keys = new object[this.NumKeys];
                 Array.Copy(base.Keys as object[], keys, base.NumKeys);
-                keys[base.NumKeys + 0] = "retries";
-                keys[base.NumKeys + 1] = "cache_id";
+                keys[base.NumKeys + 0] = RETRIES_KEY;
                 return keys;
             }
         }
@@ -233,7 +248,6 @@ public partial class Teak
                 object[] values = new object[this.NumKeys];
                 Array.Copy(base.Values as object[], values, base.NumKeys);
                 values[base.NumKeys + 0] = this.Retries;
-                values[base.NumKeys + 1] = this.CacheId;
                 return values;
             }
         }
