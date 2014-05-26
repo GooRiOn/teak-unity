@@ -196,15 +196,11 @@ public partial class Teak : MonoBehaviour
         {
             if(mAuthStatus != value)
             {
+                Debug.Log("Auth status changed from " + authStatusString(mAuthStatus) + " to " + authStatusString(value));
                 mAuthStatus = value;
                 if(AuthenticationStatusChanged != null)
                 {
                     AuthenticationStatusChanged(this, mAuthStatus);
-                }
-
-                foreach(TeakCache.CachedRequest request in mTeakCache.RequestsInCache())
-                {
-                    StartCoroutine(signedRequestCoroutine(request, cachedRequestHandler(request, null)));
                 }
             }
         }
@@ -571,8 +567,7 @@ public partial class Teak : MonoBehaviour
     }
 #endif
 
-    private RequestResponse cachedRequestHandler(TeakCache.CachedRequest cachedRequest,
-                                                       RequestResponse callback)
+    private RequestResponse cachedRequestHandler(CachedRequest cachedRequest, RequestResponse callback)
     {
         return (Response ret, string errorText, Dictionary<string, object> reply) => {
                 switch(ret)
@@ -634,6 +629,70 @@ public partial class Teak : MonoBehaviour
             }));
         }
     }
+
+    private void loadMobileAdvertisingIds()
+    {
+        // Get attribution id so we can generate a custom audience id via graph call
+        // to app_id/custom_audience_third_party_id
+#if !UNITY_EDITOR
+#   if UNITY_ANDROID
+        AndroidJavaClass unityPlayerClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+        AndroidJavaObject currentActivity = unityPlayerClass.GetStatic<AndroidJavaObject>("currentActivity");
+
+        // New Android SDK method
+        try
+        {
+            AndroidJavaClass AttributionIdentifiersClass = new AndroidJavaClass("com.facebook.internal.AttributionIdentifiers");
+            AndroidJavaObject attributionIdentifiers = AttributionIdentifiersClass.CallStatic<AndroidJavaObject>("getAttributionIdentifiers", new object[] { currentActivity });
+            mAttributionId = attributionIdentifiers.Call<string>("getAttributionId");
+            Debug.Log("Android Advertising Id via com.facebook.internal.AttributionIdentifiers: " + mAttributionId);
+        }
+        catch { Debug.Log("com.facebook.internal.AttributionIdentifiers is not available."); }
+
+        // Try old Android SDK
+        if(string.IsNullOrEmpty(mAttributionId))
+        {
+            // Old Android SDK method
+            try
+            {
+                AndroidJavaClass FacebookSettingsClass = new AndroidJavaClass("com.facebook.Settings");
+                AndroidJavaObject contentResolver = currentActivity.Call<AndroidJavaObject>("getContentResolver");
+                mAttributionId = FacebookSettingsClass.CallStatic<string>("getAttributionId", new object[] { contentResolver });
+                Debug.Log("Android Advertising Id via com.facebook.Settings: " + mAttributionId);
+            }
+            catch { Debug.Log("com.facebook.Settings is not available."); }
+        }
+
+        // Check for Google Advertising Id
+        if(string.IsNullOrEmpty(mAttributionId))
+        {
+            try
+            {
+                AndroidJavaClass GooglePlayServicesUtilClass = new AndroidJavaClass("com.google.android.gms.common.GooglePlayServicesUtil");
+                if(GooglePlayServicesUtilClass.CallStatic<int>("isGooglePlayServicesAvailable", new object[] { currentActivity }) == 0)
+                {
+                    // TODO: Retrieve advertising id
+                    Debug.Log("isGooglePlayServicesAvailable == TRUE");
+                }
+            }
+            catch { Debug.Log("Google Play Services are not available."); }
+        }
+#   elif UNITY_IPHONE
+        // TODO: C-call in to native code
+#   endif
+#endif
+
+        // Resolve to a custom audience id
+        if(string.IsNullOrEmpty(mAttributionId))
+        {
+            // No attribution id found, so check
+            Debug.Log("Attribution Id for Advertising not found.");
+        }
+        else
+        {
+            Debug.Log("Advertising identifier: " + mAttributionId);
+        }
+    }
     /// @endcond
     #endregion
 
@@ -668,61 +727,8 @@ public partial class Teak : MonoBehaviour
     {
         DontDestroyOnLoad(this);
 
-        // Get attribution id so we can generate a custom audience id via graph call
-        // to app_id/custom_audience_third_party_id
-#if !UNITY_EDITOR
-#   if UNITY_ANDROID
-        AndroidJavaClass unityPlayerClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-        AndroidJavaObject currentActivity = unityPlayerClass.GetStatic<AndroidJavaObject>("currentActivity");
-
-        // New Android SDK method
-        try
-        {
-            AndroidJavaClass AttributionIdentifiersClass = new AndroidJavaClass("com.facebook.internal.AttributionIdentifiers");
-            AndroidJavaObject attributionIdentifiers = AttributionIdentifiersClass.CallStatic<AndroidJavaObject>("getAttributionIdentifiers", new object[] { currentActivity });
-            mAttributionId = attributionIdentifiers.Call<string>("getAttributionId");
-        }
-        catch { Debug.Log("com.facebook.internal.AttributionIdentifiers is not available."); }
-
-        // Try old Android SDK
-        if(string.IsNullOrEmpty(mAttributionId))
-        {
-            // Old Android SDK method
-            try
-            {
-                AndroidJavaClass FacebookSettingsClass = new AndroidJavaClass("com.facebook.Settings");
-                AndroidJavaObject contentResolver = currentActivity.Call<AndroidJavaObject>("getContentResolver");
-                mAttributionId = FacebookSettingsClass.CallStatic<string>("getAttributionId", new object[] { contentResolver });
-            }
-            catch { Debug.Log("com.facebook.Settings is not available."); }
-        }
-
-        // Check for Google Advertising Id
-        if(string.IsNullOrEmpty(mAttributionId))
-        {
-            try
-            {
-                AndroidJavaClass GooglePlayServicesUtilClass = new AndroidJavaClass("com.google.android.gms.common.GooglePlayServicesUtil");
-                if(GooglePlayServicesUtilClass.CallStatic<int>("isGooglePlayServicesAvailable", new object[] { currentActivity }) == 0)
-                {
-                    // TODO: Retrieve advertising id
-                    Debug.Log("isGooglePlayServicesAvailable == TRUE");
-                }
-            }
-            catch { Debug.Log("Google Play Services are not available."); }
-        }
-#   elif UNITY_IPHONE
-        // TODO: C-call in to native code
-#   endif
-        if(string.IsNullOrEmpty(mAttributionId))
-        {
-            Debug.Log("Attribution Id for Advertising not found.");
-        }
-        else
-        {
-            Debug.Log("Advertising identifier: " + mAttributionId);
-        }
-#endif
+        // Load appropriate advertising ids from iOS/Android
+        loadMobileAdvertisingIds();
 
         // Do services discovery
         StartCoroutine(servicesDiscoveryCoroutine());
@@ -755,7 +761,7 @@ public partial class Teak : MonoBehaviour
 
     void OnApplicationQuit()
     {
-        mTeakCache.Dispose();
+        // Serialize teak cache
         Destroy(this);
     }
     /// @endcond
@@ -765,10 +771,10 @@ public partial class Teak : MonoBehaviour
     /// @cond hide_from_doxygen
     public enum ServiceType : int
     {
-        Discovery   = -3,
-        Auth        = -2,
+        Discovery   = -2,
         Metrics     = -1,
-        Post        = 2
+        Auth        =  1,
+        Post        =  2
     }
 
     private string hostForServiceType(ServiceType type)
@@ -822,7 +828,7 @@ public partial class Teak : MonoBehaviour
 
         if(string.IsNullOrEmpty(mFacebookAppId))
         {
-            StartCoroutine(servicesDiscoveryCoroutine(1.0f));
+            StartCoroutine(servicesDiscoveryCoroutine(UnityEngine.Random.Range(0.5f, 2.0f)));
         }
         else
         {
@@ -843,16 +849,9 @@ public partial class Teak : MonoBehaviour
                         mSessionId = reply["session_id"] as string;
                     }
 
-                    if(!string.IsNullOrEmpty(mAccessTokenOrFacebookId))
+                    foreach(CachedRequest crequest in mTeakCache)
                     {
-                        validateUser(mAccessTokenOrFacebookId);
-                    }
-                    else
-                    {
-                        foreach(TeakCache.CachedRequest crequest in mTeakCache.RequestsInCache())
-                        {
-                            StartCoroutine(signedRequestCoroutine(crequest, cachedRequestHandler(crequest, null)));
-                        }
+                        StartCoroutine(signedRequestCoroutine(crequest, cachedRequestHandler(crequest, null)));
                     }
                 }
                 else
@@ -863,25 +862,24 @@ public partial class Teak : MonoBehaviour
         }
     }
 
-    private IEnumerator validateUserCoroutine(string accessTokenOrFacebookId)
+    private IEnumerator validateUserCoroutine(string accessTokenOrFacebookId, float delay = 0.0f)
     {
-        if(string.IsNullOrEmpty(mUserId))
+        if(delay > 0.0f)
         {
-            throw new NullReferenceException("UserId is empty. Assign a UserId before calling validateUser");
+            yield return new WaitForSeconds(delay);
         }
 
         mAccessTokenOrFacebookId = accessTokenOrFacebookId;
 
         Dictionary<string, object> payload = new Dictionary<string, object>();
         payload.Add("access_token", mAccessTokenOrFacebookId);
-        if(!string.IsNullOrEmpty(mAttributionId)) payload.Add("attribution_id", mAttributionId);
 
         Request request = new Request(ServiceType.Auth, string.Format("/games/{0}/users.json", mFacebookAppId), payload);
         yield return StartCoroutine(signedRequestCoroutine(request, (Response response, string errorText, Dictionary<string, object> reply) => {
             switch(response)
             {
                 case Response.NetworkError:
-                    StartCoroutine(validateUserCoroutine(accessTokenOrFacebookId));
+                    StartCoroutine(validateUserCoroutine(accessTokenOrFacebookId, UnityEngine.Random.Range(0.5f, 2.0f)));
                     break;
 
                 case Response.OK:
@@ -904,7 +902,7 @@ public partial class Teak : MonoBehaviour
                                                Dictionary<string, object> parameters,
                                                RequestResponse callback = null)
     {
-        TeakCache.CachedRequest cachedRequest = mTeakCache.CacheRequest(serviceType, endpoint, parameters);
+        CachedRequest cachedRequest = mTeakCache.CacheRequest(serviceType, endpoint, parameters);
         yield return StartCoroutine(signedRequestCoroutine(cachedRequest, cachedRequestHandler(cachedRequest, callback)));
     }
 
@@ -943,7 +941,7 @@ public partial class Teak : MonoBehaviour
 
         if(string.IsNullOrEmpty(hostname))
         {
-            if(callback != null) callback(Response.OK, "", null);
+            if(callback != null) callback(Response.NetworkError, "", null);
             return false;
         }
 
@@ -999,6 +997,10 @@ public partial class Teak : MonoBehaviour
 
         addCommonPayloadFields(urlParams);
 
+        string sig = signParams(hostname, teakRequest.Endpoint, mTeakAppSecret, urlParams);
+        urlParams["sig"] = sig;
+
+        // Copy url params to form payload
         UnityEngine.WWWForm formPayload = new UnityEngine.WWWForm();
         string[] keys = new string[urlParams.Keys.Count];
         urlParams.Keys.CopyTo(keys, 0);
@@ -1015,9 +1017,6 @@ public partial class Teak : MonoBehaviour
                     Json.Serialize(urlParams[key]));
             }
         }
-
-        string sig = signParams(hostname, teakRequest.Endpoint, mTeakAppSecret, urlParams);
-        formPayload.AddField("sig", sig);
 
         // Attach image
         if(imageBytes != null)
@@ -1045,6 +1044,9 @@ public partial class Teak : MonoBehaviour
             else
             {
                 Debug.Log(errorText);
+                Debug.Log(string.Format("{0}://{1}{2}", mURLScheme, hostname, teakRequest.Endpoint));
+                Debug.Log(Json.Serialize(urlParams));
+
             }
         }
         else
@@ -1061,100 +1063,40 @@ public partial class Teak : MonoBehaviour
             case 201:
             case 200: // Successful
                 ret = Response.OK;
-                if(teakRequest.ServiceType != ServiceType.Metrics) this.Status = AuthStatus.Ready;
+                if(teakRequest.ServiceType < 0) this.Status = AuthStatus.Ready;
                 break;
 
             case 401: // User has not authorized 'publish_actions', read only
                 ret = Response.ReadOnly;
-                if(teakRequest.ServiceType != ServiceType.Metrics) this.Status = AuthStatus.ReadOnly;
+                if(teakRequest.ServiceType < 0) this.Status = AuthStatus.ReadOnly;
                 break;
 
             case 402: // Service tier exceeded, not posted
                 ret = Response.UserLimitHit;
-                if(teakRequest.ServiceType != ServiceType.Metrics) this.Status = AuthStatus.Ready;
+                if(teakRequest.ServiceType < 0) this.Status = AuthStatus.Ready;
                 break;
 
             case 403: // Authentication error, app secret incorrect
                 ret = Response.BadAppSecret;
-                if(teakRequest.ServiceType != ServiceType.Metrics) this.Status = AuthStatus.Ready;
+                if(teakRequest.ServiceType < 0) this.Status = AuthStatus.Ready;
                 break;
 
             case 404: // Resource not found
                 ret = Response.NotFound;
-                if(teakRequest.ServiceType != ServiceType.Metrics) this.Status = AuthStatus.Ready;
+                if(teakRequest.ServiceType < 0) this.Status = AuthStatus.Ready;
                 break;
 
             case 405: // User is not authorized for Facebook App
                 ret = Response.NotAuthorized;
-                if(teakRequest.ServiceType != ServiceType.Metrics) this.Status = AuthStatus.NotAuthorized;
+                if(teakRequest.ServiceType < 0) this.Status = AuthStatus.NotAuthorized;
                 break;
 
             case 424: // Dynamic OG object not created due to parameter error
                 ret = Response.ParameterError;
-                if(teakRequest.ServiceType != ServiceType.Metrics) this.Status = AuthStatus.Ready;
+                if(teakRequest.ServiceType < 0) this.Status = AuthStatus.Ready;
                 break;
         }
         if(callback != null) callback(ret, errorText, reply);
-    }
-    /// @endcond
-    #endregion
-
-    #region Request
-    /// @cond hide_from_doxygen
-    public class Request
-    {
-        public Dictionary<string, object> Parameters
-        {
-            get;
-            internal set;
-        }
-
-        public Teak.ServiceType ServiceType
-        {
-            get;
-            internal set;
-        }
-
-        public string Endpoint
-        {
-            get;
-            internal set;
-        }
-
-        public string RequestId
-        {
-            get;
-            internal set;
-        }
-
-        public long RequestDate
-        {
-            get;
-            internal set;
-        }
-
-        public float DelayInSeconds
-        {
-            get;
-            internal set;
-        }
-
-        public Request() {}
-
-        public Request(ServiceType serviceType, string endpoint, Dictionary<string, object> parameters)
-        {
-            this.ServiceType = serviceType;
-            this.Endpoint = endpoint;
-            this.Parameters = parameters;
-            this.RequestDate = (long)((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000);
-            this.RequestId = System.Guid.NewGuid().ToString();
-            this.DelayInSeconds = 0.0f;
-        }
-
-        public override string ToString()
-        {
-            return string.Format("[{0}] {1} {2} - {3}: {4}", '-', this.ServiceType, this.RequestId, this.Endpoint, Json.Serialize(this.Parameters));
-        }
     }
     /// @endcond
     #endregion
