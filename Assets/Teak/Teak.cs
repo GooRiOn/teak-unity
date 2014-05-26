@@ -808,7 +808,7 @@ public partial class Teak : MonoBehaviour
         payload.Add("app_id", mFacebookAppId);
         payload.Add("app_version", mBundleVersion);
         payload.Add("app_build_id", "TODO: USER SPECIFIED BUILD ID");
-        if(!string.IsNullOrEmpty(mUserId)) payload.Add("api_key", mUserId);
+        payload.Add("api_key", mUserId);
         if(!string.IsNullOrEmpty(this.Tag)) payload.Add("tag", this.Tag);
         if(!string.IsNullOrEmpty(mSessionId)) payload.Add("session_id", mSessionId);
     }
