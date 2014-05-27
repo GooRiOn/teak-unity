@@ -1,14 +1,14 @@
 using System;
 using UnityEngine;
-using System.Collections;
 using GoCarrotInc.MiniJSON;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 public partial class Teak
 {
     #region Request
     /// @cond hide_from_doxygen
-    public class Request : IDictionary
+    public class Request : ISerializable
     {
         public const string PARAMETERS_KEY = "parameters";
         public const string SERVICE_TYPE_KEY = "service_type";
@@ -52,11 +52,6 @@ public partial class Teak
             internal set;
         }
 
-        protected int NumKeys
-        {
-            get { return 5; }
-        }
-
         public Request() {}
 
         public Request(ServiceType serviceType, string endpoint, Dictionary<string, object> parameters)
@@ -69,14 +64,13 @@ public partial class Teak
             this.DelayInSeconds = 0.0f;
         }
 
-        public Request(Dictionary<string, object> fromJson)
+        public Request(SerializationInfo info, StreamingContext context)
         {
-            this.ServiceType = (Teak.ServiceType)fromJson[SERVICE_TYPE_KEY];
-            this.Endpoint = fromJson[ENDPOINT_KEY] as string;
-            this.Parameters = fromJson[PARAMETERS_KEY] as Dictionary<string, object>;
-            this.RequestDate = (long)fromJson[REQUEST_DATE_KEY];
-            this.RequestId = fromJson[REQUEST_ID_KEY] as string;
-            this.DelayInSeconds = 0.0f;
+            this.ServiceType = (Teak.ServiceType)info.GetValue(SERVICE_TYPE_KEY, typeof(int));
+            this.Endpoint = info.GetValue(SERVICE_TYPE_KEY, typeof(string)) as string;
+            this.Parameters = info.GetValue(PARAMETERS_KEY, typeof(Dictionary<string, object>)) as Dictionary<string, object>;
+            this.RequestDate = (long)info.GetValue(REQUEST_DATE_KEY, typeof(long));
+            this.RequestId = info.GetValue(REQUEST_ID_KEY, typeof(string)) as string;
         }
 
         public override string ToString()
@@ -84,72 +78,15 @@ public partial class Teak
             return string.Format("[{0}] {1} {2} - {3}: {4}", '-', this.ServiceType, this.RequestId, this.Endpoint, Json.Serialize(this.Parameters));
         }
 
-        #region IDictionary Members
-        public object this[object keyObj]
+        #region ISerializable
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            get
-            {
-                string key = keyObj as string;
-                switch(key)
-                {
-                    case PARAMETERS_KEY:    return this.Parameters;
-                    case SERVICE_TYPE_KEY:  return (int)this.ServiceType;
-                    case ENDPOINT_KEY:      return this.Endpoint;
-                    case REQUEST_ID_KEY:    return this.RequestId;
-                    case REQUEST_DATE_KEY:  return this.RequestDate;
-                    default:                return null;
-                }
-            }
-            set { throw new NotImplementedException(); }
+            info.AddValue(SERVICE_TYPE_KEY, this.ServiceType, typeof(int));
+            info.AddValue(ENDPOINT_KEY, this.Endpoint, typeof(string));
+            info.AddValue(PARAMETERS_KEY, this.Parameters, typeof(Dictionary<string, object>));
+            info.AddValue(REQUEST_DATE_KEY, this.RequestDate, typeof(long));
+            info.AddValue(REQUEST_ID_KEY, this.RequestId, typeof(string));
         }
-
-        public ICollection Keys
-        {
-            get
-            {
-                return new object[] {
-                    PARAMETERS_KEY,
-                    SERVICE_TYPE_KEY,
-                    ENDPOINT_KEY,
-                    REQUEST_ID_KEY,
-                    REQUEST_DATE_KEY,
-                };
-            }
-        }
-
-        public ICollection Values
-        {
-            get
-            {
-                return new object[] {
-                    this.Parameters,
-                    (int)this.ServiceType,
-                    this.Endpoint,
-                    this.RequestId,
-                    this.RequestId,
-                    this.RequestDate
-                };
-            }
-        }
-
-        public bool IsReadOnly { get { return true; } }
-        public bool IsFixedSize { get { return true; } }
-        public IDictionaryEnumerator GetEnumerator() { throw new NotImplementedException(); }
-        public void Clear() { throw new NotImplementedException(); }
-        public void Remove(object key) { throw new NotImplementedException(); }
-        public bool Contains(object key) { throw new NotImplementedException(); }
-        public void Add(object key, object value) { throw new NotImplementedException(); }
-        #endregion
-
-        #region ICollection Members
-        public bool IsSynchronized { get { return false; } }
-        public object SyncRoot { get { throw new NotImplementedException(); } }
-        public int Count { get { return this.NumKeys; } }
-        public void CopyTo(Array array, int index) { throw new NotImplementedException(); }
-        #endregion
-
-        #region IEnumerable Members
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
         #endregion
     }
     /// @endcond
@@ -172,16 +109,11 @@ public partial class Teak
             set;
         }
 
-        protected new int NumKeys
-        {
-            get { return base.NumKeys + 1; }
-        }
-
         internal CachedRequest() {}
 
-        public CachedRequest(Dictionary<string, object> fromJson) : base(fromJson)
+        public CachedRequest(SerializationInfo info, StreamingContext context) : base(info, context)
         {
-            this.Retries = (int)fromJson[RETRIES_KEY];
+            this.Retries = (int)info.GetValue(RETRIES_KEY, typeof(int));
         }
 
         public override string ToString()
@@ -195,10 +127,8 @@ public partial class Teak
             lock(this.Cache)
             {
                 this.Cache.Remove(this);
+                this.Cache.Dirty = true;
             }
-#if CACHE_ENABLED
-            // Mark dirty
-#endif
             return ret;
         }
 
@@ -206,50 +136,18 @@ public partial class Teak
         {
             bool ret = true;
             this.DelayInSeconds = (this.DelayInSeconds > 0.0f ? this.DelayInSeconds * 2.0f : 1.0f) + UnityEngine.Random.Range(0.0f, 3.0f);
-#if CACHE_ENABLED
-            // Mark dirty
-#endif
+            lock(this.Cache)
+            {
+                this.Cache.Dirty = true;
+            }
             return ret;
         }
 
-        #region IDictionary Members
-        public new object this[object keyObj]
+        #region ISerializable
+        public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            get
-            {
-                object ret = base[keyObj];
-                if(ret == null)
-                {
-                    string key = keyObj as string;
-                    switch(key)
-                    {
-                        case RETRIES_KEY:   return this.Retries;
-                    }
-                }
-                return ret;
-            }
-        }
-
-        public new ICollection Keys
-        {
-            get
-            {
-                object[] keys = new object[this.NumKeys];
-                Array.Copy(base.Keys as object[], keys, base.NumKeys);
-                keys[base.NumKeys + 0] = RETRIES_KEY;
-                return keys;
-            }
-        }
-
-        public new ICollection Values
-        {
-            get
-            {
-                object[] values = new object[this.NumKeys];
-                Array.Copy(base.Values as object[], values, base.NumKeys);
-                values[base.NumKeys + 0] = this.Retries;
-                return values;
-            }
+            base.GetObjectData(info, context);
+            info.AddValue(RETRIES_KEY, this.Retries, typeof(int));
         }
         #endregion
     }

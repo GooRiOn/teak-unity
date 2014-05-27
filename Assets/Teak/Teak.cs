@@ -506,7 +506,7 @@ public partial class Teak : MonoBehaviour
     Teak()
     {
         mAttributionId = null;
-        mTeakCache = new TeakCache();
+        mTeakCache = TeakCache.Create();
         this.InstallDate = new DateTime(1970, 1, 1, 0, 0, 0, 0).AddSeconds(mTeakCache.InstallDate);
 
         // Check to see if the official Facebook SDK is being used
