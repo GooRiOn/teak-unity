@@ -761,7 +761,7 @@ public partial class Teak : MonoBehaviour
 
     void OnApplicationQuit()
     {
-        // Serialize teak cache
+        mTeakCache.Close();
         Destroy(this);
     }
     /// @endcond

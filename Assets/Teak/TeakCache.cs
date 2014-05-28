@@ -61,14 +61,22 @@ public class TeakCache : List<Teak.CachedRequest>, ISerializable
         {
             if(value != mDirty)
             {
-                mDirty = true;
+                lock(this)
+                {
+                    mDirty = value;
+                    // TODO: Schedule a write-timer?
+                }
             }
         }
     }
 
     public void markInstallMetricSent()
     {
-        // TODO
+        lock(this)
+        {
+            this.InstallMetricSent = true;
+            this.Serialize();
+        }
     }
 
     public static TeakCache Create()
@@ -76,24 +84,25 @@ public class TeakCache : List<Teak.CachedRequest>, ISerializable
         TeakCache ret = null;
 
 #if CACHE_ENABLED
-        IFormatter formatter = new BinaryFormatter();
-        FileStream s = null;
         try
         {
+            IFormatter formatter = new BinaryFormatter();
             Debug.Log("Cache file: " + TeakCache.Filename);
-            s = new FileStream(TeakCache.Filename, FileMode.Open);
+            FileStream s = new FileStream(TeakCache.Filename, FileMode.Open);
             ret = (TeakCache)formatter.Deserialize(s);
+            ret.mFileStream = s;
         }
         catch {}
-        finally
-        {
-            if(s != null) s.Close();
-        }
 #endif
 
         if(ret == null)
         {
             ret = new TeakCache();
+#if CACHE_ENABLED
+            ret.Serialize();
+            Debug.Log("CREATING NEW CACHE");
+#endif
+            ret.mDirty = false;
         }
 
         return ret;
@@ -103,12 +112,23 @@ public class TeakCache : List<Teak.CachedRequest>, ISerializable
     {
         this.InstallDate = (long)((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000);
         this.InstallMetricSent = false;
+        mDirty = true;
 #if CACHE_ENABLED
-        Debug.Log("CREATING NEW CACHE");
+        mStreamFormatter = new BinaryFormatter();
+        mFileStream = new FileStream(TeakCache.Filename, FileMode.Create);
 #endif
-        mDirty = false;
     }
 
+    public void Close()
+    {
+#if CACHE_ENABLED
+        this.Serialize();
+        mFileStream.Close();
+        mFileStream = null;
+#endif
+    }
+
+#if CACHE_ENABLED
     public TeakCache(SerializationInfo info, StreamingContext context)
     {
         int version = (int)info.GetValue("version", typeof(int));
@@ -126,7 +146,10 @@ public class TeakCache : List<Teak.CachedRequest>, ISerializable
             throw new NotImplementedException();
         }
         mDirty = false;
+        mStreamFormatter = new BinaryFormatter();
+        // Create filestream in Create()
     }
+#endif
 
     public Teak.CachedRequest CacheRequest(Teak.ServiceType serviceType, string endpoint, Dictionary<string, object> parameters)
     {
@@ -137,15 +160,28 @@ public class TeakCache : List<Teak.CachedRequest>, ISerializable
         ret.RequestDate = (long)((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000);
         ret.RequestId = System.Guid.NewGuid().ToString();
         ret.Retries = 0;
+        ret.Cache = this;
 
         lock(this)
         {
-            ret.Cache = this;
             this.Add(ret);
-            this.Dirty = true;
         }
+        this.Dirty = true;
 
         return ret;
+    }
+
+    public void Serialize()
+    {
+#if CACHE_ENABLED
+        lock(this)
+        {
+            mFileStream.Seek(0, SeekOrigin.Begin);
+            mStreamFormatter.Serialize(mFileStream, this);
+            mFileStream.Flush();
+            this.Dirty = false;
+        }
+#endif
     }
 
     #region ISerializable
@@ -160,6 +196,10 @@ public class TeakCache : List<Teak.CachedRequest>, ISerializable
 
     #region Data
     bool mDirty;
+#if CACHE_ENABLED
+    FileStream mFileStream;
+    IFormatter mStreamFormatter;
+#endif
     #endregion
 }
 // @endcond
