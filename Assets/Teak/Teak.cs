@@ -1051,10 +1051,15 @@ public partial class Teak : MonoBehaviour
         }
         else
         {
+            Match match = Regex.Match(request.responseHeaders["STATUS"], "^([0-9]+)");
+            if(match.Success)
+            {
+                statusCode = int.Parse(match.Value);
+            }
+
             if(!string.IsNullOrEmpty(request.text))
             {
                 reply = Json.Deserialize(request.text) as Dictionary<string, object>;
-                if(reply != null && reply.ContainsKey("code")) statusCode = (int)((long)reply["code"]);
             }
         }
 
