@@ -29,6 +29,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 #endregion
 
 /// @cond hide_from_doxygen
+[Serializable]
 public class TeakCache : List<Teak.CachedRequest>, ISerializable
 {
     public const int VERSION = 1;
@@ -64,13 +65,16 @@ public class TeakCache : List<Teak.CachedRequest>, ISerializable
                 lock(this)
                 {
                     mDirty = value;
-                    // TODO: Schedule a write-timer?
+                    if(mDirty)
+                    {
+                        this.Serialize();
+                    }
                 }
             }
         }
     }
 
-    public void markInstallMetricSent()
+    public void MarkInstallMetricSent()
     {
         lock(this)
         {
@@ -84,15 +88,19 @@ public class TeakCache : List<Teak.CachedRequest>, ISerializable
         TeakCache ret = null;
 
 #if CACHE_ENABLED
+        FileStream s = null;
         try
         {
             IFormatter formatter = new BinaryFormatter();
             Debug.Log("Cache file: " + TeakCache.Filename);
-            FileStream s = new FileStream(TeakCache.Filename, FileMode.Open);
+            s = new FileStream(TeakCache.Filename, FileMode.Open);
             ret = (TeakCache)formatter.Deserialize(s);
             ret.mFileStream = s;
         }
-        catch {}
+        catch
+        {
+            if(s != null) s.Close();
+        }
 #endif
 
         if(ret == null)

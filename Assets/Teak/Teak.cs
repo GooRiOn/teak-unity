@@ -686,11 +686,9 @@ public partial class Teak : MonoBehaviour
         if(string.IsNullOrEmpty(mAttributionId))
         {
             // No attribution id found, so check
-            Debug.Log("Attribution Id for Advertising not found.");
         }
         else
         {
-            Debug.Log("Advertising identifier: " + mAttributionId);
         }
     }
     /// @endcond
@@ -698,20 +696,33 @@ public partial class Teak : MonoBehaviour
 
     #region Metrics
     /// @cond hide_from_doxygen
-    private IEnumerator sendInstallMetricIfNeeded()
+    private IEnumerator sendInstallMetricIfNeeded(float delay = 0.0f)
     {
         if(!mTeakCache.InstallMetricSent)
         {
-            yield return StartCoroutine(cachedRequestCoroutine(ServiceType.Metrics, "/install.json", new Dictionary<string, object>() {
-                    {"install_date", mTeakCache.InstallDate}
-            }, (Response response, string errorText, Dictionary<string, object> reply) => {
+            if(delay > 0.0f)
+            {
+                yield return new WaitForSeconds(delay);
+            }
+
+            Debug.Log("Sending install metric.");
+            Dictionary<string, object> payload = new Dictionary<string, object>() {
+                {"install_date", mTeakCache.InstallDate}
+            };
+
+            Request request = new Request(ServiceType.Metrics, "/install.json", payload);
+            yield return StartCoroutine(signedRequestCoroutine(request, (Response response, string errorText, Dictionary<string, object> reply) => {
+                Debug.Log("Reply from install metric: " + response);
                 if(response == Response.OK)
                 {
-                    mTeakCache.markInstallMetricSent();
+                    mTeakCache.MarkInstallMetricSent();
+                }
+                else
+                {
+                    StartCoroutine(sendInstallMetricIfNeeded(UnityEngine.Random.Range(1.0f, 5.0f)));
                 }
             }));
         }
-        yield return null;
     }
 
     private IEnumerator sendAppOpenedEvent()

@@ -8,6 +8,7 @@ public partial class Teak
 {
     #region Request
     /// @cond hide_from_doxygen
+    [Serializable]
     public class Request : ISerializable
     {
         public const string PARAMETERS_KEY = "parameters";
@@ -93,6 +94,7 @@ public partial class Teak
     #endregion
 
     #region CachedRequest
+    [Serializable]
     public class CachedRequest : Request
     {
         public const string RETRIES_KEY = "retries";
