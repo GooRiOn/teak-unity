@@ -29,185 +29,209 @@ using System.Runtime.Serialization.Formatters.Binary;
 #endregion
 
 /// @cond hide_from_doxygen
-[Serializable]
-public class TeakCache : List<Teak.CachedRequest>, ISerializable
+public partial class Teak
 {
-    public const int VERSION = 1;
-    public const string FILENAME = "teak.db";
-
-    public static string Filename
+    [Serializable]
+    private class Cache : List<Teak.CachedRequest>, ISerializable
     {
-        get
+        public const int VERSION = 1;
+        public const string FILENAME = "teak.db";
+
+        public static string Filename
         {
-            return string.Format("{0}/{1}", Application.persistentDataPath, TeakCache.FILENAME);
-        }
-    }
-
-    public bool InstallMetricSent
-    {
-        get;
-        private set;
-    }
-
-    public long InstallDate
-    {
-        get;
-        private set;
-    }
-
-    public bool Dirty
-    {
-        get { return mDirty; }
-        set
-        {
-            if(value != mDirty)
+            get
             {
-                lock(this)
+                return string.Format("{0}/{1}", Application.persistentDataPath, Cache.FILENAME);
+            }
+        }
+
+        public bool InstallMetricSent
+        {
+            get;
+            private set;
+        }
+
+        public long InstallDate
+        {
+            get;
+            private set;
+        }
+
+        public bool Dirty
+        {
+            get { return mDirty; }
+            set
+            {
+                if(value != mDirty)
                 {
-                    mDirty = value;
-                    if(mDirty)
+                    lock(this)
                     {
-                        this.Serialize();
+                        mDirty = value;
+                        if(mDirty)
+                        {
+                            this.Serialize();
+                        }
                     }
                 }
             }
         }
-    }
 
-    public void MarkInstallMetricSent()
-    {
-        lock(this)
+        public bool AdvertisingIdsSent
         {
-            this.InstallMetricSent = true;
+            get;
+            private set;
+        }
+
+        public string CustomAudienceId
+        {
+            get;
+            set;
+        }
+
+        public string MobileAdvertisingId
+        {
+            get;
+            set;
+        }
+
+        public void MarkInstallMetricSent()
+        {
+            lock(this)
+            {
+                this.InstallMetricSent = true;
+                this.Serialize();
+            }
+        }
+
+        public static Cache Create()
+        {
+            Cache ret = null;
+
+    #if CACHE_ENABLED
+            FileStream s = null;
+            try
+            {
+                IFormatter formatter = new BinaryFormatter();
+                Debug.Log("Cache file: " + Cache.Filename);
+                s = new FileStream(Cache.Filename, FileMode.Open);
+                ret = (Cache)formatter.Deserialize(s);
+                ret.mFileStream = s;
+            }
+            catch
+            {
+                if(s != null) s.Close();
+            }
+    #endif
+
+            if(ret == null)
+            {
+                ret = new Cache();
+    #if CACHE_ENABLED
+                ret.Serialize();
+                Debug.Log("CREATING NEW CACHE");
+    #endif
+                ret.mDirty = false;
+            }
+
+            return ret;
+        }
+
+        private Cache()
+        {
+            this.InstallDate = (long)((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000);
+            this.InstallMetricSent = false;
+            this.AdvertisingIdsSent = false;
+            this.CustomAudienceId = null;
+            mDirty = true;
+    #if CACHE_ENABLED
+            mStreamFormatter = new BinaryFormatter();
+            mFileStream = new FileStream(Cache.Filename, FileMode.Create);
+    #endif
+        }
+
+        public void Close()
+        {
+    #if CACHE_ENABLED
             this.Serialize();
+            mFileStream.Close();
+            mFileStream = null;
+    #endif
         }
-    }
 
-    public static TeakCache Create()
-    {
-        TeakCache ret = null;
-
-#if CACHE_ENABLED
-        FileStream s = null;
-        try
+    #if CACHE_ENABLED
+        public Cache(SerializationInfo info, StreamingContext context)
         {
-            IFormatter formatter = new BinaryFormatter();
-            Debug.Log("Cache file: " + TeakCache.Filename);
-            s = new FileStream(TeakCache.Filename, FileMode.Open);
-            ret = (TeakCache)formatter.Deserialize(s);
-            ret.mFileStream = s;
+            int version = (int)info.GetValue("version", typeof(int));
+            if(version == Cache.VERSION)
+            {
+                this.InstallDate = (long)info.GetValue("install_date", typeof(long));
+                this.InstallMetricSent = (bool)info.GetValue("install_metric_sent", typeof(bool));
+                List<Teak.CachedRequest> requests = info.GetValue("requests", typeof(List<Teak.CachedRequest>)) as List<Teak.CachedRequest>;
+                // TODO: prune requests older than 3 days
+                if(requests != null && requests.Count > 0) this.AddRange(requests);
+
+            }
+            else
+            {
+                // Handle upgrade path when it becomes needed
+                throw new NotImplementedException();
+            }
+            mDirty = false;
+            mStreamFormatter = new BinaryFormatter();
+            // Create filestream in Create()
         }
-        catch
+    #endif
+
+        public Teak.CachedRequest CacheRequest(Teak.ServiceType serviceType, string endpoint, Dictionary<string, object> parameters)
         {
-            if(s != null) s.Close();
-        }
-#endif
+            Teak.CachedRequest ret = new Teak.CachedRequest();
+            ret.ServiceType = serviceType;
+            ret.Endpoint = endpoint;
+            ret.Parameters = parameters;
+            ret.RequestDate = (long)((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000);
+            ret.RequestId = System.Guid.NewGuid().ToString();
+            ret.Retries = 0;
+            ret.Cache = this;
 
-        if(ret == null)
+            lock(this)
+            {
+                this.Add(ret);
+            }
+            this.Dirty = true;
+
+            return ret;
+        }
+
+        public void Serialize()
         {
-            ret = new TeakCache();
-#if CACHE_ENABLED
-            ret.Serialize();
-            Debug.Log("CREATING NEW CACHE");
-#endif
-            ret.mDirty = false;
+    #if CACHE_ENABLED
+            lock(this)
+            {
+                mFileStream.Seek(0, SeekOrigin.Begin);
+                mStreamFormatter.Serialize(mFileStream, this);
+                mFileStream.Flush();
+                this.Dirty = false;
+            }
+    #endif
         }
 
-        return ret;
-    }
-
-    private TeakCache()
-    {
-        this.InstallDate = (long)((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000);
-        this.InstallMetricSent = false;
-        mDirty = true;
-#if CACHE_ENABLED
-        mStreamFormatter = new BinaryFormatter();
-        mFileStream = new FileStream(TeakCache.Filename, FileMode.Create);
-#endif
-    }
-
-    public void Close()
-    {
-#if CACHE_ENABLED
-        this.Serialize();
-        mFileStream.Close();
-        mFileStream = null;
-#endif
-    }
-
-#if CACHE_ENABLED
-    public TeakCache(SerializationInfo info, StreamingContext context)
-    {
-        int version = (int)info.GetValue("version", typeof(int));
-        if(version == TeakCache.VERSION)
+        #region ISerializable
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            this.InstallDate = (long)info.GetValue("install_date", typeof(long));
-            this.InstallMetricSent = (bool)info.GetValue("install_metric_sent", typeof(bool));
-            List<Teak.CachedRequest> requests = info.GetValue("requests", typeof(List<Teak.CachedRequest>)) as List<Teak.CachedRequest>;
-            // TODO: prune requests older than 3 days
-            if(requests != null && requests.Count > 0) this.AddRange(requests);
+            info.AddValue("version", Cache.VERSION, typeof(int));
+            info.AddValue("install_date", this.InstallDate, typeof(long));
+            info.AddValue("install_metric_sent", this.InstallMetricSent, typeof(bool));
+            info.AddValue("requests", this, typeof(List<Teak.CachedRequest>));
         }
-        else
-        {
-            // Handle upgrade path when it becomes needed
-            throw new NotImplementedException();
-        }
-        mDirty = false;
-        mStreamFormatter = new BinaryFormatter();
-        // Create filestream in Create()
+        #endregion
+
+        #region Data
+        bool mDirty;
+    #if CACHE_ENABLED
+        FileStream mFileStream;
+        IFormatter mStreamFormatter;
+    #endif
+        #endregion
     }
-#endif
-
-    public Teak.CachedRequest CacheRequest(Teak.ServiceType serviceType, string endpoint, Dictionary<string, object> parameters)
-    {
-        Teak.CachedRequest ret = new Teak.CachedRequest();
-        ret.ServiceType = serviceType;
-        ret.Endpoint = endpoint;
-        ret.Parameters = parameters;
-        ret.RequestDate = (long)((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000);
-        ret.RequestId = System.Guid.NewGuid().ToString();
-        ret.Retries = 0;
-        ret.Cache = this;
-
-        lock(this)
-        {
-            this.Add(ret);
-        }
-        this.Dirty = true;
-
-        return ret;
-    }
-
-    public void Serialize()
-    {
-#if CACHE_ENABLED
-        lock(this)
-        {
-            mFileStream.Seek(0, SeekOrigin.Begin);
-            mStreamFormatter.Serialize(mFileStream, this);
-            mFileStream.Flush();
-            this.Dirty = false;
-        }
-#endif
-    }
-
-    #region ISerializable
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        info.AddValue("version", TeakCache.VERSION, typeof(int));
-        info.AddValue("install_date", this.InstallDate, typeof(long));
-        info.AddValue("install_metric_sent", this.InstallMetricSent, typeof(bool));
-        info.AddValue("requests", this, typeof(List<Teak.CachedRequest>));
-    }
-    #endregion
-
-    #region Data
-    bool mDirty;
-#if CACHE_ENABLED
-    FileStream mFileStream;
-    IFormatter mStreamFormatter;
-#endif
-    #endregion
+    // @endcond
 }
-// @endcond

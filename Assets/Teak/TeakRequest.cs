@@ -9,7 +9,7 @@ public partial class Teak
     #region Request
     /// @cond hide_from_doxygen
     [Serializable]
-    public class Request : ISerializable
+    private class Request : ISerializable
     {
         public const string PARAMETERS_KEY = "parameters";
         public const string SERVICE_TYPE_KEY = "service_type";
@@ -95,7 +95,7 @@ public partial class Teak
 
     #region CachedRequest
     [Serializable]
-    public class CachedRequest : Request
+    private class CachedRequest : Request
     {
         public const string RETRIES_KEY = "retries";
 
@@ -105,7 +105,7 @@ public partial class Teak
             internal set;
         }
 
-        internal TeakCache Cache
+        internal Teak.Cache Cache
         {
             get;
             set;
