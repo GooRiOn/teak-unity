@@ -107,7 +107,7 @@ public partial class Teak
         {
             Cache ret = null;
 
-    #if CACHE_ENABLED
+#if CACHE_ENABLED
             FileStream s = null;
             try
             {
@@ -121,15 +121,15 @@ public partial class Teak
             {
                 if(s != null) s.Close();
             }
-    #endif
+#endif
 
             if(ret == null)
             {
                 ret = new Cache();
-    #if CACHE_ENABLED
+#if CACHE_ENABLED
                 ret.Serialize();
                 Debug.Log("CREATING NEW CACHE");
-    #endif
+#endif
                 ret.mDirty = false;
             }
 
@@ -143,22 +143,22 @@ public partial class Teak
             this.AdvertisingIdsSent = false;
             this.CustomAudienceId = null;
             mDirty = true;
-    #if CACHE_ENABLED
+#if CACHE_ENABLED
             mStreamFormatter = new BinaryFormatter();
             mFileStream = new FileStream(Cache.Filename, FileMode.Create);
-    #endif
+#endif
         }
 
         public void Close()
         {
-    #if CACHE_ENABLED
+#if CACHE_ENABLED
             this.Serialize();
             mFileStream.Close();
             mFileStream = null;
-    #endif
+#endif
         }
 
-    #if CACHE_ENABLED
+#if CACHE_ENABLED
         public Cache(SerializationInfo info, StreamingContext context)
         {
             int version = (int)info.GetValue("version", typeof(int));
@@ -180,7 +180,7 @@ public partial class Teak
             mStreamFormatter = new BinaryFormatter();
             // Create filestream in Create()
         }
-    #endif
+#endif
 
         public Teak.CachedRequest CacheRequest(Teak.ServiceType serviceType, string endpoint, Dictionary<string, object> parameters)
         {
@@ -204,7 +204,7 @@ public partial class Teak
 
         public void Serialize()
         {
-    #if CACHE_ENABLED
+#if CACHE_ENABLED
             lock(this)
             {
                 mFileStream.Seek(0, SeekOrigin.Begin);
@@ -212,7 +212,7 @@ public partial class Teak
                 mFileStream.Flush();
                 this.Dirty = false;
             }
-    #endif
+#endif
         }
 
         #region ISerializable
@@ -227,10 +227,10 @@ public partial class Teak
 
         #region Data
         bool mDirty;
-    #if CACHE_ENABLED
+#if CACHE_ENABLED
         FileStream mFileStream;
         IFormatter mStreamFormatter;
-    #endif
+#endif
         #endregion
     }
     // @endcond
