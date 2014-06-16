@@ -29,6 +29,7 @@ using GoCarrotInc.Amazon.Util;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 #endregion
 
@@ -226,6 +227,13 @@ public partial class Teak
             }
 #   elif UNITY_IPHONE
             // TODO: C-call in to native code
+            byte[] buffer = new byte[256];
+            GCHandle pinnedArray = GCHandle.Alloc(byteArray, GCHandleType.Pinned);
+            if(TeakHelper_GetAttributionId(pinnedArray.AddrOfPinnedObject(), new UIntPtr(256)).ToInt64 > 0)
+            {
+                mCache.MobileAdvertisingId = System.Text.Encoding.UTF8.GetString(buffer);
+            }
+            pinnedArray.Free();
 #   endif
         }
 
@@ -621,6 +629,13 @@ public partial class Teak
         }
         return null;
     }
+    #endregion
+
+    #region iOS Imports
+#if UNITY_IPHONE
+    [DllImport("__Internal")]
+    extern static UIntPtr TeakHelper_GetAttributionId(IntPtr buffer, UIntPtr bufferSize);
+#endif
     #endregion
 
     #region Member Variables
