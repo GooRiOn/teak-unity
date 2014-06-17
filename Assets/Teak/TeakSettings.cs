@@ -75,18 +75,18 @@ public class TeakSettings : ScriptableObject
 #endif
     }
 
-    public static string AppSecret
+    public static string APIKey
     {
-        get { return Instance.appSecret; }
+        get { return Instance.apiKey; }
 #if UNITY_EDITOR
         set
         {
-            string appSecret = value.Trim();
-            if(appSecret != Instance.appSecret)
+            string apiKey = value.Trim();
+            if(apiKey != Instance.apiKey)
             {
                 Instance.mAppValid = false;
                 Instance.mAppStatus = "";
-                Instance.appSecret = appSecret;
+                Instance.apiKey = apiKey;
                 DirtyEditor();
             }
         }
@@ -146,7 +146,7 @@ public class TeakSettings : ScriptableObject
     [SerializeField]
     private string appId = "";
     [SerializeField]
-    private string appSecret = "";
+    private string apiKey = "";
     
     private bool mAppValid = false;
     private string mAppStatus = "";

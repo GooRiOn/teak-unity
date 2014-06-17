@@ -54,12 +54,12 @@ public partial class Teak : MonoBehaviour
                 }
 
                 mInstance.mFacebookAppId = TeakSettings.AppId;
-                mInstance.mTeakAppSecret = TeakSettings.AppSecret;
+                mInstance.mTeakAPIKey = TeakSettings.APIKey;
                 mInstance.mBundleVersion = TeakSettings.BundleVersion;
 
                 if(string.IsNullOrEmpty(mInstance.mFacebookAppId))
                 {
-                    throw new ArgumentException("Teak App Id has not been configured. Use the configuration tool in the 'Edit/Teak' menu to assign your Teak App Id and Secret.");
+                    throw new ArgumentException("Teak App Id has not been configured. Use the configuration tool in the 'Edit/Teak' menu to assign your Teak App Id and API Key.");
                 }
             }
             return mInstance;
@@ -98,8 +98,8 @@ public partial class Teak : MonoBehaviour
         /// <summary>Service tier exceeded, not posted.</summary>
         UserLimitHit,
 
-        /// <summary>Authentication error, app secret incorrect.</summary>
-        BadAppSecret,
+        /// <summary>Authentication error, Teak API key incorrect.</summary>
+        BadApiKey,
 
         /// <summary>Resource not found.</summary>
         NotFound,

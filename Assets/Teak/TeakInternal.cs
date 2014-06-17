@@ -501,7 +501,7 @@ public partial class Teak
 
         addCommonPayloadFields(urlParams);
 
-        string sig = signParams(hostname, teakRequest.Endpoint, mTeakAppSecret, urlParams);
+        string sig = signParams(hostname, teakRequest.Endpoint, mTeakAPIKey, urlParams);
         urlParams["sig"] = sig;
 
         // Copy url params to form payload
@@ -586,7 +586,7 @@ public partial class Teak
                 break;
 
             case 403: // Authentication error, app secret incorrect
-                ret = Response.BadAppSecret;
+                ret = Response.BadApiKey;
                 if(teakRequest.ServiceType < 0) this.Status = AuthStatus.Ready;
                 break;
 
@@ -648,7 +648,7 @@ public partial class Teak
     private string mAuthHostname;
     private string mMetricsHostname;
     private string mFacebookAppId;
-    private string mTeakAppSecret;
+    private string mTeakAPIKey;
     private string mBundleVersion;
     private string mAccessTokenOrFacebookId;
     private string mLaunchURL;

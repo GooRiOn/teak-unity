@@ -26,9 +26,9 @@ public class TeakPostProcessScene
         {
             Debug.LogError("Teak App Id needs to be assigned in the Edit/Teak menu.");
         }
-        if(string.IsNullOrEmpty(TeakSettings.AppSecret))
+        if(string.IsNullOrEmpty(TeakSettings.APIKey))
         {
-            Debug.LogError("Teak App Secret needs to be assigned in the Edit/Teak menu.");
+            Debug.LogError("Teak API Key needs to be assigned in the Edit/Teak menu.");
         }
 
         if(!TeakSettings.AppValid)

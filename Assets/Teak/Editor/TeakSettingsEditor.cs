@@ -17,7 +17,7 @@ public class TeakSettingsEditor : Editor
     {
         GUILayout.Label("Settings", EditorStyles.boldLabel);
         TeakSettings.AppId = EditorGUILayout.TextField("Teak App Id", TeakSettings.AppId);
-        TeakSettings.AppSecret = EditorGUILayout.TextField("Teak App Secret", TeakSettings.AppSecret);
+        TeakSettings.APIKey = EditorGUILayout.TextField("Teak API Key", TeakSettings.APIKey);
 
         if(TeakSettings.AppValid)
         {
@@ -51,7 +51,7 @@ public class TeakSettingsEditor : Editor
             {"app_version", versionString},
             {"id", TeakSettings.AppId}
         };
-        string sig = Teak.signParams(hostname, endpoint, TeakSettings.AppSecret, urlParams);
+        string sig = Teak.signParams(hostname, endpoint, TeakSettings.APIKey, urlParams);
 
         // Use System.Net.WebRequest due to crossdomain.xml bug in Unity Editor mode
         string postData = String.Format("app_version={0}&id={1}&sig={2}",
@@ -92,7 +92,7 @@ public class TeakSettingsEditor : Editor
                 case 403:
                 {
                     // Invalid signature
-                    TeakSettings.AppStatus = "Invalid Teak App Secret";
+                    TeakSettings.AppStatus = "Invalid Teak API Key";
                 }
                 break;
 
