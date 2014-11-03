@@ -16,8 +16,6 @@
 #import <AdSupport/AdSupport.h>
 #import <objc/runtime.h>
 
-extern "C" {
-
 // Grab most appropriate advertising id, server can resolve to a custom audience id
 size_t TeakHelper_GetAttributionId(const char* buffer, size_t bufferSize)
 {
@@ -43,5 +41,3 @@ size_t TeakHelper_GetAttributionId(const char* buffer, size_t bufferSize)
 
     return [advertiserID length];
 }
-
-}; // extern "C"
