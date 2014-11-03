@@ -228,8 +228,9 @@ public partial class Teak
 #   elif UNITY_IPHONE
             // TODO: C-call in to native code
             byte[] buffer = new byte[256];
-            GCHandle pinnedArray = GCHandle.Alloc(byteArray, GCHandleType.Pinned);
-            if(TeakHelper_GetAttributionId(pinnedArray.AddrOfPinnedObject(), new UIntPtr(256)).ToInt64 > 0)
+            GCHandle pinnedArray = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+            UIntPtr result = TeakHelper_GetAttributionId(pinnedArray.AddrOfPinnedObject(), new UIntPtr(256));
+            if(!result.Equals(UIntPtr.Zero))
             {
                 mCache.MobileAdvertisingId = System.Text.Encoding.UTF8.GetString(buffer);
             }
