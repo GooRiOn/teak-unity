@@ -58,8 +58,7 @@ public class MainMenu : MonoBehaviour
         objectString = GUILayout.TextField(objectString, buttonWidth);
         if(GUILayout.Button("Post Object/Action", GUILayout.Height(buttonHeight)))
         {
-            //Teak.Instance.postAction(actionString, objectString);
-            Teak.Instance.popupFeedPost(objectString);
+            Teak.Instance.postAction(actionString, objectString);
         }
 
         // Dynamic Action Post
@@ -83,7 +82,7 @@ public class MainMenu : MonoBehaviour
         Teak.Instance.postAction("demo", "template", new Dictionary<string, object>() {
             {"title", "Test Title"},
             {"description", "Test Description"},
-            //{"image", tex}
+            {"image", tex}
         });
         Destroy(tex);
     }
