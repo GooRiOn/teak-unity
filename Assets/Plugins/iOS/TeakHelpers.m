@@ -17,7 +17,7 @@
 #import <objc/runtime.h>
 
 // Grab most appropriate advertising id, server can resolve to a custom audience id
-size_t TeakHelper_GetAttributionId(const char* buffer, size_t bufferSize)
+size_t TeakHelper_GetAttributionId(char* buffer, size_t bufferSize)
 {
     NSString* advertiserID = nil;
     Class ASIdentifierManagerClass = NSClassFromString(@"ASIdentifierManager");
