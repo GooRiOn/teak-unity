@@ -178,6 +178,7 @@ public partial class Teak
 
     private IEnumerator loadMobileAdvertisingIds()
     {
+#if false // TEMPORARY: Remove this functionality
         // Get attribution id so we can generate a custom audience id via graph call
         // to app_id/custom_audience_third_party_id
 #if !UNITY_EDITOR && (UNITY_ANDROID || UNITY_IPHONE)
@@ -256,6 +257,8 @@ public partial class Teak
             }
         }
 #endif
+
+#endif // End temporary remove
         yield return null;
     }
     #endregion
