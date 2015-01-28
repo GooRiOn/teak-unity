@@ -42,7 +42,7 @@ task :unity => "unity:package"
 namespace :unity do
   task :package do
     project_path = File.expand_path("./")
-    package_path = File.expand_path("./Carrot.unitypackage")
+    package_path = File.expand_path("./Teak.unitypackage")
     mv "#{project_path}/Assets/Example", "#{project_path}/Assets/.Example"
     begin
       unity "-quit -batchmode -projectPath #{project_path} -exportPackage Assets #{package_path}"
