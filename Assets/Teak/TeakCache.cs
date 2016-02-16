@@ -1,5 +1,5 @@
 #region License
-/* Teak -- Copyright (C) 2014 GoCarrot Inc.
+/* Teak -- Copyright (C) 2016 GoCarrot Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
