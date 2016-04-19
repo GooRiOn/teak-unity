@@ -42,13 +42,26 @@ task :unity => "unity:package"
 namespace :unity do
   task :package do
     project_path = File.expand_path("./")
+    puts project_path
     package_path = File.expand_path("./Teak.unitypackage")
-    mv "#{project_path}/Assets/Example", "#{project_path}/Assets/.Example"
+    Dir.chdir("#{project_path}/Assets") do
+      mv "Example", ".Example"
+      mv "Facebook", ".Facebook"
+      Dir.chdir("Teak") do
+        mv "Resources", ".Resources"
+      end
+    end
     begin
       unity "-quit -batchmode -projectPath #{project_path} -exportPackage Assets #{package_path}"
     rescue
       puts "Unity build failed."
     end
-    mv "#{project_path}/Assets/.Example", "#{project_path}/Assets/Example"
+    Dir.chdir("#{project_path}/Assets") do
+      mv ".Example", "Example"
+      mv ".Facebook", "Facebook"
+      Dir.chdir("Teak") do
+        mv ".Resources", "Resources"
+      end
+    end
   end
 end

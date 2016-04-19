@@ -1,4 +1,3 @@
-﻿#region License
 /* Teak -- Copyright (C) 2016 GoCarrot Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,18 +12,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#endregion
 
-#region References
-using System;
-using UnityEngine;
-#endregion
+#import <Teak/Teak.h>
 
-public partial class Teak : MonoBehaviour
+// From Classes/main.mm
+extern const char* AppControllerClassName;
+
+__attribute__((constructor))
+static void teak_init()
 {
-    #region MonoBehaviour
-    /// @cond hide_from_doxygen
-    private static Teak mInstance;
-    /// @endcond
-    #endregion
+   NSString* appId = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TeakAppId"];
+   NSString* apiKey = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TeakApiKey"];
+   [Teak initForApplicationId:appId withClass:NSClassFromString([NSString stringWithUTF8String:AppControllerClassName]) andSecret:apiKey];
 }

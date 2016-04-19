@@ -32,7 +32,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace GoCarrotInc.MiniJSON {
+namespace Teak.MiniJSON {
     // Example usage:
     //
     //  using UnityEngine;

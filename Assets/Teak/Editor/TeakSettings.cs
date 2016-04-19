@@ -1,3 +1,4 @@
+#region License
 /* Teak -- Copyright (C) 2016 GoCarrot Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#endregion
 
+#region References
 using System;
 using System.IO;
 using UnityEngine;
+#endregion
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -124,11 +128,6 @@ public class TeakSettings : ScriptableObject
 #endif
     }
 
-    public static string BundleVersion
-    {
-        get { return Instance.mBundleVersion; }
-    }
-
 #if UNITY_EDITOR
     [MenuItem("Edit/Teak")]
     public static void Edit()
@@ -138,7 +137,6 @@ public class TeakSettings : ScriptableObject
 
     private static void DirtyEditor()
     {
-        Instance.mBundleVersion = PlayerSettings.bundleVersion.ToString();
         EditorUtility.SetDirty(Instance);
     }
 #endif
@@ -150,7 +148,6 @@ public class TeakSettings : ScriptableObject
     
     private bool mAppValid = false;
     private string mAppStatus = "";
-    private string mBundleVersion = "";
 
     private static TeakSettings mInstance;
 }

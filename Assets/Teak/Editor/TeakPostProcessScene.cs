@@ -1,3 +1,4 @@
+#region License
 /* Teak -- Copyright (C) 2016 GoCarrot Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,33 +13,58 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#endregion
+
+#region References
+using System.IO;
+using System.Xml;
+using System.Xml.Linq;
 
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
+#endregion
 
 public class TeakPostProcessScene
 {
     [PostProcessScene]
     public static void OnPostprocessScene()
     {
-        if(string.IsNullOrEmpty(TeakSettings.AppId))
+        if(!mRanThisBuild)
         {
-            Debug.LogError("Teak App Id needs to be assigned in the Edit/Teak menu.");
-        }
-        if(string.IsNullOrEmpty(TeakSettings.APIKey))
-        {
-            Debug.LogError("Teak API Key needs to be assigned in the Edit/Teak menu.");
-        }
+            mRanThisBuild = true;
 
-        if(!TeakSettings.AppValid)
-        {
-            Debug.LogWarning("Your Teak settings have not been validated. Click 'Validate Settings' in the Edit/Teak menu.");
-        }
+            if(string.IsNullOrEmpty(TeakSettings.AppId))
+            {
+                Debug.LogError("Teak App Id needs to be assigned in the Edit/Teak menu.");
+            }
 
-        if(PlayerSettings.iOS.exitOnSuspend)
-        {
-            Debug.LogWarning("Your app is set to exit when it is suspended on iOS (when the Home button is pushed). This will prevent Teak from tracking session times.");
+            if(string.IsNullOrEmpty(TeakSettings.APIKey))
+            {
+                Debug.LogError("Teak API Key needs to be assigned in the Edit/Teak menu.");
+            }
+
+            //if(!TeakSettings.AppValid)
+            //{
+            //    Debug.LogWarning("Your Teak settings have not been validated. Click 'Validate Settings' in the Edit/Teak menu.");
+            //}
+
+            Directory.CreateDirectory(Path.Combine(Application.dataPath, "Plugins/Android/res/values"));
+            XDocument doc = new XDocument(
+                new XElement("resources", 
+                    new XElement("string", TeakSettings.AppId, new XAttribute("name", "io_teak_app_id")),
+                    new XElement("string", TeakSettings.APIKey, new XAttribute("name", "io_teak_api_key"))
+                )
+            );
+            doc.Save(Path.Combine(Application.dataPath, "Plugins/Android/res/values/teak.xml"));
         }
     }
+
+    [PostProcessBuild]
+    public static void OnPostprocessBuild(BuildTarget target, string pathToBuildProject)
+    {
+        mRanThisBuild = false;
+    }
+
+    private static bool mRanThisBuild = false;
 }

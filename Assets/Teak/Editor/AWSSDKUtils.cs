@@ -27,7 +27,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace GoCarrotInc.Amazon.Util
+namespace Teak.Amazon.Util
 {
     /// <summary>
     /// This class defines utilities and constants that can be used by 

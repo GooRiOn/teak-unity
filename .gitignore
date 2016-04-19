@@ -21,8 +21,13 @@ Assets/Plugins/Android/facebook.meta
 Assets/Plugins/Android/android-support-v4.jar*
 Assets/Plugins/Android/AndroidManifest.xml*
 
+Assets/Plugins/Android/res.meta
+Assets/Plugins/Android/res/values.meta
+Assets/Plugins/Android/res/values/teak.xml*
+
 Teak.unitypackage
 
+AndroidBuild/
 iOSBuild/
 WebBuild/
 StandaloneBuild*/
