@@ -78,6 +78,24 @@ public partial class Teak : MonoBehaviour
 #endif
     }
 
+    /// <summary>
+    /// Track an arbitrary event in Teak.
+    /// </summary>
+    /// <param name="actionId">The identifier for the action, e.g. 'complete'.</param>
+    /// <param name="objectTypeId">The type of object that is being posted, e.g. 'quest'.</param>
+    /// <param name="objectInstanceId">The specific instance of the object, e.g. 'gather-quest-1'</param>
+    public void TrackEvent(string actionId, string objectTypeId, string objectInstanceId)
+    {
+#if UNITY_EDITOR
+        Debug.Log("[Teak] TrackEvent(): " + actionId + " - " + objectTypeId + " - " + objectInstanceId);
+#elif UNITY_ANDROID
+        AndroidJavaClass teak = new AndroidJavaClass("io.teak.sdk.Teak");
+        teak.CallStatic("trackEvent", actionId, objectTypeId, objectInstanceId);
+#elif UNITY_IPHONE
+        TeakTrackEvent(actionId, objectTypeId, objectInstanceId);
+#endif
+    }
+
     public delegate void LaunchedFromNotification(TeakNotification notif);
     public event LaunchedFromNotification OnLaunchedFromNotification;
 
@@ -112,6 +130,9 @@ public partial class Teak : MonoBehaviour
 #elif UNITY_IPHONE
     [DllImport ("__Internal")]
     private static extern void TeakIdentifyUser(string userId);
+
+    [DllImport ("__Internal")]
+    private static extern void TeakTrackEvent(string actionId, string objectTypeId, string objectInstanceId);
 
     [DllImport ("__Internal")]
     private static extern IntPtr TeakLaunchedFromTeakNotifId();
