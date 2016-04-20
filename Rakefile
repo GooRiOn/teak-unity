@@ -31,6 +31,12 @@ if doxygen?
   end
 end
 
+def umv(src, dest)
+  return if not File.exist? src
+  mv src, dest
+  mv "#{src}.meta", "#{dest}.meta"
+end
+
 #
 # Unity build tasks
 #
@@ -45,10 +51,13 @@ namespace :unity do
     puts project_path
     package_path = File.expand_path("./Teak.unitypackage")
     Dir.chdir("#{project_path}/Assets") do
-      mv "Example", ".Example"
-      mv "Facebook", ".Facebook"
+      umv "Example", ".Example"
+      umv "Facebook", ".Facebook"
       Dir.chdir("Teak") do
-        mv "Resources", ".Resources"
+        umv "Resources", ".Resources"
+      end
+      Dir.chdir("Plugins/Android") do
+        umv "res", ".res"
       end
     end
     begin
@@ -57,10 +66,13 @@ namespace :unity do
       puts "Unity build failed."
     end
     Dir.chdir("#{project_path}/Assets") do
-      mv ".Example", "Example"
-      mv ".Facebook", "Facebook"
+      umv ".Example", "Example"
+      umv ".Facebook", "Facebook"
       Dir.chdir("Teak") do
-        mv ".Resources", "Resources"
+        umv ".Resources", "Resources"
+      end
+      Dir.chdir("Plugins/Android") do
+        umv ".res", "res"
       end
     end
   end
