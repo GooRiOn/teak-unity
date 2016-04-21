@@ -57,7 +57,11 @@ namespace :unity do
         umv "Resources", ".Resources"
       end
       Dir.chdir("Plugins/Android") do
+        umv "AndroidManifest.xml", ".AndroidManifest.xml"
         umv "res", ".res"
+        umv "facebook", ".facebook"
+        umv "android-support-v4.jar", ".android-support-v4.jar"
+        umv "bolts.jar", ".bolts.jar"
       end
     end
     begin
@@ -72,7 +76,11 @@ namespace :unity do
         umv ".Resources", "Resources"
       end
       Dir.chdir("Plugins/Android") do
+        umv ".AndroidManifest.xml", "AndroidManifest.xml"
         umv ".res", "res"
+        umv ".facebook", "facebook"
+        umv ".android-support-v4.jar", "android-support-v4.jar"
+        umv ".bolts.jar", "bolts.jar"
       end
     end
   end
