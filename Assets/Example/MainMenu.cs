@@ -12,12 +12,13 @@ public class MainMenu : MonoBehaviour
 
     void Start()
     {
-        //FB.Init(() => {
-        //    Debug.Log("Facebook initialized");
-        //});
+        FB.Init(() => {
+            Debug.Log("Facebook initialized");
+        });
 
         Teak.Instance.IdentifyUser(teakUserId);
         Teak.Instance.OnLaunchedFromNotification += OnLaunchedFromNotification;
+        Teak.Instance.TrackEvent("foo", "bar", "baz");
     }
 
     void OnLaunchedFromNotification(TeakNotification notif)
@@ -42,6 +43,18 @@ public class MainMenu : MonoBehaviour
         // Display auth status
         GUILayout.Label(teakUserId);
 
+        // FB Login
+        if(FB.IsLoggedIn)
+        {
+            GUILayout.Label("Facebook UserId: " + FB.UserId);
+        }
+        else
+        {
+            if(GUILayout.Button("Login With Facebook", GUILayout.Height(buttonHeight)))
+            {
+                FB.Login("public_profile,email,user_friends");
+            }
+        }
 /*
         // High Score
         GUILayout.Space(buttonSpacing);
