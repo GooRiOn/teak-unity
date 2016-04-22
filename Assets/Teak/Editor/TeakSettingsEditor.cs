@@ -23,18 +23,19 @@ using System.Text;
 using UnityEngine;
 using UnityEditor;
 using System.Threading;
-using System.Net.Security;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 
-using Teak.MiniJSON;
-using Teak.Amazon.Util;
+using TeakEditor.MiniJSON;
 #endregion
+
+// Disable warning for the Teak.signParams partial class
+#pragma warning disable 0436
 
 [CustomEditor(typeof(TeakSettings))]
 public class TeakSettingsEditor : Editor
 {
+    private bool mAndroidFoldout;
+
     public override void OnInspectorGUI()
     {
         GUILayout.Label("Settings", EditorStyles.boldLabel);
@@ -57,6 +58,23 @@ public class TeakSettingsEditor : Editor
                 ValidateSettings();
             }
         }
+
+        EditorGUILayout.Space();
+        GUILayout.Label("Additional Settings", EditorStyles.boldLabel);
+        mAndroidFoldout = EditorGUILayout.Foldout(mAndroidFoldout, "Android");
+        if(mAndroidFoldout)
+        {
+            GUIContent content = new GUIContent("GCM Sender Id [?]",  "Put in your GCM Sender Id to have Teak auto-register for GCM notifications.");
+            TeakSettings.GCMSenderId = EditorGUILayout.TextField(content, TeakSettings.GCMSenderId);
+        }
+
+        EditorGUILayout.Space();
+        GUILayout.Label("Development Tools", EditorStyles.boldLabel);
+        TeakSettings.SimulateOpenedWithPush = EditorGUILayout.ToggleLeft("Simulate Opening App via Push Notification", TeakSettings.SimulateOpenedWithPush, GUILayout.ExpandWidth(true));
+        if(TeakSettings.SimulateOpenedWithPush)
+        {
+            TeakSettings.SimulatedTeakRewardId = EditorGUILayout.TextField("teakRewardId", TeakSettings.SimulatedTeakRewardId);
+        }
     }
 
     void ValidateSettings()
@@ -68,7 +86,7 @@ public class TeakSettingsEditor : Editor
             {"app_version", versionString},
             {"id", TeakSettings.AppId}
         };
-        string sig = signParams(hostname, endpoint, TeakSettings.APIKey, urlParams);
+        string sig = Teak.signParams(hostname, endpoint, TeakSettings.APIKey, urlParams);
 
         // Use System.Net.WebRequest due to crossdomain.xml bug in Unity Editor mode
         string postData = String.Format("app_version={0}&id={1}&sig={2}",
@@ -129,31 +147,5 @@ public class TeakSettingsEditor : Editor
             }
             TeakSettings.AppValid = false;
         }
-    }
-
-    private static string signParams(string hostname, string endpoint, string secret, Dictionary<string, object> urlParams)
-    {
-        // Build sorted list of key-value pairs
-        string[] keys = new string[urlParams.Keys.Count];
-        urlParams.Keys.CopyTo(keys, 0);
-        Array.Sort(keys);
-        List<string> kvList = new List<string>();
-        foreach(string key in keys)
-        {
-            string asStr;
-            if((asStr = urlParams[key] as string) != null)
-            {
-                kvList.Add(String.Format("{0}={1}", key, asStr));
-            }
-            else
-            {
-                kvList.Add(String.Format("{0}={1}", key,
-                    Json.Serialize(urlParams[key])));
-            }
-        }
-        string payload = String.Join("&", kvList.ToArray());
-        string signString = String.Format("{0}\n{1}\n{2}\n{3}", "POST", hostname.Split(new char[]{':'})[0], endpoint, payload);
-        string sig = AWSSDKUtils.HMACSign(signString, secret, KeyedHashAlgorithm.Create("HMACSHA256"));
-        return sig;
     }
 }

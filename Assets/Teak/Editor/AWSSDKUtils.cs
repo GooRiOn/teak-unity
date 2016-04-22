@@ -27,7 +27,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Teak.Amazon.Util
+namespace TeakEditor.Amazon.Util
 {
     /// <summary>
     /// This class defines utilities and constants that can be used by 

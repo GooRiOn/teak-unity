@@ -21,6 +21,10 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Runtime.InteropServices;
+
+#if UNITY_EDITOR
+using System.Collections.Generic;
+#endif
 #endregion
 
 /// <summary>
@@ -31,7 +35,9 @@ public class TeakNotification
     public static TeakNotification FromTeakNotifId(string teakNotifId)
     {
         TeakNotification ret = null;
-#if UNITY_ANDROID
+#if UNITY_EDITOR
+        ret = new TeakNotification();
+#elif UNITY_ANDROID
         AndroidJavaClass teakNotification = new AndroidJavaClass("io.teak.sdk.TeakNotification");
         AndroidJavaObject notif = teakNotification.CallStatic<AndroidJavaObject>("byTeakNotifId", teakNotifId);
 
@@ -54,12 +60,12 @@ public class TeakNotification
     {
         get
         {
-#if UNITY_ANDROID
+#if UNITY_EDITOR
+            return !String.IsNullOrEmpty(TeakSettings.SimulatedTeakRewardId);
+#elif UNITY_ANDROID
             return mTeakNotification.Call<bool>("hasReward");
 #elif UNITY_IOS
             return TeakNotificationHasReward(mTeakNotification);
-#elif UNITY_EDITOR
-            return false;
 #endif
         }
     }
@@ -67,7 +73,10 @@ public class TeakNotification
     public IEnumerator ConsumeNotification(System.Action<Reward> callback)
     {
         Reward ret = null;
-#if UNITY_ANDROID
+#if UNITY_EDITOR
+        // TODO
+        yield return null;
+#elif UNITY_ANDROID
         AndroidJavaObject rewardFuture = mTeakNotification.Call<AndroidJavaObject>("consumeNotification");
         if(rewardFuture != null)
         {
@@ -118,7 +127,9 @@ public class TeakNotification
         {
             get
             {
-#if UNITY_ANDROID
+#if UNITY_EDITOR
+                return (RewardStatus)mReward["status"];
+#elif UNITY_ANDROID
                 return (RewardStatus)mReward.Get<int>("status");
 #elif UNITY_IOS
                 return (RewardStatus)TeakRewardGetStatus(mReward);
@@ -130,7 +141,9 @@ public class TeakNotification
         {
             get
             {
-#if UNITY_ANDROID
+#if UNITY_EDITOR
+                return mReward["json"] as string;
+#elif UNITY_ANDROID
                 AndroidJavaObject reward = mReward.Get<AndroidJavaObject>("reward");
                 if(reward != null)
                 {
@@ -143,7 +156,14 @@ public class TeakNotification
             }
         }
 
-#if UNITY_ANDROID
+#if UNITY_EDITOR
+        internal Reward(Dictionary<string, object> reward)
+        {
+            mReward = reward;
+            Debug.Log("There's a reward that got made from magic! Status: " + this.Status);
+        }
+        private Dictionary<string, object> mReward;
+#elif UNITY_ANDROID
         internal Reward(AndroidJavaObject reward)
         {
             mReward = reward;
@@ -159,8 +179,11 @@ public class TeakNotification
         private IntPtr mReward;
 #endif
     }
-
-#if UNITY_ANDROID
+#if UNITY_EDITOR
+    private TeakNotification()
+    {
+    }
+#elif UNITY_ANDROID
     private TeakNotification(AndroidJavaObject teakNotification)
     {
         mTeakNotification = teakNotification;

@@ -177,6 +177,18 @@ public partial class Teak : MonoBehaviour
             Debug.LogWarning("[Teak] No known store plugin found.");
         }
 #endif
+
+#if UNITY_EDITOR
+    if(TeakSettings.SimulateOpenedWithPush)
+    {
+        TeakNotification notif = TeakNotification.FromTeakNotifId("");
+        if(notif != null)
+        {
+            // Send event
+            OnLaunchedFromNotification(notif);
+        }
+    }
+#endif
     }
 
 #if UNITY_IPHONE || UNITY_ANDROID
@@ -189,7 +201,9 @@ public partial class Teak : MonoBehaviour
         else
         {
             // Resume
-#if UNITY_ANDROID
+#if UNITY_EDITOR
+            string launchedFromTeakNotifId = null;
+#elif UNITY_ANDROID
             AndroidJavaClass teak = new AndroidJavaClass("io.teak.sdk.Teak");
             string launchedFromTeakNotifId = teak.GetStatic<string>("launchedFromTeakNotifId");
 #elif UNITY_IPHONE

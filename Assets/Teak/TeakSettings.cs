@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 #region License
 /* Teak -- Copyright (C) 2016 GoCarrot Inc.
  *
@@ -18,14 +19,12 @@
 #region References
 using System;
 using System.IO;
+
 using UnityEngine;
+using UnityEditor;
 #endregion
 
-#if UNITY_EDITOR
-using UnityEditor;
-
 [InitializeOnLoad]
-#endif
 public class TeakSettings : ScriptableObject
 {
     const string teakSettingsAssetName = "TeakSettings";
@@ -63,16 +62,16 @@ public class TeakSettings : ScriptableObject
 
     public static string AppId
     {
-        get { return Instance.appId; }
+        get { return Instance.mAppId; }
 #if UNITY_EDITOR
         set
         {
             string appId = value.Trim();
-            if(appId != Instance.appId)
+            if(appId != Instance.mAppId)
             {
                 Instance.mAppValid = false;
                 Instance.mAppStatus = "";
-                Instance.appId = appId;
+                Instance.mAppId = appId;
                 DirtyEditor();
             }
         }
@@ -81,16 +80,34 @@ public class TeakSettings : ScriptableObject
 
     public static string APIKey
     {
-        get { return Instance.apiKey; }
+        get { return Instance.mAPIKey; }
 #if UNITY_EDITOR
         set
         {
             string apiKey = value.Trim();
-            if(apiKey != Instance.apiKey)
+            if(apiKey != Instance.mAPIKey)
             {
                 Instance.mAppValid = false;
                 Instance.mAppStatus = "";
-                Instance.apiKey = apiKey;
+                Instance.mAPIKey = apiKey;
+                DirtyEditor();
+            }
+        }
+#endif
+    }
+
+    public static string GCMSenderId
+    {
+        get { return Instance.mGCMSenderId; }
+#if UNITY_EDITOR
+        set
+        {
+            string gcmSenderId = value.Trim();
+            if(gcmSenderId != Instance.mGCMSenderId)
+            {
+                Instance.mAppValid = false;
+                Instance.mAppStatus = "";
+                Instance.mGCMSenderId = gcmSenderId;
                 DirtyEditor();
             }
         }
@@ -128,6 +145,37 @@ public class TeakSettings : ScriptableObject
 #endif
     }
 
+    public static bool SimulateOpenedWithPush
+    {
+        get { return Instance.mSimulateOpenedWithPush; }
+#if UNITY_EDITOR
+        set
+        {
+            if(value != Instance.mSimulateOpenedWithPush)
+            {
+                Instance.mSimulateOpenedWithPush = value;
+                DirtyEditor();
+            }
+        }
+#endif
+    }
+
+    public static string SimulatedTeakRewardId
+    {
+        get { return Instance.mSimulateTeakRewardId; }
+#if UNITY_EDITOR
+        set
+        {
+            string teakNotifId = value.Trim();
+            if(teakNotifId != Instance.mSimulateTeakRewardId)
+            {
+                Instance.mSimulateTeakRewardId = teakNotifId;
+                DirtyEditor();
+            }
+        }
+#endif
+    }
+
 #if UNITY_EDITOR
     [MenuItem("Edit/Teak")]
     public static void Edit()
@@ -142,13 +190,20 @@ public class TeakSettings : ScriptableObject
 #endif
 
     [SerializeField]
-    private string appId = "";
+    private string mAppId = "";
     [SerializeField]
-    private string apiKey = "";
+    private string mAPIKey = "";
+    [SerializeField]
+    private string mGCMSenderId = "";
     [SerializeField]
     private bool mAppValid = false;
     [SerializeField]
     private string mAppStatus = "";
+    [SerializeField]
+    private bool mSimulateOpenedWithPush = false;
+    [SerializeField]
+    private string mSimulateTeakRewardId = "";
 
     private static TeakSettings mInstance;
 }
+#endif

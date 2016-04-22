@@ -22,9 +22,7 @@ using UnityEngine;
 
 public partial class Teak : MonoBehaviour
 {
-    #region MonoBehaviour
     /// @cond hide_from_doxygen
     private static Teak mInstance;
     /// @endcond
-    #endregion
 }

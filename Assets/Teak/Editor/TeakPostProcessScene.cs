@@ -16,6 +16,7 @@
 #endregion
 
 #region References
+using System;
 using System.IO;
 using System.Xml;
 using System.Xml.Linq;
@@ -44,16 +45,17 @@ public class TeakPostProcessScene
                 Debug.LogError("Teak API Key needs to be assigned in the Edit/Teak menu.");
             }
 
-            //if(!TeakSettings.AppValid)
-            //{
-            //    Debug.LogWarning("Your Teak settings have not been validated. Click 'Validate Settings' in the Edit/Teak menu.");
-            //}
+            if(!TeakSettings.AppValid)
+            {
+                Debug.LogWarning("Your Teak settings have not been validated. Click 'Validate Settings' in the Edit/Teak menu.");
+            }
 
             Directory.CreateDirectory(Path.Combine(Application.dataPath, "Plugins/Android/res/values"));
             XDocument doc = new XDocument(
                 new XElement("resources", 
                     new XElement("string", TeakSettings.AppId, new XAttribute("name", "io_teak_app_id")),
-                    new XElement("string", TeakSettings.APIKey, new XAttribute("name", "io_teak_api_key"))
+                    new XElement("string", TeakSettings.APIKey, new XAttribute("name", "io_teak_api_key")),
+                    String.IsNullOrEmpty(TeakSettings.GCMSenderId) ? null : new XElement("string", TeakSettings.GCMSenderId, new XAttribute("name", "io_teak_gcm_sender_id"))
                 )
             );
             doc.Save(Path.Combine(Application.dataPath, "Plugins/Android/res/values/teak.xml"));

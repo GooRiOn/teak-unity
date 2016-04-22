@@ -32,7 +32,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Teak.MiniJSON {
+namespace TeakEditor.MiniJSON {
     // Example usage:
     //
     //  using UnityEngine;
