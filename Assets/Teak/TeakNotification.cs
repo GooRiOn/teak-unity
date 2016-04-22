@@ -58,6 +58,8 @@ public class TeakNotification
             return mTeakNotification.Call<bool>("hasReward");
 #elif UNITY_IOS
             return TeakNotificationHasReward(mTeakNotification);
+#elif UNITY_EDITOR
+            return false;
 #endif
         }
     }
