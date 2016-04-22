@@ -145,8 +145,9 @@ public class TeakSettings : ScriptableObject
     private string appId = "";
     [SerializeField]
     private string apiKey = "";
-    
+    [SerializeField]
     private bool mAppValid = false;
+    [SerializeField]
     private string mAppStatus = "";
 
     private static TeakSettings mInstance;
