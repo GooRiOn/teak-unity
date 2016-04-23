@@ -160,6 +160,21 @@ public class TeakSettings : ScriptableObject
 #endif
     }
 
+    public static bool SimulateRewardReply
+    {
+        get { return Instance.mSimulateRewardReply; }
+#if UNITY_EDITOR
+        set
+        {
+            if(value != Instance.mSimulateRewardReply)
+            {
+                Instance.mSimulateRewardReply = value;
+                DirtyEditor();
+            }
+        }
+#endif
+    }
+
     public static string SimulatedTeakRewardId
     {
         get { return Instance.mSimulateTeakRewardId; }
@@ -176,6 +191,42 @@ public class TeakSettings : ScriptableObject
 #endif
     }
 
+    public static TeakNotification.Reward.RewardStatus SimulatedTeakRewardStatus
+    {
+        get { return Instance.mSimulateTeakRewardStatus; }
+#if UNITY_EDITOR
+        set
+        {
+            if(value != Instance.mSimulateTeakRewardStatus)
+            {
+                Instance.mSimulateTeakRewardStatus = value;
+                DirtyEditor();
+            }
+        }
+#endif
+    }
+
+    public static string SimulatedTeakRewardJson
+    {
+        get { return Instance.mSimulatedTeakRewardJson; }
+#if UNITY_EDITOR
+        set
+        {
+            string rewardJson = value.Trim();
+            if(rewardJson != Instance.mSimulatedTeakRewardJson)
+            {
+                Instance.mSimulatedTeakRewardJson = rewardJson;
+                DirtyEditor();
+            }
+        }
+#endif
+    }
+
+    public static RewardEntry[] RewardEntries
+    {
+        get { return Instance.mRewardEntries; }
+    }
+
 #if UNITY_EDITOR
     [MenuItem("Edit/Teak")]
     public static void Edit()
@@ -188,6 +239,13 @@ public class TeakSettings : ScriptableObject
         EditorUtility.SetDirty(Instance);
     }
 #endif
+
+    [Serializable]
+    public struct RewardEntry {
+        public string key;
+        public int count;
+    }
+    public RewardEntry[] mRewardEntries;
 
     [SerializeField]
     private string mAppId = "";
@@ -202,7 +260,13 @@ public class TeakSettings : ScriptableObject
     [SerializeField]
     private bool mSimulateOpenedWithPush = false;
     [SerializeField]
+    private bool mSimulateRewardReply = false;
+    [SerializeField]
     private string mSimulateTeakRewardId = "";
+    [SerializeField]
+    private TeakNotification.Reward.RewardStatus mSimulateTeakRewardStatus = TeakNotification.Reward.RewardStatus.GrantReward;
+    [SerializeField]
+    private string mSimulatedTeakRewardJson = "";
 
     private static TeakSettings mInstance;
 }

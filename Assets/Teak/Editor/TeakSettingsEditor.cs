@@ -44,7 +44,7 @@ public class TeakSettingsEditor : Editor
 
         if(TeakSettings.AppValid)
         {
-            EditorGUILayout.HelpBox(TeakSettings.AppStatus, MessageType.Info);
+            EditorGUILayout.HelpBox("Settings valid for: " + TeakSettings.AppStatus, MessageType.Info);
         }
         else if(!string.IsNullOrEmpty(TeakSettings.AppStatus))
         {
@@ -64,16 +64,62 @@ public class TeakSettingsEditor : Editor
         mAndroidFoldout = EditorGUILayout.Foldout(mAndroidFoldout, "Android");
         if(mAndroidFoldout)
         {
-            GUIContent content = new GUIContent("GCM Sender Id [?]",  "Put in your GCM Sender Id to have Teak auto-register for GCM notifications.");
-            TeakSettings.GCMSenderId = EditorGUILayout.TextField(content, TeakSettings.GCMSenderId);
+            GUIContent gcmSenderIdContent = new GUIContent("GCM Sender Id [?]",  "Put in your GCM Sender Id to have Teak auto-register for GCM notifications.");
+            TeakSettings.GCMSenderId = EditorGUILayout.TextField(gcmSenderIdContent, TeakSettings.GCMSenderId);
         }
 
         EditorGUILayout.Space();
         GUILayout.Label("Development Tools", EditorStyles.boldLabel);
-        TeakSettings.SimulateOpenedWithPush = EditorGUILayout.ToggleLeft("Simulate Opening App via Push Notification", TeakSettings.SimulateOpenedWithPush, GUILayout.ExpandWidth(true));
+        GUIContent simulateOpenedWithPushContent = new GUIContent("Simulate Opening App via Push Notification [?]",  "When running the game in the Unity Editor, Teak will simulate that the app has been opened by a push notification.");
+        TeakSettings.SimulateOpenedWithPush = EditorGUILayout.ToggleLeft(simulateOpenedWithPushContent, TeakSettings.SimulateOpenedWithPush, GUILayout.ExpandWidth(true));
         if(TeakSettings.SimulateOpenedWithPush)
         {
-            TeakSettings.SimulatedTeakRewardId = EditorGUILayout.TextField("teakRewardId", TeakSettings.SimulatedTeakRewardId);
+            GUIContent simulateRewardContent = new GUIContent("Simulate Teak Reward [?]",  "Simulate the Teak reward instead of querying the Teak service.");
+            TeakSettings.SimulateRewardReply = EditorGUILayout.ToggleLeft(simulateRewardContent, TeakSettings.SimulateRewardReply, GUILayout.ExpandWidth(true));
+            if(TeakSettings.SimulateRewardReply)
+            {
+                GUIContent simulateRewardStatusContent = new GUIContent("Reward Status [?]",  "The Teak Reward Status that will be simulated.");
+                TeakSettings.SimulatedTeakRewardStatus = (TeakNotification.Reward.RewardStatus)EditorGUILayout.EnumPopup(simulateRewardStatusContent, TeakSettings.SimulatedTeakRewardStatus);
+
+                if(TeakSettings.SimulatedTeakRewardStatus == TeakNotification.Reward.RewardStatus.GrantReward)
+                {
+                    GUIContent simulateRewardJsonContent = new GUIContent("Reward Payload [?]",  "The contents of the Teak Reward JSON that will be simulated.");
+                    SerializedProperty rewardEntries = serializedObject.FindProperty("mRewardEntries");
+                    EditorGUI.BeginChangeCheck();
+                    EditorGUILayout.PropertyField(rewardEntries, simulateRewardJsonContent, true);
+                    if(EditorGUI.EndChangeCheck())
+                    {
+                        serializedObject.ApplyModifiedProperties();
+                        if(TeakSettings.RewardEntries != null)
+                        {
+                            Dictionary<string, object> json = new Dictionary<string, object>();
+                            foreach(TeakSettings.RewardEntry entry in TeakSettings.RewardEntries)
+                            {
+                                json[entry.key] = entry.count;
+                            }
+                            TeakSettings.SimulatedTeakRewardJson = Json.Serialize(json);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                GUIContent teakRewardIdContent = new GUIContent("teakRewardId [?]",  "teakRewardId parameter of push notification payload.");
+                TeakSettings.SimulatedTeakRewardId = EditorGUILayout.TextField(teakRewardIdContent, TeakSettings.SimulatedTeakRewardId);
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.PrefixLabel(" ");
+                EditorGUILayout.HelpBox("Leave this field blank for no reward", MessageType.None);
+                EditorGUILayout.EndHorizontal();
+                if(TeakSettings.AppValid)
+                {
+                    string bundleConfigUrl = "https://app.teak.io/apps#/dashboard/" + TeakSettings.AppId + "/bundles?tab=Bundles";
+                    if(GUILayout.Button("Reward Configuration for " + TeakSettings.AppStatus, GUILayout.Height(25)))
+                    {
+                        Application.OpenURL(bundleConfigUrl);
+                    }
+                    EditorGUILayout.HelpBox("This will open up the Teak Reward Bundle Configuration in your browser.", MessageType.Info);
+                }
+            }
         }
     }
 
@@ -116,7 +162,7 @@ public class TeakSettingsEditor : Editor
                 Dictionary<string, object> reply = null;
                 reply = Json.Deserialize(responseFromServer) as Dictionary<string, object>;
                 TeakSettings.AppValid = true;
-                TeakSettings.AppStatus = "Settings valid for: " + reply["name"] as string;
+                TeakSettings.AppStatus = reply["name"] as string;
             }
         }
         catch(WebException e)

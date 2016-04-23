@@ -61,7 +61,7 @@ public class TeakNotification
         get
         {
 #if UNITY_EDITOR
-            return !String.IsNullOrEmpty(TeakSettings.SimulatedTeakRewardId);
+            return (TeakSettings.SimulateRewardReply ? true : !String.IsNullOrEmpty(TeakSettings.SimulatedTeakRewardId));
 #elif UNITY_ANDROID
             return mTeakNotification.Call<bool>("hasReward");
 #elif UNITY_IOS
@@ -74,7 +74,13 @@ public class TeakNotification
     {
         Reward ret = null;
 #if UNITY_EDITOR
-        // TODO
+        if(TeakSettings.SimulateRewardReply)
+        {
+            Dictionary<string, object> dict = new Dictionary<string, object>();
+            dict["status"] = TeakSettings.SimulatedTeakRewardStatus;
+            dict["json"] = TeakSettings.SimulatedTeakRewardJson;
+            ret = new Reward(dict);
+        }
         yield return null;
 #elif UNITY_ANDROID
         AndroidJavaObject rewardFuture = mTeakNotification.Call<AndroidJavaObject>("consumeNotification");
