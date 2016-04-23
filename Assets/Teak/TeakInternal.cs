@@ -18,11 +18,47 @@
 #region References
 using System;
 using UnityEngine;
+
+#if UNITY_EDITOR
+using TeakEditor.MiniJSON;
+using TeakEditor.Amazon.Util;
+
+using System.Net.Security;
+using System.Collections.Generic;
+using System.Security.Cryptography;
+#endif
 #endregion
 
 public partial class Teak : MonoBehaviour
 {
     /// @cond hide_from_doxygen
     private static Teak mInstance;
+#if UNITY_EDITOR
+    public static string signParams(string hostname, string endpoint, string secret, Dictionary<string, object> urlParams)
+    {
+        // Build sorted list of key-value pairs
+        string[] keys = new string[urlParams.Keys.Count];
+        urlParams.Keys.CopyTo(keys, 0);
+        Array.Sort(keys);
+        List<string> kvList = new List<string>();
+        foreach(string key in keys)
+        {
+            string asStr;
+            if((asStr = urlParams[key] as string) != null)
+            {
+                kvList.Add(String.Format("{0}={1}", key, asStr));
+            }
+            else
+            {
+                kvList.Add(String.Format("{0}={1}", key,
+                    Json.Serialize(urlParams[key])));
+            }
+        }
+        string payload = String.Join("&", kvList.ToArray());
+        string signString = String.Format("{0}\n{1}\n{2}\n{3}", "POST", hostname.Split(new char[]{':'})[0], endpoint, payload);
+        string sig = AWSSDKUtils.HMACSign(signString, secret, KeyedHashAlgorithm.Create("HMACSHA256"));
+        return sig;
+    }
+#endif
     /// @endcond
 }

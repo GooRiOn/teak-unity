@@ -59,6 +59,13 @@ public partial class Teak : MonoBehaviour
     /// <summary>Teak SDK version.</summary>
     public static readonly string SDKVersion = "2.0.1";
 
+    /// <summary>The user identifier for the current user.</summary>
+    public string UserId
+    {
+        get;
+        private set;
+    }
+
     /// <summary>
     /// Tell Teak how it should identify the current user.
     /// </summary>
@@ -68,6 +75,8 @@ public partial class Teak : MonoBehaviour
     /// <param name="userIdentifier">An identifier which is unique for the current user.</param>
     public void IdentifyUser(string userIdentifier)
     {
+        this.UserId = userIdentifier;
+
 #if UNITY_EDITOR
         Debug.Log("[Teak] IdentifyUser(): " + userIdentifier);
 #elif UNITY_ANDROID

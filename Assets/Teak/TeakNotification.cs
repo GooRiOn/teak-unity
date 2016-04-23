@@ -23,14 +23,19 @@ using System.Collections;
 using System.Runtime.InteropServices;
 
 #if UNITY_EDITOR
+using System.IO;
+using System.Net;
+using System.Text;
 using System.Collections.Generic;
+
+using TeakEditor.MiniJSON;
 #endif
 #endregion
 
 /// <summary>
 /// Interface for manipulating notifications from Teak.
 /// </summary>
-public class TeakNotification
+public partial class TeakNotification
 {
     public static TeakNotification FromTeakNotifId(string teakNotifId)
     {
@@ -80,8 +85,68 @@ public class TeakNotification
             dict["status"] = TeakSettings.SimulatedTeakRewardStatus;
             dict["json"] = TeakSettings.SimulatedTeakRewardJson;
             ret = new Reward(dict);
+            yield return null;
         }
-        yield return null;
+        else
+        {
+            string hostname = "rewards.gocarrot.com";
+            string endpoint = String.Format("/{0}/clicks", TeakSettings.SimulatedTeakRewardId);
+            Dictionary<string, object> urlParams  = new Dictionary<string, object> {
+                {"clicking_user_id", Teak.Instance.UserId},
+                {"no_status_code", true}
+            };
+            string sig = Teak.signParams(hostname, endpoint, TeakSettings.APIKey, urlParams);
+
+            // Use System.Net.WebRequest due to crossdomain.xml bug in Unity Editor mode
+            string postData = String.Format("clicking_user_id={0}&no_status_code=true&sig={1}",
+                WWW.EscapeURL(Teak.Instance.UserId),
+                WWW.EscapeURL(sig));
+            byte[] byteArray = Encoding.UTF8.GetBytes(postData);
+            WebRequest request = WebRequest.Create(String.Format("https://{0}{1}", hostname, endpoint));
+            request.Method = "POST";
+            request.ContentType = "application/x-www-form-urlencoded";
+            request.ContentLength = byteArray.Length;
+
+            Stream dataStream = request.GetRequestStream();
+            dataStream.Write(byteArray, 0, byteArray.Length);
+            dataStream.Close();
+
+            IAsyncResult asyncResult = request.BeginGetResponse((IAsyncResult result) => {
+                HttpWebResponse response = (result.AsyncState as HttpWebRequest).EndGetResponse(result) as HttpWebResponse;
+
+                dataStream = response.GetResponseStream();
+                StreamReader reader = new StreamReader(dataStream);
+                string responseFromServer = reader.ReadToEnd();
+                reader.Close();
+                dataStream.Close();
+
+                Dictionary<string, object> reply = null;
+                reply = Json.Deserialize(responseFromServer) as Dictionary<string, object>;
+                
+                Dictionary<string, object> responseJson = reply["response"] as Dictionary<string, object>;
+
+                Dictionary<string, object> rewardDict = new Dictionary<string, object>();
+                switch(responseJson["status"] as string)
+                {
+                    case "grant_reward": rewardDict["status"] = Reward.RewardStatus.GrantReward; break;
+                    case "self_click": rewardDict["status"] = Reward.RewardStatus.SelfGrant; break;
+                    case "already_clicked": rewardDict["status"] = Reward.RewardStatus.AlreadyGranted; break;
+                    case "too_many_clicks": rewardDict["status"] = Reward.RewardStatus.TooManyGrants; break;
+                    case "exceed_max_clicks_for_day": rewardDict["status"] = Reward.RewardStatus.ExceedMaxGrantsForDay; break;
+                    case "expired": rewardDict["status"] = Reward.RewardStatus.Expired; break;
+                    case "invalid_post": rewardDict["status"] = Reward.RewardStatus.Invalid; break;
+                    default: rewardDict["status"] = Reward.RewardStatus.Unknown; break;
+                }
+
+                if((Reward.RewardStatus)rewardDict["status"] == Reward.RewardStatus.GrantReward)
+                {
+                    rewardDict["json"] = responseJson["reward"] as string;
+                }
+                ret = new Reward(rewardDict);
+            }, request);
+
+            while(!asyncResult.IsCompleted) yield return null;
+        }
 #elif UNITY_ANDROID
         AndroidJavaObject rewardFuture = mTeakNotification.Call<AndroidJavaObject>("consumeNotification");
         if(rewardFuture != null)
@@ -166,21 +231,18 @@ public class TeakNotification
         internal Reward(Dictionary<string, object> reward)
         {
             mReward = reward;
-            Debug.Log("There's a reward that got made from magic! Status: " + this.Status);
         }
         private Dictionary<string, object> mReward;
 #elif UNITY_ANDROID
         internal Reward(AndroidJavaObject reward)
         {
             mReward = reward;
-            Debug.Log("There's a reward that got made from Java! Status: " + this.Status);
         }
         private AndroidJavaObject mReward;
 #elif UNITY_IOS
         internal Reward(IntPtr reward)
         {
             mReward = reward;
-            Debug.Log("There's a reward that got made from Obj-C! Status: " + this.Status);
         }
         private IntPtr mReward;
 #endif

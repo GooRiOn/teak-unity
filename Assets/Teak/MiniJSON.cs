@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 /*
  * Copyright (c) 2012 Calvin Rien
  *
@@ -547,3 +548,4 @@ namespace TeakEditor.MiniJSON {
         }
     }
 }
+#endif

@@ -22,14 +22,10 @@ using System.Net;
 using System.Text;
 using UnityEngine;
 using UnityEditor;
-using System.Threading;
 using System.Collections.Generic;
 
 using TeakEditor.MiniJSON;
 #endregion
-
-// Disable warning for the Teak.signParams partial class
-#pragma warning disable 0436
 
 [CustomEditor(typeof(TeakSettings))]
 public class TeakSettingsEditor : Editor
@@ -132,6 +128,7 @@ public class TeakSettingsEditor : Editor
             {"app_version", versionString},
             {"id", TeakSettings.AppId}
         };
+
         string sig = Teak.signParams(hostname, endpoint, TeakSettings.APIKey, urlParams);
 
         // Use System.Net.WebRequest due to crossdomain.xml bug in Unity Editor mode
