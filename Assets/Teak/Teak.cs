@@ -57,7 +57,7 @@ public partial class Teak : MonoBehaviour
     }
 
     /// <summary>Teak SDK version.</summary>
-    public static readonly string SDKVersion = "2.0.0";
+    public static readonly string SDKVersion = "2.0.1";
 
     /// <summary>
     /// Tell Teak how it should identify the current user.
