@@ -24,7 +24,7 @@ using System;
 using System.Diagnostics;
 #endregion
 
-public class TeakPostProcessBuild : MonoBehaviour
+public class TeakPostProcessBuild
 {
     [PostProcessBuild(100)]
     public static void OnPostprocessBuild(BuildTarget target, string pathToBuildProject)

@@ -192,15 +192,21 @@ public partial class Teak : MonoBehaviour
 #endif
 
 #if UNITY_EDITOR
-    if(TeakSettings.SimulateOpenedWithPush)
-    {
-        TeakNotification notif = TeakNotification.FromTeakNotifId("");
-        if(notif != null)
+        if(TeakSettings.SimulateOpenedWithPush)
         {
-            // Send event
-            OnLaunchedFromNotification(notif);
+            TeakNotification notif = TeakNotification.FromTeakNotifId("");
+            if(notif != null)
+            {
+                // Send event
+                OnLaunchedFromNotification(notif);
+            }
         }
-    }
+
+        if(TeakSettings.SimulateDeepLink)
+        {
+            // TODO: Test FB.GetDeepLink
+            TeakLinkAttribute.ProcessUrl(TeakSettings.SimulatedDeepLink);
+        }
 #endif
     }
 

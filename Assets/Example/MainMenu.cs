@@ -19,15 +19,22 @@ public class MainMenu : MonoBehaviour
         Teak.Instance.IdentifyUser(teakUserId);
         Teak.Instance.OnLaunchedFromNotification += OnLaunchedFromNotification;
         Teak.Instance.TrackEvent("foo", "bar", "baz");
-
-        // TODO: Test FB.GetDeepLink
-        TeakLinkAttribute.ProcessUrl("/store/asdf");
     }
 
     [TeakLink("/store/:sku")]
-    public void Foo(string sku)
+    void Foo(string sku)
     {
         Debug.Log("Foo called with sku: " + sku);
+    }
+
+    [TeakLink("/iap/:foo/:bar/:baz")]
+    void Bar(Dictionary<string, object> parameters)
+    {
+        Debug.Log("Bar called...");
+        foreach(var kvp in parameters)
+        {
+            Debug.Log(kvp.Key + " = " + kvp.Value);
+        }
     }
 
     void OnLaunchedFromNotification(TeakNotification notif)

@@ -20,17 +20,47 @@ using System;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEditor;
-using System.Collections.Generic;
+using UnityEditor.Callbacks;
 
 using TeakEditor.MiniJSON;
 #endregion
 
+[InitializeOnLoad]
 [CustomEditor(typeof(TeakSettings))]
 public class TeakSettingsEditor : Editor
 {
-    private bool mAndroidFoldout;
+    static TeakSettingsEditor()
+    {
+        TeakLinkAttribute.ProcessAnnotatedMethods();
+        OnScriptsReloaded();
+    }
+
+    bool mAndroidFoldout;
+    static int mSelectedEditorLink = 0;
+    static string[] mPopupArrayEditorLinks;
+
+    [DidReloadScripts]
+    public static void OnScriptsReloaded()
+    {
+        // Rebuild string-array
+        if(TeakLinkAttribute.EditorLinks != null)
+        {
+            if(mPopupArrayEditorLinks == null ||
+                TeakLinkAttribute.EditorLinks.Keys.Count != mPopupArrayEditorLinks.Length)
+            {
+                mPopupArrayEditorLinks = new string[TeakLinkAttribute.EditorLinks.Keys.Count];
+            }
+            TeakLinkAttribute.EditorLinks.Keys.CopyTo(mPopupArrayEditorLinks, 0);
+
+            // Update index
+            mSelectedEditorLink = mPopupArrayEditorLinks == null ? 0 : Array.IndexOf(mPopupArrayEditorLinks, TeakSettings.SimulateDeepLinkEditorKey);
+            mSelectedEditorLink = (mSelectedEditorLink < 0 ? 0 : mSelectedEditorLink);
+        }
+    }
 
     public override void OnInspectorGUI()
     {
@@ -66,6 +96,52 @@ public class TeakSettingsEditor : Editor
 
         EditorGUILayout.Space();
         GUILayout.Label("Development Tools", EditorStyles.boldLabel);
+
+        GUIContent simulateDeepLinkContent = new GUIContent("Simulate Deep Link [?]",  "When running the game in the Unity Editor, Teak will simulate that the app has been opened by deep linking.");
+        TeakSettings.SimulateDeepLink = EditorGUILayout.ToggleLeft(simulateDeepLinkContent, TeakSettings.SimulateDeepLink, GUILayout.ExpandWidth(true));
+        if(TeakSettings.SimulateDeepLink)
+        {
+            if(TeakLinkAttribute.EditorLinks == null)
+            {
+                EditorGUILayout.HelpBox("Error in TeakLinks, see the Console tab for more details.", MessageType.Error);
+            }
+            else
+            {
+                string previousDeepLinkKey = mPopupArrayEditorLinks[mSelectedEditorLink];
+                EditorGUI.BeginChangeCheck();
+                mSelectedEditorLink = EditorGUILayout.Popup(mSelectedEditorLink, mPopupArrayEditorLinks);
+                TeakSettings.SimulateDeepLinkEditorKey = mPopupArrayEditorLinks[mSelectedEditorLink];
+                TeakLinkAttribute selected = TeakLinkAttribute.EditorLinks[TeakSettings.SimulateDeepLinkEditorKey];
+                if((EditorGUI.EndChangeCheck() && (previousDeepLinkKey == null || previousDeepLinkKey != TeakSettings.SimulateDeepLinkEditorKey)) ||
+                    TeakSettings.DeepLinkParams == null)
+                {
+                    TeakSettings.DeepLinkParams = new TeakSettings.DeepLinkParam[(selected.Regex.GetGroupNames().Length - 1)];
+                }
+
+                EditorGUI.BeginChangeCheck();
+                int j = 0;
+                foreach(string groupName in selected.Regex.GetGroupNames())
+                {
+                    if(groupName == "0") continue;
+                    TeakSettings.DeepLinkParams[j].Key = groupName;
+                    TeakSettings.DeepLinkParams[j].Value = EditorGUILayout.TextField(groupName, TeakSettings.DeepLinkParams[j].Value);
+                    j++;
+                }
+                if(EditorGUI.EndChangeCheck() || String.IsNullOrEmpty(TeakSettings.SimulatedDeepLink))
+                {
+                    TeakSettings.SimulatedDeepLink = selected.Url;
+                    j = 0;
+                    foreach(string groupName in selected.Regex.GetGroupNames())
+                    {
+                        if(groupName == "0") continue;
+                        TeakSettings.SimulatedDeepLink = TeakSettings.SimulatedDeepLink.Replace(String.Format(":{0}", groupName), TeakSettings.DeepLinkParams[j].Value);
+                        j++;
+                    }
+                }
+                EditorGUILayout.HelpBox(String.Format("Deep Link Preview:\n{0}", TeakSettings.SimulatedDeepLink), MessageType.Info);
+            }
+        }
+
         GUIContent simulateOpenedWithPushContent = new GUIContent("Simulate Opening App via Push Notification [?]",  "When running the game in the Unity Editor, Teak will simulate that the app has been opened by a push notification.");
         TeakSettings.SimulateOpenedWithPush = EditorGUILayout.ToggleLeft(simulateOpenedWithPushContent, TeakSettings.SimulateOpenedWithPush, GUILayout.ExpandWidth(true));
         if(TeakSettings.SimulateOpenedWithPush)

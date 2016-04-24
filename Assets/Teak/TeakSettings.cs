@@ -22,6 +22,8 @@ using System.IO;
 
 using UnityEngine;
 using UnityEditor;
+
+using TeakEditor;
 #endregion
 
 [InitializeOnLoad]
@@ -145,6 +147,37 @@ public class TeakSettings : ScriptableObject
 #endif
     }
 
+    public static bool SimulateDeepLink
+    {
+        get { return Instance.mSimulateDeepLink; }
+#if UNITY_EDITOR
+        set
+        {
+            if(value != Instance.mSimulateDeepLink)
+            {
+                Instance.mSimulateDeepLink = value;
+                DirtyEditor();
+            }
+        }
+#endif
+    }
+
+#if UNITY_EDITOR
+    public static string SimulateDeepLinkEditorKey
+    {
+        get { return Instance.mSimulateDeepLinkEditorKey; }
+        set
+        {
+            string editorKey = value.Trim();
+            if(editorKey != Instance.mSimulateDeepLinkEditorKey)
+            {
+                Instance.mSimulateDeepLinkEditorKey = editorKey;
+                DirtyEditor();
+            }
+        }
+    }
+#endif
+
     public static bool SimulateOpenedWithPush
     {
         get { return Instance.mSimulateOpenedWithPush; }
@@ -227,6 +260,34 @@ public class TeakSettings : ScriptableObject
         get { return Instance.mRewardEntries; }
     }
 
+    public static DeepLinkParam[] DeepLinkParams
+    {
+        get { return Instance.mDeepLinkParams; }
+#if UNITY_EDITOR
+        set
+        {
+            Instance.mDeepLinkParams = value;
+            DirtyEditor();
+        }
+#endif
+    }
+
+    public static string SimulatedDeepLink
+    {
+        get { return Instance.mSimulatedDeepLink; }
+#if UNITY_EDITOR
+        set
+        {
+            string deepLink = value.Trim();
+            if(deepLink != Instance.mSimulatedDeepLink)
+            {
+                Instance.mSimulatedDeepLink = deepLink;
+                DirtyEditor();
+            }
+        }
+#endif
+    }
+
 #if UNITY_EDITOR
     [MenuItem("Edit/Teak")]
     public static void Edit()
@@ -247,6 +308,13 @@ public class TeakSettings : ScriptableObject
     }
     public RewardEntry[] mRewardEntries;
 
+    [Serializable]
+    public struct DeepLinkParam {
+        public string Key;
+        public string Value;
+    }
+    public DeepLinkParam[] mDeepLinkParams;
+
     [SerializeField]
     private string mAppId = "";
     [SerializeField]
@@ -258,6 +326,8 @@ public class TeakSettings : ScriptableObject
     [SerializeField]
     private string mAppStatus = "";
     [SerializeField]
+    private bool mSimulateDeepLink = false;
+    [SerializeField]
     private bool mSimulateOpenedWithPush = false;
     [SerializeField]
     private bool mSimulateRewardReply = false;
@@ -267,6 +337,13 @@ public class TeakSettings : ScriptableObject
     private TeakNotification.Reward.RewardStatus mSimulateTeakRewardStatus = TeakNotification.Reward.RewardStatus.GrantReward;
     [SerializeField]
     private string mSimulatedTeakRewardJson = "";
+    [SerializeField]
+    private string mSimulatedDeepLink = "";
+
+#if UNITY_EDITOR
+    [SerializeField]
+    private string mSimulateDeepLinkEditorKey = "";
+#endif
 
     private static TeakSettings mInstance;
 }

@@ -28,13 +28,22 @@ using System.Text.RegularExpressions;
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public class TeakLinkAttribute : System.Attribute
 {
+    // TODO: __FILE__ and __LINE__ can work maybe?
     public TeakLinkAttribute(string url)
     {
         this.Url = url;
     }
 
     /// @cond hide_from_doxygen
-    readonly string Url;
+    public readonly string Url;
+
+#if UNITY_EDITOR
+    public static Dictionary<string, TeakLinkAttribute> EditorLinks
+    {
+        get;
+        private set;
+    }
+#endif
 
     Dictionary<string, ParameterInfo> MethodParams
     {
@@ -42,11 +51,19 @@ public class TeakLinkAttribute : System.Attribute
         set;
     }
 
+#if UNITY_EDITOR
+    public Regex Regex
+    {
+        get;
+        private set;
+    }
+#else
     Regex Regex
     {
         get;
         set;
     }
+#endif
 
     MethodInfo MethodInfo
     {
@@ -68,10 +85,8 @@ public class TeakLinkAttribute : System.Attribute
 
     public static bool ProcessUrl(string url)
     {
-        Debug.Log("Trying to match: " + url);
         foreach(KeyValuePair<Regex, TeakLinkAttribute> entry in TeakLinkAttribute.Links)
         {
-            Debug.Log(entry.Key);
             Match matchResult = entry.Key.Match(url);
             if(matchResult.Success)
             {
@@ -102,10 +117,27 @@ public class TeakLinkAttribute : System.Attribute
 
                 if(entry.Value.MethodInfo.IsStatic || target != null)
                 {
+                    Dictionary<string, object> paramsDict = new Dictionary<string, object>();
+                    if(entry.Value.MethodParams.ContainsKey("parameters"))
+                    {
+                        foreach(string groupName in entry.Value.Regex.GetGroupNames())
+                        {
+                            if(groupName == "0") continue;
+                            paramsDict.Add(groupName, matchResult.Groups[groupName].Value);
+                        }
+                    }
+
                     object[] invokeParams = new object[entry.Value.MethodParams.Count];
                     foreach(KeyValuePair<string, ParameterInfo> param in entry.Value.MethodParams)
                     {
-                        invokeParams[param.Value.Position] = matchResult.Groups[param.Key].Value;
+                        if(param.Key == "parameters")
+                        {
+                            invokeParams[param.Value.Position] = paramsDict;
+                        }
+                        else
+                        {
+                            invokeParams[param.Value.Position] = matchResult.Groups[param.Key].Value;
+                        }
                     }
                     entry.Value.MethodInfo.Invoke(target, invokeParams);
 
@@ -126,7 +158,6 @@ public class TeakLinkAttribute : System.Attribute
         //var assemblies = AppDomain.CurrentDomain.GetAssemblies();
         //foreach (var a in assemblies)
         //{
-            Debug.Log(a.ToString());
             MethodInfo[] methods = a.GetTypes()
                       .SelectMany(t => t.GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
                       .Where(m => m.GetCustomAttributes(typeof(TeakLinkAttribute), false).Length > 0)
@@ -135,6 +166,12 @@ public class TeakLinkAttribute : System.Attribute
             {
                 ValidateAnnotations(entry);
             }
+#if UNITY_EDITOR
+            TeakLinkAttribute.EditorLinks = TeakLinkAttribute.Links
+                .OrderByDescending(l => l.Value.Url)
+                .Select(l => l.Value)
+                .ToDictionary(l => l.Url.Replace("/", "\u2215")); // For Unity Editor
+#endif
         //}
     }
 
@@ -152,6 +189,7 @@ public class TeakLinkAttribute : System.Attribute
                 return Regex.Escape(m.Value);
             });
 
+            List<string> dupeCheck = new List<string>();
             Regex compile = new Regex(@"((:\w+)|\*)");
             pattern = compile.Replace(pattern, (Match m) => {
                 if(m.Value == "*")
@@ -160,19 +198,31 @@ public class TeakLinkAttribute : System.Attribute
                     throw new NotSupportedException(String.Format("'splat' functionality is not supported by TeakLinks.\nMethod: {0}", DebugStringForMethodInfo(method)));
                     // return "(?<splat>.*?)";
                 }
+                 dupeCheck.Add(m.Value.Substring(1));
                 return String.Format("(?<{0}>[^/?#]+)", m.Value.Substring(1));
             });
+
+            // Check for duplicate capture group names
+            List<string> duplicates = dupeCheck
+                .GroupBy(i => i)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToList();
+            if(duplicates.Count() > 0)
+            {
+                throw new ArgumentException(String.Format("Duplicate variable name '{0}'.\nMethod: {1}", duplicates[0], DebugStringForMethodInfo(method)));
+            }
 
             link.Regex = new Regex(pattern);
             link.MethodParams = methodParams;
             link.MethodInfo = method;
 
             // Check for special case where method has only one parameter named 'params' of type Dictionary<string, object>
-            if(link.MethodParams.ContainsKey("params"))
+            if(link.MethodParams.ContainsKey("parameters"))
             {
-                if(link.MethodParams["params"].ParameterType != typeof(Dictionary<string, object>))
+                if(link.MethodParams["parameters"].ParameterType != typeof(Dictionary<string, object>))
                 {
-                    throw new ArgumentException(String.Format("Parameter passing by 'params' must use type Dictionary<string, object>.\nMethod: {0}", DebugStringForMethodInfo(method)));
+                    throw new ArgumentException(String.Format("Parameter passing by 'parameters' must use type Dictionary<string, object>.\nMethod: {0}", DebugStringForMethodInfo(method)));
                 }
             }
             else
