@@ -150,10 +150,14 @@ public partial class Teak : MonoBehaviour
 
     #region MonoBehaviour
     /// @cond hide_from_doxygen
+    void Awake()
+    {
+        TeakLinkAttribute.ProcessAnnotatedMethods();
+        DontDestroyOnLoad(this);
+    }
+
     void Start()
     {
-        DontDestroyOnLoad(this);
-
 #if UNITY_ANDROID
         // Try and find an active store plugin
         if(Type.GetType("OpenIABEventManager, Assembly-CSharp-firstpass") != null)
