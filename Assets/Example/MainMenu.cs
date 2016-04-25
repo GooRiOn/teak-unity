@@ -21,16 +21,26 @@ public class MainMenu : MonoBehaviour
         Teak.Instance.TrackEvent("foo", "bar", "baz");
     }
 
-    [TeakLink("/store/:sku")]
-    void Foo(string sku)
+    [TeakLink("/store/:page/:sku")]
+    void OpenIAPStore(string sku, string page)
     {
-        Debug.Log("Foo called with sku: " + sku);
+        Debug.Log("OpenIAPStore called with sku: " + sku);
     }
 
     [TeakLink("/iap/:foo/:bar/:baz")]
-    void Bar(Dictionary<string, object> parameters)
+    void TestDictionary(Dictionary<string, object> parameters)
     {
-        Debug.Log("Bar called...");
+        Debug.Log("TestDictionary called...");
+        foreach(var kvp in parameters)
+        {
+            Debug.Log(kvp.Key + " = " + kvp.Value);
+        }
+    }
+
+    [TeakLink("/mixed/:foo")]
+    void TestMixed(string foo, Dictionary<string, object> parameters)
+    {
+        Debug.Log("TestDictionary called with foo: " + foo + " and parameters...");
         foreach(var kvp in parameters)
         {
             Debug.Log(kvp.Key + " = " + kvp.Value);

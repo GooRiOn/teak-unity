@@ -37,9 +37,11 @@ public class TeakSettingsEditor : Editor
     {
         TeakLinkAttribute.ProcessAnnotatedMethods();
         OnScriptsReloaded();
+
+        mAndroidFoldout = !String.IsNullOrEmpty(TeakSettings.GCMSenderId);
     }
 
-    bool mAndroidFoldout;
+    static bool mAndroidFoldout;
     static int mSelectedEditorLink = 0;
     static string[] mPopupArrayEditorLinks;
 
@@ -107,18 +109,15 @@ public class TeakSettingsEditor : Editor
             }
             else
             {
-                string previousDeepLinkKey = mPopupArrayEditorLinks[mSelectedEditorLink];
-                EditorGUI.BeginChangeCheck();
                 mSelectedEditorLink = EditorGUILayout.Popup(mSelectedEditorLink, mPopupArrayEditorLinks);
                 TeakSettings.SimulateDeepLinkEditorKey = mPopupArrayEditorLinks[mSelectedEditorLink];
                 TeakLinkAttribute selected = TeakLinkAttribute.EditorLinks[TeakSettings.SimulateDeepLinkEditorKey];
-                if((EditorGUI.EndChangeCheck() && (previousDeepLinkKey == null || previousDeepLinkKey != TeakSettings.SimulateDeepLinkEditorKey)) ||
-                    TeakSettings.DeepLinkParams == null)
+                int shouldBeLength = (selected.Regex.GetGroupNames().Length - 1);
+                if(TeakSettings.DeepLinkParams == null || TeakSettings.DeepLinkParams.Length != shouldBeLength)
                 {
-                    TeakSettings.DeepLinkParams = new TeakSettings.DeepLinkParam[(selected.Regex.GetGroupNames().Length - 1)];
+                    TeakSettings.DeepLinkParams = new TeakSettings.DeepLinkParam[shouldBeLength];
                 }
 
-                EditorGUI.BeginChangeCheck();
                 int j = 0;
                 foreach(string groupName in selected.Regex.GetGroupNames())
                 {
@@ -127,16 +126,14 @@ public class TeakSettingsEditor : Editor
                     TeakSettings.DeepLinkParams[j].Value = EditorGUILayout.TextField(groupName, TeakSettings.DeepLinkParams[j].Value);
                     j++;
                 }
-                if(EditorGUI.EndChangeCheck() || String.IsNullOrEmpty(TeakSettings.SimulatedDeepLink))
+
+                TeakSettings.SimulatedDeepLink = selected.Url;
+                j = 0;
+                foreach(string groupName in selected.Regex.GetGroupNames())
                 {
-                    TeakSettings.SimulatedDeepLink = selected.Url;
-                    j = 0;
-                    foreach(string groupName in selected.Regex.GetGroupNames())
-                    {
-                        if(groupName == "0") continue;
-                        TeakSettings.SimulatedDeepLink = TeakSettings.SimulatedDeepLink.Replace(String.Format(":{0}", groupName), TeakSettings.DeepLinkParams[j].Value);
-                        j++;
-                    }
+                    if(groupName == "0") continue;
+                    TeakSettings.SimulatedDeepLink = TeakSettings.SimulatedDeepLink.Replace(String.Format(":{0}", groupName), TeakSettings.DeepLinkParams[j].Value);
+                    j++;
                 }
                 EditorGUILayout.HelpBox(String.Format("Deep Link Preview:\n{0}", TeakSettings.SimulatedDeepLink), MessageType.Info);
             }
