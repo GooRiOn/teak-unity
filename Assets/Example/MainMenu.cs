@@ -8,10 +8,13 @@ public class MainMenu : MonoBehaviour
     public int buttonWidth = 200;
     public int buttonSpacing = 8;
 
-    string teakUserId = "ffffffff-f71d-e60e-08d4-8f760033c587";
+    string pushTokenString = null;
+    string teakUserId = null;
 
     void Start()
     {
+        teakUserId = SystemInfo.deviceUniqueIdentifier;
+
         FB.Init(() => {
             Debug.Log("Facebook initialized");
         });
@@ -62,6 +65,20 @@ public class MainMenu : MonoBehaviour
         }
     }
 
+    void FixedUpdate()
+    {
+        if(pushTokenString == null)
+        {
+            byte[] token = NotificationServices.deviceToken;
+            if(token != null)
+            {
+                // Teak will take care of storing this automatically
+                pushTokenString = System.BitConverter.ToString(token).Replace("-", "").ToLower();
+            }
+        }
+
+    }
+
     void OnGUI()
     {
         GUILayout.BeginArea(new Rect(10, 10, Screen.width - 20, Screen.height - 20));
@@ -79,6 +96,18 @@ public class MainMenu : MonoBehaviour
             if(GUILayout.Button("Login With Facebook", GUILayout.Height(buttonHeight)))
             {
                 FB.Login("public_profile,email,user_friends");
+            }
+        }
+
+        if(pushTokenString != null)
+        {
+            GUILayout.Label("Push Token: " + pushTokenString);
+        }
+        else
+        {
+            if(GUILayout.Button("Request Push Notifications", GUILayout.Height(buttonHeight)))
+            {
+                NotificationServices.RegisterForRemoteNotificationTypes(RemoteNotificationType.Alert |  RemoteNotificationType.Badge |  RemoteNotificationType.Sound);
             }
         }
 /*
