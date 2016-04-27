@@ -35,7 +35,15 @@ public class TeakSettingsEditor : Editor
 {
     static TeakSettingsEditor()
     {
-        TeakLinkAttribute.ProcessAnnotatedMethods();
+        try
+        {
+            TeakLinkAttribute.ProcessAnnotatedMethods();
+        }
+        catch(Exception e)
+        {
+            Debug.LogError(e.ToString());
+        }
+
         OnScriptsReloaded();
 
         mAndroidFoldout = !String.IsNullOrEmpty(TeakSettings.GCMSenderId);
