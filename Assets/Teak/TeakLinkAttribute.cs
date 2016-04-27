@@ -237,11 +237,12 @@ public class TeakLinkAttribute : System.Attribute
                 }
             }
 
+            // Check for either static method or method on a MonoBehaviour
             if(method.IsStatic)
             {
                 // Nothing for now
             }
-            else if(method.DeclaringType.BaseType == typeof(MonoBehaviour))
+            else if(method.DeclaringType.BaseType == typeof(MonoBehaviour)) // TODO: Walk back base types?
             {
                 link.DeclaringObjectType = method.DeclaringType;
             }
@@ -249,6 +250,31 @@ public class TeakLinkAttribute : System.Attribute
             {
                 Debug.LogError(method.DeclaringType + " is a " + method.DeclaringType.BaseType);
                 throw new NotSupportedException(String.Format("Method must be declared 'static' if it is not on a MonoBehaviour.\nMethod: {0}", DebugStringForMethodInfo(method)));
+            }
+
+            // Check for duplicate routes
+            string dupeRouteCheck = link.Url;
+            foreach(string groupName in link.Regex.GetGroupNames())
+            {
+                if(groupName == "0") continue;
+                dupeRouteCheck = dupeRouteCheck.Replace(String.Format(":{0}", groupName), "");
+            }
+
+            foreach(KeyValuePair<Regex, TeakLinkAttribute> entry in TeakLinkAttribute.Links)
+            {
+                string emptyVarRoute = entry.Value.Url;
+                foreach(string groupName in entry.Key.GetGroupNames())
+                {
+                    if(groupName == "0") continue;
+                    emptyVarRoute = emptyVarRoute.Replace(String.Format(":{0}", groupName), "");
+                }
+
+                if(emptyVarRoute == dupeRouteCheck)
+                {
+                    throw new ArgumentException(String.Format("TeakLink route for method {0}({1}) conflicts with route for method: {2}({3})",
+                        DebugStringForMethodInfo(link.MethodInfo), link.Url,
+                        DebugStringForMethodInfo(entry.Value.MethodInfo), entry.Value.Url));
+                }
             }
 
             TeakLinkAttribute.Links.Add(link.Regex, link);
