@@ -37,10 +37,10 @@ public class TeakSettings : ScriptableObject
     {
         get
         {
-            if (mInstance == null)
+            if(mInstance == null)
             {
                 mInstance = Resources.Load(teakSettingsAssetName) as TeakSettings;
-                if (mInstance == null)
+                if(mInstance == null)
                 {
                     // If not found, autocreate the asset object.
                     mInstance = CreateInstance<TeakSettings>();
@@ -54,6 +54,8 @@ public class TeakSettings : ScriptableObject
                     string fullPath = Path.Combine(Path.Combine("Assets", teakSettingsPath),
                                                    teakSettingsAssetName + teakSettingsAssetExtension
                                                   );
+                    if(mInstance == null) throw new NullReferenceException("mInstance is null somehow");
+                    if(String.IsNullOrEmpty(fullPath)) throw new ArgumentNullException("fullPath is null or empty somehow.");
                     AssetDatabase.CreateAsset(mInstance, fullPath);
 #endif
                 }
