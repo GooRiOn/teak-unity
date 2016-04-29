@@ -105,6 +105,53 @@ public partial class Teak : MonoBehaviour
 #endif
     }
 
+    /// <summary>
+    /// Navigate to the deep link with which your game was launched.
+    /// </summary>
+    /// <remarks>
+    /// You should call this function once your game is fully initialized and ready to
+    /// for navigation to the deep-linked content. If there is no deep link available
+    /// this function will simply return without performing any actions.
+    ///
+    /// If you are using the Facebook SDK, FB.Init() must be completed before calling this function.
+    ///
+    /// In the Unity Editor, this function will navigate to the destination in Simulate Deep Link
+    /// in the Teak settings (if applicable).
+    /// </remarks>
+    public void NavigateToDeepLink()
+    {
+#if UNITY_EDITOR
+        if(TeakSettings.SimulateDeepLink &&
+            !String.IsNullOrEmpty(TeakSettings.SimulatedDeepLink))
+        {
+            try
+            {
+                Uri deepLinkUri = new Uri(String.Format("unityeditor:/{0}", TeakSettings.SimulatedDeepLink));
+                TeakLinkAttribute.ProcessUri(deepLinkUri);
+            }
+            catch(Exception e)
+            {
+                Debug.LogError(e.ToString());
+            }
+        }
+#else
+        FB.GetDeepLink((FBResult result) => {
+            if(!String.IsNullOrEmpty(result.Text))
+            {
+                try
+                {
+                    Uri deepLinkUri = new Uri(result.Text);
+                    TeakLinkAttribute.ProcessUri(deepLinkUri);
+                }
+                catch(Exception e)
+                {
+                    Debug.LogError(e.ToString());
+                }
+            }
+        });
+#endif
+    }
+
     public delegate void LaunchedFromNotification(TeakNotification notif);
     public event LaunchedFromNotification OnLaunchedFromNotification;
 
@@ -200,12 +247,6 @@ public partial class Teak : MonoBehaviour
                 // Send event
                 OnLaunchedFromNotification(notif);
             }
-        }
-
-        if(TeakSettings.SimulateDeepLink)
-        {
-            // TODO: Test FB.GetDeepLink
-            TeakLinkAttribute.ProcessUrl(TeakSettings.SimulatedDeepLink);
         }
 #endif
     }

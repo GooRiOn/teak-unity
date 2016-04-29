@@ -83,11 +83,17 @@ public class TeakLinkAttribute : System.Attribute
         set;
     }
 
-    public static bool ProcessUrl(string url)
+    public static bool ProcessUri(Uri uri)
     {
+        if(uri == null) return false;
+
+        // TODO: Check incoming Uri for a query parameter named 'al_applink_data' and
+        //       JSON parse that.
+
+        string uriMatchString = String.Format("/{0}{1}", uri.Authority, uri.AbsolutePath);
         foreach(KeyValuePair<Regex, TeakLinkAttribute> entry in TeakLinkAttribute.Links)
         {
-            Match matchResult = entry.Key.Match(url);
+            Match matchResult = entry.Key.Match(uriMatchString);
             if(matchResult.Success)
             {
                 object target = null;
@@ -101,7 +107,7 @@ public class TeakLinkAttribute : System.Attribute
                     UnityEngine.Object[] objects = UnityEngine.Object.FindObjectsOfType(entry.Value.DeclaringObjectType);
                     if(objects.Length == 0)
                     {
-                        string err = String.Format("0 objects of type {0} found when trying to resolve TeakLink '{1}'.", entry.Value.DeclaringObjectType, url);
+                        string err = String.Format("0 objects of type {0} found when trying to resolve TeakLink '{1}'.", entry.Value.DeclaringObjectType, uriMatchString);
                         Debug.LogError(err);
                     }
                     else
@@ -109,7 +115,7 @@ public class TeakLinkAttribute : System.Attribute
                         target = objects[0];
                         if(objects.Length > 1)
                         {
-                            string err = String.Format("{0} possible objects of type {1} found when trying to resolve TeakLink '{2}'. Using the first object found.", objects.Length, entry.Value.DeclaringObjectType, url);
+                            string err = String.Format("{0} possible objects of type {1} found when trying to resolve TeakLink '{2}'. Using the first object found.", objects.Length, entry.Value.DeclaringObjectType, uriMatchString);
                             Debug.LogWarning(err);
                         }
                     }
@@ -118,6 +124,7 @@ public class TeakLinkAttribute : System.Attribute
                 if(entry.Value.MethodInfo.IsStatic || target != null)
                 {
                     Dictionary<string, object> paramsDict = new Dictionary<string, object>();
+                    paramsDict.Add("_uri", uri);
                     if(entry.Value.MethodParams.ContainsKey("parameters"))
                     {
                         foreach(string groupName in entry.Value.Regex.GetGroupNames())

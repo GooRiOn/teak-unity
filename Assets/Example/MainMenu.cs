@@ -8,17 +8,23 @@ public class MainMenu : MonoBehaviour
     public int buttonWidth = 200;
     public int buttonSpacing = 8;
 
+#if UNITY_IOS
     string pushTokenString = null;
+#endif
     string teakUserId = null;
 
     void Start()
     {
         teakUserId = SystemInfo.deviceUniqueIdentifier;
 
+#if UNITY_EDITOR
+        Teak.Instance.NavigateToDeepLink();
+#else
         FB.Init(() => {
-            Debug.Log("Facebook initialized");
+            Debug.Log("Facebook initialized.");
+            Teak.Instance.NavigateToDeepLink();
         });
-
+#endif
         Teak.Instance.IdentifyUser(teakUserId);
         Teak.Instance.OnLaunchedFromNotification += OnLaunchedFromNotification;
         Teak.Instance.TrackEvent("foo", "bar", "baz");
@@ -65,6 +71,7 @@ public class MainMenu : MonoBehaviour
         }
     }
 
+#if UNITY_IOS
     void FixedUpdate()
     {
         if(pushTokenString == null)
@@ -76,8 +83,8 @@ public class MainMenu : MonoBehaviour
                 pushTokenString = System.BitConverter.ToString(token).Replace("-", "").ToLower();
             }
         }
-
     }
+#endif
 
     void OnGUI()
     {
@@ -99,6 +106,7 @@ public class MainMenu : MonoBehaviour
             }
         }
 
+#if UNITY_IOS
         if(pushTokenString != null)
         {
             GUILayout.Label("Push Token: " + pushTokenString);
@@ -110,15 +118,8 @@ public class MainMenu : MonoBehaviour
                 NotificationServices.RegisterForRemoteNotificationTypes(RemoteNotificationType.Alert |  RemoteNotificationType.Badge |  RemoteNotificationType.Sound);
             }
         }
-/*
-        // High Score
-        GUILayout.Space(buttonSpacing);
-        scoreString = GUILayout.TextField(scoreString, buttonWidth);
-        if(GUILayout.Button("Earn High Score", GUILayout.Height(buttonHeight)))
-        {
-            Teak.Instance.postHighScore(System.Convert.ToUInt32(scoreString));
-        }
-*/
+#endif
+
         GUILayout.EndArea();
     }
 }
