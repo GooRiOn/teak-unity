@@ -13,15 +13,16 @@
  * limitations under the License.
  */
 
-#import <Teak/Teak.h>
-
 // From Classes/main.mm
 extern const char* AppControllerClassName;
+
+// From TeakHooks.m
+extern void Teak_Plant(Class appDelegateClass, NSString* appId, NSString* appSecret);
 
 __attribute__((constructor))
 static void teak_init()
 {
    NSString* appId = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TeakAppId"];
    NSString* apiKey = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TeakApiKey"];
-   [Teak initForApplicationId:appId withClass:NSClassFromString([NSString stringWithUTF8String:AppControllerClassName]) andSecret:apiKey];
+   Teak_Plant(NSClassFromString([NSString stringWithUTF8String:AppControllerClassName]), appId, apiKey);
 }
