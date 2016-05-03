@@ -11,7 +11,7 @@ docs/
 *.pdb*
 *.mdb*
 
-Assets/Teak/Resources*
+Assets/Resources/TeakSettings.*
 
 # Facebook SDK
 Assets/Facebook*

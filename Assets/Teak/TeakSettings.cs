@@ -30,7 +30,7 @@ using TeakEditor;
 public class TeakSettings : ScriptableObject
 {
     const string teakSettingsAssetName = "TeakSettings";
-    const string teakSettingsPath = "Teak/Resources";
+    const string teakSettingsPath = "Resources";
     const string teakSettingsAssetExtension = ".asset";
 
     static TeakSettings Instance
