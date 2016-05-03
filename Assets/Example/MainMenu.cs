@@ -4,18 +4,18 @@ using System.Collections.Generic;
 
 public class MainMenu : MonoBehaviour
 {
-    public int buttonHeight = 60;
-    public int buttonWidth = 200;
-    public int buttonSpacing = 8;
+    public int buttonHeight = 150;
 
 #if UNITY_IOS
     string pushTokenString = null;
 #endif
     string teakUserId = null;
+    string teakSdkVersion = null;
 
     void Start()
     {
         teakUserId = SystemInfo.deviceUniqueIdentifier;
+        teakSdkVersion = "Teak SDK Version: " + Teak.Version;
 
 #if UNITY_EDITOR
         Teak.Instance.NavigateToDeepLink();
@@ -90,7 +90,7 @@ public class MainMenu : MonoBehaviour
     {
         GUILayout.BeginArea(new Rect(10, 10, Screen.width - 20, Screen.height - 20));
 
-        // Display auth status
+        GUILayout.Label(teakSdkVersion);
         GUILayout.Label(teakUserId);
 
         // FB Login

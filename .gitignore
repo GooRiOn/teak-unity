@@ -12,6 +12,7 @@ docs/
 *.mdb*
 
 Assets/Resources/TeakSettings.*
+Assets/Teak/TeakVersion.dll*
 
 # Facebook SDK
 Assets/Facebook*

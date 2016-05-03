@@ -57,7 +57,13 @@ public partial class Teak : MonoBehaviour
     }
 
     /// <summary>Teak SDK version.</summary>
-    public static readonly string SDKVersion = "2.0.1";
+    public static string Version
+    {
+        get
+        {
+            return TeakVersion.Version;
+        }
+    }
 
     /// <summary>The user identifier for the current user.</summary>
     public string UserId
@@ -199,6 +205,7 @@ public partial class Teak : MonoBehaviour
     /// @cond hide_from_doxygen
     void Awake()
     {
+        Debug.Log("Teak SDK Version: " + Teak.Version);
         TeakLinkAttribute.ProcessAnnotatedMethods();
         DontDestroyOnLoad(this);
     }

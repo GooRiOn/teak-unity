@@ -31,12 +31,6 @@ if doxygen?
   end
 end
 
-def umv(src, dest)
-  return if not File.exist? src
-  mv src, dest
-  mv "#{src}.meta", "#{dest}.meta"
-end
-
 #
 # Unity build tasks
 #
@@ -48,40 +42,13 @@ task :unity => "unity:package"
 namespace :unity do
   task :package do
     project_path = File.expand_path("./")
-    puts project_path
     package_path = File.expand_path("./Teak.unitypackage")
-    Dir.chdir("#{project_path}/Assets") do
-      umv "Example", ".Example"
-      umv "Facebook", ".Facebook"
-      Dir.chdir("Teak") do
-        umv "Resources", ".Resources"
-      end
-      Dir.chdir("Plugins/Android") do
-        umv "AndroidManifest.xml", ".AndroidManifest.xml"
-        umv "res", ".res"
-        umv "facebook", ".facebook"
-        umv "android-support-v4.jar", ".android-support-v4.jar"
-        umv "bolts.jar", ".bolts.jar"
-      end
-    end
     begin
-      unity "-quit -batchmode -projectPath #{project_path} -exportPackage Assets #{package_path}"
-    rescue
-      puts "Unity build failed."
-    end
-    Dir.chdir("#{project_path}/Assets") do
-      umv ".Example", "Example"
-      umv ".Facebook", "Facebook"
-      Dir.chdir("Teak") do
-        umv ".Resources", "Resources"
-      end
-      Dir.chdir("Plugins/Android") do
-        umv ".AndroidManifest.xml", "AndroidManifest.xml"
-        umv ".res", "res"
-        umv ".facebook", "facebook"
-        umv ".android-support-v4.jar", "android-support-v4.jar"
-        umv ".bolts.jar", "bolts.jar"
-      end
+      unity "-quit -batchmode -projectPath #{project_path} -executeMethod TeakPackageBuilder.BuildUnityPackage"
+      sh "python extractunitypackage.py Teak.unitypackage _temp_pkg/"
+      FileUtils.rm_rf("_temp_pkg")
+    rescue => error
+      puts "Unity build failed: #{error}"
     end
   end
 end
