@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Teak Unity Activity Build Script" default="all">
+
+    <!-- Config -->
+    <property file="build.config"/>
+
+    <!-- All -->
+    <target name="all" depends="android_native,unity" description="Full build"/>
+
+    <!-- Native Lib -->
+    <target name="android_native" description="Build Teak Android Library">
+        <exec executable="gradle" failonerror="true" dir="../../teak-android/">
+            <arg line="assemble"/>
+        </exec>
+
+        <mkdir dir="./androidtemp"/>
+        <copy file="../../teak-android/build/libs/teak.jar" tofile="./androidtemp/teak.jar" overwrite="true"/>
+    </target>
+
+    <!-- Unity JAR -->
+    <target name="unity" description="Build Unity Android Library">
+        <mkdir dir="./androidtemp/classes"/>
+
+        <javac target="1.6" source="1.6" srcdir="./src" destdir="./androidtemp/classes" includeantruntime="false" verbose="true">
+            <classpath>
+                <pathelement location="${android.sdk}/android.jar"/>
+                <pathelement location="${unity.sdk}/PlaybackEngines/AndroidPlayer/release/bin/classes.jar"/>
+                <pathelement location="./androidtemp/teak.jar"/>
+            </classpath>
+        </javac>
+
+        <mkdir dir="./androidtemp/zip"/>
+        <unzip src="./androidtemp/teak.jar" dest="./androidtemp/zip"/>
+        <copydir src="./androidtemp/zip/io" dest="./androidtemp/classes/io"/>
+
+        <jar basedir="./androidtemp/classes" destfile="../Assets/Plugins/Android/teak.jar"/>
+        <delete dir="./androidtemp"/>
+    </target>
+
+</project>
