@@ -203,6 +203,21 @@ public class TeakSettings : ScriptableObject
 #endif
     }
 
+    public static bool SimulateNotificationPayload
+    {
+        get { return Instance.mSimulateNotificationPayload; }
+#if UNITY_EDITOR
+        set
+        {
+            if(value != Instance.mSimulateNotificationPayload)
+            {
+                Instance.mSimulateNotificationPayload = value;
+                DirtyEditor();
+            }
+        }
+#endif
+    }
+
     public static string SimulatedTeakRewardId
     {
         get { return Instance.mSimulateTeakRewardId; }
@@ -244,6 +259,21 @@ public class TeakSettings : ScriptableObject
             if(rewardJson != Instance.mSimulatedTeakRewardJson)
             {
                 Instance.mSimulatedTeakRewardJson = rewardJson;
+            }
+        }
+#endif
+    }
+
+    public static string SimulatedNotificationPayloadJson
+    {
+        get { return Instance.mSimulatedNotificationPayloadJson; }
+#if UNITY_EDITOR
+        set
+        {
+            string valueTrim = value.Trim();
+            if(valueTrim != Instance.mSimulatedNotificationPayloadJson)
+            {
+                Instance.mSimulatedNotificationPayloadJson = valueTrim;
                 DirtyEditor();
             }
         }
@@ -253,6 +283,11 @@ public class TeakSettings : ScriptableObject
     public static RewardEntry[] RewardEntries
     {
         get { return Instance.mRewardEntries; }
+    }
+
+    public static StringStringPair[] NotificationPayloadEntries
+    {
+        get { return Instance.mNotificationPayloadEntries; }
     }
 
     public static StringStringPair[] DeepLinkParams
@@ -309,6 +344,7 @@ public class TeakSettings : ScriptableObject
         public string Value;
     }
     public StringStringPair[] mDeepLinkParams;
+    public StringStringPair[] mNotificationPayloadEntries;
 
     [SerializeField]
     private string mAppId = "";
@@ -323,6 +359,8 @@ public class TeakSettings : ScriptableObject
     [SerializeField]
     private bool mSimulateRewardReply = false;
     [SerializeField]
+    private bool mSimulateNotificationPayload = false;
+    [SerializeField]
     private string mSimulateTeakRewardId = "";
     [SerializeField]
     private TeakNotification.Reward.RewardStatus mSimulateTeakRewardStatus = TeakNotification.Reward.RewardStatus.GrantReward;
@@ -330,6 +368,8 @@ public class TeakSettings : ScriptableObject
     private string mSimulatedTeakRewardJson = "";
     [SerializeField]
     private string mSimulatedDeepLink = "";
+    [SerializeField]
+    private string mSimulatedNotificationPayloadJson = "";
 
 #if UNITY_EDITOR
     [SerializeField]
