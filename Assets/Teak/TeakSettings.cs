@@ -55,7 +55,9 @@ public class TeakSettings : ScriptableObject
                         teakSettingsAssetName + teakSettingsAssetExtension);
                     if(mInstance == null) throw new NullReferenceException("mInstance is null somehow");
                     if(String.IsNullOrEmpty(relativePath)) throw new ArgumentNullException("relativePath is null or empty somehow.");
+
                     AssetDatabase.CreateAsset(mInstance, relativePath);
+                    AssetDatabase.Refresh();
 #endif
                 }
             }
