@@ -248,7 +248,7 @@ public partial class Teak : MonoBehaviour
 #if UNITY_EDITOR
         if(TeakSettings.SimulateOpenedWithNotification)
         {
-            TeakNotification notif = TeakNotification.FromTeakNotifId("");
+            TeakNotification notif = TeakNotification.FromTeakNotifId("simulated");
             if(notif != null)
             {
                 // Send event
@@ -276,7 +276,7 @@ public partial class Teak : MonoBehaviour
 #elif UNITY_IPHONE
             string launchedFromTeakNotifId = Marshal.PtrToStringAnsi(TeakLaunchedFromTeakNotifId());
 #endif
-            if(launchedFromTeakNotifId != null)
+            if(!string.IsNullOrEmpty(launchedFromTeakNotifId))
             {
                 TeakNotification notif = TeakNotification.FromTeakNotifId(launchedFromTeakNotifId);
                 if(notif != null)

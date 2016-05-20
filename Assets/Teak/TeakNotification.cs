@@ -58,7 +58,14 @@ public partial class TeakNotification
         }
 #endif
 
+        ret.mTeakNotifId = teakNotifId;
+
         return ret;
+    }
+
+    public string TeakNotifId
+    {
+        get { return mTeakNotifId; }
     }
 
     public bool HasReward
@@ -73,6 +80,33 @@ public partial class TeakNotification
             return TeakNotificationHasReward(mTeakNotification);
 #endif
         }
+    }
+
+    public Dictionary<string, object> UserData
+    {
+        get
+        {
+            // TODO: Native->C# user data conversion
+#if UNITY_EDITOR
+            return new Dictionary<string, object>();
+#elif UNITY_ANDROID
+            return new Dictionary<string, object>();
+#elif UNITY_IOS
+            return new Dictionary<string, object>();
+#endif
+        }
+    }
+
+    public override string ToString()
+    {
+        // Funny space formatting since the Unity editor doesn't use a fixed width font
+        return string.Format(
+@"TeakNotification {{
+    TeakNotifId : '{0}',
+    HasReward  : '{1}',
+    UserData     : '{2}'
+}}",
+            this.TeakNotifId, this.HasReward, this.UserData);
     }
 
     public IEnumerator ConsumeNotification(System.Action<Reward> callback)
@@ -247,6 +281,9 @@ public partial class TeakNotification
         private IntPtr mReward;
 #endif
     }
+
+    string mTeakNotifId;
+
 #if UNITY_EDITOR
     private TeakNotification()
     {
