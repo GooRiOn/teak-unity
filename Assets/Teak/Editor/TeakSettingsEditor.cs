@@ -117,7 +117,7 @@ public class TeakSettingsEditor : Editor
         }
 
         EditorGUILayout.Space();
-        GUILayout.Label("Development Tools", EditorStyles.boldLabel);
+        GUILayout.Label("Deep Linking Tools", EditorStyles.boldLabel);
 
         GUIContent simulateDeepLinkContent = new GUIContent("Simulate Deep Link [?]",  "When running the game in the Unity Editor, Teak will simulate that the app has been opened by deep linking.");
         TeakSettings.SimulateDeepLink = EditorGUILayout.ToggleLeft(simulateDeepLinkContent, TeakSettings.SimulateDeepLink, GUILayout.ExpandWidth(true));
@@ -157,7 +157,11 @@ public class TeakSettingsEditor : Editor
                 }
                 EditorGUILayout.HelpBox(String.Format("Deep Link Preview:\n{0}", TeakSettings.SimulatedDeepLink), MessageType.Info);
             }
+            EditorGUILayout.Space();
         }
+
+        EditorGUILayout.Space();
+        GUILayout.Label("Notification Tools", EditorStyles.boldLabel);
 
         GUIContent simulateOpenedWithNotificationContent = new GUIContent("Simulate Opening App via Notification [?]",  "When running the game in the Unity Editor, Teak will simulate that the app has been opened by a notification.");
         TeakSettings.SimulateOpenedWithNotification = EditorGUILayout.ToggleLeft(simulateOpenedWithNotificationContent, TeakSettings.SimulateOpenedWithNotification, GUILayout.ExpandWidth(true));
@@ -185,6 +189,7 @@ public class TeakSettingsEditor : Editor
                     }
                 }
 
+                GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));
             }
 
             GUIContent simulateRewardContent = new GUIContent("Simulate Teak Reward [?]",  "Simulate the Teak reward instead of querying the Teak service.");
@@ -214,6 +219,8 @@ public class TeakSettingsEditor : Editor
                         }
                     }
                 }
+
+                GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));
             }
             else
             {
