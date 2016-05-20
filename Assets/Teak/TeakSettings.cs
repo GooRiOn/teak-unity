@@ -71,12 +71,12 @@ public class TeakSettings : ScriptableObject
 #if UNITY_EDITOR
         set
         {
-            string appId = value.Trim();
-            if(appId != Instance.mAppId)
+            string valueTrim = value.Trim();
+            if(valueTrim != Instance.mAppId)
             {
                 Instance.mAppValid = false;
                 Instance.mAppStatus = "";
-                Instance.mAppId = appId;
+                Instance.mAppId = valueTrim;
                 DirtyEditor();
             }
         }
@@ -89,12 +89,12 @@ public class TeakSettings : ScriptableObject
 #if UNITY_EDITOR
         set
         {
-            string apiKey = value.Trim();
-            if(apiKey != Instance.mAPIKey)
+            string valueTrim = value.Trim();
+            if(valueTrim != Instance.mAPIKey)
             {
                 Instance.mAppValid = false;
                 Instance.mAppStatus = "";
-                Instance.mAPIKey = apiKey;
+                Instance.mAPIKey = valueTrim;
                 DirtyEditor();
             }
         }
@@ -107,12 +107,12 @@ public class TeakSettings : ScriptableObject
 #if UNITY_EDITOR
         set
         {
-            string gcmSenderId = value.Trim();
-            if(gcmSenderId != Instance.mGCMSenderId)
+            string valueTrim = value.Trim();
+            if(valueTrim != Instance.mGCMSenderId)
             {
                 Instance.mAppValid = false;
                 Instance.mAppStatus = "";
-                Instance.mGCMSenderId = gcmSenderId;
+                Instance.mGCMSenderId = valueTrim;
                 DirtyEditor();
             }
         }
@@ -140,10 +140,10 @@ public class TeakSettings : ScriptableObject
 #if UNITY_EDITOR
         set
         {
-            string appStatus = value.Trim();
-            if(appStatus != Instance.mAppStatus)
+            string valueTrim = value.Trim();
+            if(valueTrim != Instance.mAppStatus)
             {
-                Instance.mAppStatus = appStatus;
+                Instance.mAppStatus = valueTrim;
                 DirtyEditor();
             }
         }
@@ -167,10 +167,10 @@ public class TeakSettings : ScriptableObject
         get { return Instance.mSimulateDeepLinkEditorKey; }
         set
         {
-            string editorKey = value.Trim();
-            if(editorKey != Instance.mSimulateDeepLinkEditorKey)
+            string valueTrim = value.Trim();
+            if(valueTrim != Instance.mSimulateDeepLinkEditorKey)
             {
-                Instance.mSimulateDeepLinkEditorKey = editorKey;
+                Instance.mSimulateDeepLinkEditorKey = valueTrim;
                 DirtyEditor();
             }
         }
@@ -224,10 +224,10 @@ public class TeakSettings : ScriptableObject
 #if UNITY_EDITOR
         set
         {
-            string teakNotifId = value.Trim();
-            if(teakNotifId != Instance.mSimulateTeakRewardId)
+            string valueTrim = value.Trim();
+            if(valueTrim != Instance.mSimulateTeakRewardId)
             {
-                Instance.mSimulateTeakRewardId = teakNotifId;
+                Instance.mSimulateTeakRewardId = valueTrim;
                 DirtyEditor();
             }
         }
@@ -255,10 +255,11 @@ public class TeakSettings : ScriptableObject
 #if UNITY_EDITOR
         set
         {
-            string rewardJson = value.Trim();
-            if(rewardJson != Instance.mSimulatedTeakRewardJson)
+            string valueTrim = value.Trim();
+            if(valueTrim != Instance.mSimulatedTeakRewardJson)
             {
-                Instance.mSimulatedTeakRewardJson = rewardJson;
+                Instance.mSimulatedTeakRewardJson = valueTrim;
+                DirtyEditor();
             }
         }
 #endif
@@ -308,10 +309,10 @@ public class TeakSettings : ScriptableObject
 #if UNITY_EDITOR
         set
         {
-            string deepLink = value.Trim();
-            if(deepLink != Instance.mSimulatedDeepLink)
+            string valueTrim = value.Trim();
+            if(valueTrim != Instance.mSimulatedDeepLink)
             {
-                Instance.mSimulatedDeepLink = deepLink;
+                Instance.mSimulatedDeepLink = valueTrim;
                 DirtyEditor();
             }
         }
