@@ -48,15 +48,14 @@ public class TeakSettings : ScriptableObject
                     string properPath = Path.Combine(Application.dataPath, teakSettingsPath);
                     if (!Directory.Exists(properPath))
                     {
-                        AssetDatabase.CreateFolder("Assets/Teak", "Resources");
+                        AssetDatabase.CreateFolder(Application.dataPath, teakSettingsPath);
                     }
 
-                    string fullPath = Path.Combine(Path.Combine("Assets", teakSettingsPath),
-                                                   teakSettingsAssetName + teakSettingsAssetExtension
-                                                  );
+                    string relativePath = Path.Combine(Path.Combine("Assets", teakSettingsPath),
+                        teakSettingsAssetName + teakSettingsAssetExtension);
                     if(mInstance == null) throw new NullReferenceException("mInstance is null somehow");
-                    if(String.IsNullOrEmpty(fullPath)) throw new ArgumentNullException("fullPath is null or empty somehow.");
-                    AssetDatabase.CreateAsset(mInstance, fullPath);
+                    if(String.IsNullOrEmpty(relativePath)) throw new ArgumentNullException("relativePath is null or empty somehow.");
+                    AssetDatabase.CreateAsset(mInstance, relativePath);
 #endif
                 }
             }
