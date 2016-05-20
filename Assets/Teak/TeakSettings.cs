@@ -45,18 +45,12 @@ public class TeakSettings : ScriptableObject
                     // If not found, autocreate the asset object.
                     mInstance = CreateInstance<TeakSettings>();
 #if UNITY_EDITOR
-                    string properPath = Path.Combine(Application.dataPath, teakSettingsPath);
-                    if (!Directory.Exists(properPath))
-                    {
-                        AssetDatabase.CreateFolder(Application.dataPath, teakSettingsPath);
-                    }
+                    System.IO.Directory.CreateDirectory(Path.Combine(Application.dataPath, teakSettingsPath));
 
-                    string relativePath = Path.Combine(Path.Combine("Assets", teakSettingsPath),
-                        teakSettingsAssetName + teakSettingsAssetExtension);
-                    if(mInstance == null) throw new NullReferenceException("mInstance is null somehow");
-                    if(String.IsNullOrEmpty(relativePath)) throw new ArgumentNullException("relativePath is null or empty somehow.");
+                    AssetDatabase.CreateAsset(mInstance, Path.Combine(
+                        Path.Combine("Assets", teakSettingsPath),
+                            teakSettingsAssetName + teakSettingsAssetExtension));
 
-                    AssetDatabase.CreateAsset(mInstance, relativePath);
                     AssetDatabase.Refresh();
 #endif
                 }
