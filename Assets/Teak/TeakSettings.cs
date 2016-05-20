@@ -261,7 +261,7 @@ public class TeakSettings : ScriptableObject
         get { return Instance.mRewardEntries; }
     }
 
-    public static DeepLinkParam[] DeepLinkParams
+    public static StringStringPair[] DeepLinkParams
     {
         get { return Instance.mDeepLinkParams; }
 #if UNITY_EDITOR
@@ -310,11 +310,11 @@ public class TeakSettings : ScriptableObject
     public RewardEntry[] mRewardEntries;
 
     [Serializable]
-    public struct DeepLinkParam {
+    public struct StringStringPair {
         public string Key;
         public string Value;
     }
-    public DeepLinkParam[] mDeepLinkParams;
+    public StringStringPair[] mDeepLinkParams;
 
     [SerializeField]
     private string mAppId = "";

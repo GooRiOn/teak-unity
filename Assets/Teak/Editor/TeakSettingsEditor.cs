@@ -123,7 +123,7 @@ public class TeakSettingsEditor : Editor
                 int shouldBeLength = (selected.Regex.GetGroupNames().Length - 1);
                 if(TeakSettings.DeepLinkParams == null || TeakSettings.DeepLinkParams.Length != shouldBeLength)
                 {
-                    TeakSettings.DeepLinkParams = new TeakSettings.DeepLinkParam[shouldBeLength];
+                    TeakSettings.DeepLinkParams = new TeakSettings.StringStringPair[shouldBeLength];
                 }
 
                 int j = 0;
