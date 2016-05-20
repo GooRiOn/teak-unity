@@ -167,31 +167,6 @@ public class TeakSettingsEditor : Editor
         TeakSettings.SimulateOpenedWithNotification = EditorGUILayout.ToggleLeft(simulateOpenedWithNotificationContent, TeakSettings.SimulateOpenedWithNotification, GUILayout.ExpandWidth(true));
         if(TeakSettings.SimulateOpenedWithNotification)
         {
-            GUIContent simulatePayloadContent = new GUIContent("Simulate Payload [?]",  "Simulate the Notification payload.");
-            TeakSettings.SimulateNotificationPayload = EditorGUILayout.ToggleLeft(simulatePayloadContent, TeakSettings.SimulateNotificationPayload, GUILayout.ExpandWidth(true));
-            if(TeakSettings.SimulateNotificationPayload)
-            {
-                GUIContent simulateNotificationPayloadJsonContent = new GUIContent("Notification Payload [?]",  "The contents of the Notification payload.");
-                SerializedProperty notificationPayloadEntries = serializedObject.FindProperty("mNotificationPayloadEntries");
-                EditorGUI.BeginChangeCheck();
-                EditorGUILayout.PropertyField(notificationPayloadEntries, simulateNotificationPayloadJsonContent, true);
-                if(EditorGUI.EndChangeCheck())
-                {
-                    serializedObject.ApplyModifiedProperties();
-                    if(TeakSettings.NotificationPayloadEntries != null)
-                    {
-                        Dictionary<string, object> json = new Dictionary<string, object>();
-                        foreach(TeakSettings.StringStringPair entry in TeakSettings.NotificationPayloadEntries)
-                        {
-                            json[entry.Key] = entry.Value;
-                        }
-                        TeakSettings.SimulatedNotificationPayloadJson = Json.Serialize(json);
-                    }
-                }
-
-                GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));
-            }
-
             GUIContent simulateRewardContent = new GUIContent("Simulate Teak Reward [?]",  "Simulate the Teak reward instead of querying the Teak service.");
             TeakSettings.SimulateRewardReply = EditorGUILayout.ToggleLeft(simulateRewardContent, TeakSettings.SimulateRewardReply, GUILayout.ExpandWidth(true));
             if(TeakSettings.SimulateRewardReply)
@@ -219,8 +194,6 @@ public class TeakSettingsEditor : Editor
                         }
                     }
                 }
-
-                GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));
             }
             else
             {
