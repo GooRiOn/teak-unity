@@ -35,6 +35,12 @@ public class TeakSettingsEditor : Editor
 {
     static TeakSettingsEditor()
     {
+        EditorApplication.update += EditorRunOnceOnLoad;
+    }
+    static void EditorRunOnceOnLoad()
+    {
+        EditorApplication.update -= EditorRunOnceOnLoad;
+
         try
         {
             TeakLinkAttribute.ProcessAnnotatedMethods();
@@ -45,7 +51,6 @@ public class TeakSettingsEditor : Editor
         }
 
         OnScriptsReloaded();
-
         mAndroidFoldout = !String.IsNullOrEmpty(TeakSettings.GCMSenderId);
     }
 
@@ -74,6 +79,13 @@ public class TeakSettingsEditor : Editor
 
     public override void OnInspectorGUI()
     {
+        if(TeakLinkAttribute.EditorLinks != null && mPopupArrayEditorLinks == null)
+        {
+            // This prevents exceptions/crashes when the Teak settings are being inspected
+            // and the editor enters play-mode.
+            OnScriptsReloaded();
+        }
+
         GUILayout.Label("Settings", EditorStyles.boldLabel);
         TeakSettings.AppId = EditorGUILayout.TextField("Teak App Id", TeakSettings.AppId);
         TeakSettings.APIKey = EditorGUILayout.TextField("Teak API Key", TeakSettings.APIKey);
