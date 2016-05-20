@@ -159,9 +159,9 @@ public class TeakSettingsEditor : Editor
             }
         }
 
-        GUIContent simulateOpenedWithPushContent = new GUIContent("Simulate Opening App via Push Notification [?]",  "When running the game in the Unity Editor, Teak will simulate that the app has been opened by a push notification.");
-        TeakSettings.SimulateOpenedWithPush = EditorGUILayout.ToggleLeft(simulateOpenedWithPushContent, TeakSettings.SimulateOpenedWithPush, GUILayout.ExpandWidth(true));
-        if(TeakSettings.SimulateOpenedWithPush)
+        GUIContent simulateOpenedWithNotificationContent = new GUIContent("Simulate Opening App via Notification [?]",  "When running the game in the Unity Editor, Teak will simulate that the app has been opened by a notification.");
+        TeakSettings.SimulateOpenedWithNotification = EditorGUILayout.ToggleLeft(simulateOpenedWithNotificationContent, TeakSettings.SimulateOpenedWithNotification, GUILayout.ExpandWidth(true));
+        if(TeakSettings.SimulateOpenedWithNotification)
         {
             GUIContent simulateRewardContent = new GUIContent("Simulate Teak Reward [?]",  "Simulate the Teak reward instead of querying the Teak service.");
             TeakSettings.SimulateRewardReply = EditorGUILayout.ToggleLeft(simulateRewardContent, TeakSettings.SimulateRewardReply, GUILayout.ExpandWidth(true));

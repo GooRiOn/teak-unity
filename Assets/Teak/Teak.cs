@@ -246,7 +246,7 @@ public partial class Teak : MonoBehaviour
 #endif
 
 #if UNITY_EDITOR
-        if(TeakSettings.SimulateOpenedWithPush)
+        if(TeakSettings.SimulateOpenedWithNotification)
         {
             TeakNotification notif = TeakNotification.FromTeakNotifId("");
             if(notif != null)

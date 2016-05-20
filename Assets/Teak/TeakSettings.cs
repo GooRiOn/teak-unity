@@ -150,15 +150,11 @@ public class TeakSettings : ScriptableObject
 
     public static bool SimulateDeepLink
     {
-        get { return Instance.mSimulateDeepLink; }
+        get { return PlayerPrefs.GetInt("simulate_deep_link") == 1; }
 #if UNITY_EDITOR
         set
         {
-            if(value != Instance.mSimulateDeepLink)
-            {
-                Instance.mSimulateDeepLink = value;
-                DirtyEditor();
-            }
+            PlayerPrefs.SetInt("simulate_deep_link", value ? 1 : 0);
         }
 #endif
     }
@@ -179,17 +175,13 @@ public class TeakSettings : ScriptableObject
     }
 #endif
 
-    public static bool SimulateOpenedWithPush
+    public static bool SimulateOpenedWithNotification
     {
-        get { return Instance.mSimulateOpenedWithPush; }
+        get { return PlayerPrefs.GetInt("simulate_opened_with_notification") == 1; }
 #if UNITY_EDITOR
         set
         {
-            if(value != Instance.mSimulateOpenedWithPush)
-            {
-                Instance.mSimulateOpenedWithPush = value;
-                DirtyEditor();
-            }
+            PlayerPrefs.SetInt("simulate_opened_with_notification", value ? 1 : 0);
         }
 #endif
     }
@@ -326,10 +318,6 @@ public class TeakSettings : ScriptableObject
     private bool mAppValid = false;
     [SerializeField]
     private string mAppStatus = "";
-    [SerializeField]
-    private bool mSimulateDeepLink = false;
-    [SerializeField]
-    private bool mSimulateOpenedWithPush = false;
     [SerializeField]
     private bool mSimulateRewardReply = false;
     [SerializeField]
