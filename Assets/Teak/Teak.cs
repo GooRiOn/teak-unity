@@ -161,8 +161,8 @@ public partial class Teak : MonoBehaviour
     public delegate void LaunchedFromNotification(TeakNotification notif);
     public event LaunchedFromNotification OnLaunchedFromNotification;
 
-#if UNITY_ANDROID
     /// @cond hide_from_doxygen
+#if UNITY_ANDROID
     private void Prime31PurchaseSucceded<T>(T purchase)
     {
         PropertyInfo originalJson = purchase.GetType().GetProperty("originalJson");
@@ -198,8 +198,8 @@ public partial class Teak : MonoBehaviour
 
     [DllImport ("__Internal")]
     private static extern IntPtr TeakLaunchedFromTeakNotifId();
-    /// @endcond
 #endif
+    /// @endcond
 
     #region MonoBehaviour
     /// @cond hide_from_doxygen

@@ -37,32 +37,6 @@ using TeakEditor.MiniJSON;
 /// </summary>
 public partial class TeakNotification
 {
-    public static TeakNotification FromTeakNotifId(string teakNotifId)
-    {
-        TeakNotification ret = null;
-#if UNITY_EDITOR
-        ret = new TeakNotification();
-#elif UNITY_ANDROID
-        AndroidJavaClass teakNotification = new AndroidJavaClass("io.teak.sdk.TeakNotification");
-        AndroidJavaObject notif = teakNotification.CallStatic<AndroidJavaObject>("byTeakNotifId", teakNotifId);
-
-        if(notif != null)
-        {
-            ret = new TeakNotification(notif);
-        }
-#elif UNITY_IOS
-        IntPtr notif = TeakNotificationFromTeakNotifId(teakNotifId);
-        if(notif != IntPtr.Zero)
-        {
-            ret = new TeakNotification(notif);
-        }
-#endif
-
-        ret.mTeakNotifId = teakNotifId;
-
-        return ret;
-    }
-
     public string TeakNotifId
     {
         get { return mTeakNotifId; }
@@ -95,18 +69,6 @@ public partial class TeakNotification
             return new Dictionary<string, object>();
 #endif
         }
-    }
-
-    public override string ToString()
-    {
-        // Funny space formatting since the Unity editor doesn't use a fixed width font
-        return string.Format(
-@"TeakNotification {{
-    TeakNotifId : '{0}',
-    HasReward  : '{1}',
-    UserData     : '{2}'
-}}",
-            this.TeakNotifId, this.HasReward, this.UserData);
     }
 
     public IEnumerator ConsumeNotification(System.Action<Reward> callback)
@@ -282,6 +244,57 @@ public partial class TeakNotification
 #endif
     }
 
+    // Returns an id that can be used to cancel a scheduled notification
+    public static string ScheduleNotification(string creativeId, string defaultMessage, long delayInSeconds)
+    {
+        return "temporary-code-notification-id";
+    }
+
+    // Cancel an existing notification
+    public static bool CancelScheduledNotification(string scheduleId)
+    {
+        return true;
+    }
+
+    /// @cond hide_from_doxygen
+    public static TeakNotification FromTeakNotifId(string teakNotifId)
+    {
+        TeakNotification ret = null;
+#if UNITY_EDITOR
+        ret = new TeakNotification();
+#elif UNITY_ANDROID
+        AndroidJavaClass teakNotification = new AndroidJavaClass("io.teak.sdk.TeakNotification");
+        AndroidJavaObject notif = teakNotification.CallStatic<AndroidJavaObject>("byTeakNotifId", teakNotifId);
+
+        if(notif != null)
+        {
+            ret = new TeakNotification(notif);
+        }
+#elif UNITY_IOS
+        IntPtr notif = TeakNotificationFromTeakNotifId(teakNotifId);
+        if(notif != IntPtr.Zero)
+        {
+            ret = new TeakNotification(notif);
+        }
+#endif
+
+        ret.mTeakNotifId = teakNotifId;
+
+        return ret;
+    }
+
+    public override string ToString()
+    {
+        // Funny space formatting since the Unity editor doesn't use a fixed width font
+        return string.Format(
+@"TeakNotification {{
+    TeakNotifId : '{0}',
+    HasReward  : '{1}',
+    UserData     : '{2}'
+}}",
+            this.TeakNotifId, this.HasReward, this.UserData);
+    }
+
     string mTeakNotifId;
 
 #if UNITY_EDITOR
@@ -320,4 +333,5 @@ public partial class TeakNotification
     }
     IntPtr mTeakNotification;
 #endif
+    /// @endcond
 }
