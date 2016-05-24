@@ -41,10 +41,8 @@ public class TeakPackageBuilder : Editor
 
     static TeakPackageBuilder()
     {
-        UnityEngine.Debug.Log("TeakPackageBuilder()");
         if(!File.Exists(TeakPackageBuilder.TeakVersionFile))
         {
-            UnityEngine.Debug.Log("Generating new version file.");
             GenerateVersionFile();
         }
     }
