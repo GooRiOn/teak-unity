@@ -20,13 +20,13 @@ using UnityEngine;
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 #if UNITY_EDITOR
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Collections.Generic;
 
 using TeakEditor.MiniJSON;
 #endif
