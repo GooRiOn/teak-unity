@@ -14,6 +14,8 @@
  */
 package io.teak.sdk;
 
+import android.util.Log;
+
 import android.os.Bundle;
 import android.content.Intent;
 
@@ -22,8 +24,7 @@ import com.unity3d.player.UnityPlayerNativeActivity;
 public class TeakUnityPlayerNativeActivity extends UnityPlayerNativeActivity
 {
     @Override
-    protected void onCreate (Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         Teak.onCreate(this);
         super.onCreate(savedInstanceState);
     }
