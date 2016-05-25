@@ -17,17 +17,26 @@ public class MainMenu : MonoBehaviour
         teakUserId = SystemInfo.deviceUniqueIdentifier;
         teakSdkVersion = "Teak SDK Version: " + Teak.Version;
 
-#if UNITY_EDITOR
-        Teak.Instance.NavigateToDeepLink();
-#else
+#if !UNITY_EDITOR
         FB.Init(() => {
             Debug.Log("Facebook initialized.");
-            Teak.Instance.NavigateToDeepLink();
         });
 #endif
+
         Teak.Instance.IdentifyUser(teakUserId);
         Teak.Instance.OnLaunchedFromNotification += OnLaunchedFromNotification;
-        Teak.Instance.TrackEvent("foo", "bar", "baz");
+    }
+
+    void OnApplicationPause(bool isPaused)
+    {
+        if(isPaused)
+        {
+            // Pause
+        }
+        else
+        {
+            Teak.Instance.NavigateToDeepLink();
+        }
     }
 
     [TeakLink("/store/:page/:sku")]
