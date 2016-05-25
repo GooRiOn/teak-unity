@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 #region License
 /* Teak -- Copyright (C) 2016 GoCarrot Inc.
  *
@@ -21,12 +20,16 @@ using System;
 using System.IO;
 
 using UnityEngine;
-using UnityEditor;
 
+#if UNITY_EDITOR
+using UnityEditor;
 using TeakEditor;
+#endif
 #endregion
 
+#if UNITY_EDITOR
 [InitializeOnLoad]
+#endif
 public class TeakSettings : ScriptableObject
 {
     const string teakSettingsAssetName = "TeakSettings";
@@ -277,6 +280,22 @@ public class TeakSettings : ScriptableObject
 #endif
     }
 
+    public static string TeakLinkMethods
+    {
+        get { return Instance.mTeakLinkMethods; }
+#if UNITY_EDITOR
+        set
+        {
+            string valueTrim = value.Trim();
+            if(valueTrim != Instance.mTeakLinkMethods)
+            {
+                Instance.mTeakLinkMethods = valueTrim;
+                DirtyEditor();
+            }
+        }
+#endif
+    }
+
 #if UNITY_EDITOR
     [MenuItem("Edit/Teak")]
     public static void Edit()
@@ -324,6 +343,8 @@ public class TeakSettings : ScriptableObject
     private string mSimulatedTeakRewardJson = "";
     [SerializeField]
     private string mSimulatedDeepLink = "";
+    [SerializeField]
+    private string mTeakLinkMethods = "";
 
 #if UNITY_EDITOR
     [SerializeField]
@@ -332,4 +353,3 @@ public class TeakSettings : ScriptableObject
 
     private static TeakSettings mInstance;
 }
-#endif

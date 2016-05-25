@@ -19,10 +19,12 @@
 using UnityEngine;
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Runtime.Serialization.Formatters.Binary;
 #endregion
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
@@ -81,6 +83,25 @@ public class TeakLinkAttribute : System.Attribute
     {
         get;
         set;
+    }
+
+    public static void LoadDeepLinks(bool noValidate = true)
+    {
+        List<MethodInfo> methods = null;
+        byte[] bytes = Convert.FromBase64String(TeakSettings.TeakLinkMethods);
+        using(var ms = new MemoryStream(bytes, 0, bytes.Length))
+        {
+            ms.Write(bytes, 0, bytes.Length);
+            ms.Position = 0;
+            methods = new BinaryFormatter().Deserialize(ms) as List<MethodInfo>;
+        }
+
+        TeakLinkAttribute.Links = new Dictionary<Regex, TeakLinkAttribute>();
+
+        foreach(MethodInfo entry in methods)
+        {
+            ValidateAnnotations(entry, noValidate);
+        }
     }
 
     public static bool ProcessUri(Uri uri)
@@ -157,32 +178,36 @@ public class TeakLinkAttribute : System.Attribute
         return false;
     }
 
+#if UNITY_EDITOR
     public static void ProcessAnnotatedMethods()
     {
-        TeakLinkAttribute.Links = new Dictionary<Regex, TeakLinkAttribute>();
-
         Assembly a = typeof(TeakLinkAttribute).Assembly;
         //var assemblies = AppDomain.CurrentDomain.GetAssemblies();
         //foreach (var a in assemblies)
         //{
-            MethodInfo[] methods = a.GetTypes()
+            List<MethodInfo> methods = a.GetTypes()
                       .SelectMany(t => t.GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
                       .Where(m => m.GetCustomAttributes(typeof(TeakLinkAttribute), false).Length > 0)
-                      .ToArray();
-            foreach(MethodInfo entry in methods)
-            {
-                ValidateAnnotations(entry);
-            }
-#if UNITY_EDITOR
-            TeakLinkAttribute.EditorLinks = TeakLinkAttribute.Links
-                .OrderByDescending(l => l.Value.Url)
-                .Select(l => l.Value)
-                .ToDictionary(l => l.Url.Replace("/", "\u2215")); // For Unity Editor
-#endif
-        //}
-    }
+                      .ToList();
 
-    private static void ValidateAnnotations(MethodInfo method)
+            using(var ms = new MemoryStream())
+            {
+                new BinaryFormatter().Serialize(ms, methods);
+                TeakSettings.TeakLinkMethods = Convert.ToBase64String(ms.ToArray());
+            }
+
+            // Use in-game functionality for consistency
+            LoadDeepLinks(false);
+        //}
+
+        TeakLinkAttribute.EditorLinks = TeakLinkAttribute.Links
+            .OrderByDescending(l => l.Value.Url)
+            .Select(l => l.Value)
+            .ToDictionary(l => l.Url.Replace("/", "\u2215")); // For Unity Editor
+    }
+#endif
+
+    private static void ValidateAnnotations(MethodInfo method, bool noValidate = false)
     {
         Dictionary<string, ParameterInfo> methodParams = method.GetParameters()
             .ToDictionary(m => m.Name);
@@ -195,6 +220,7 @@ public class TeakLinkAttribute : System.Attribute
             string pattern = escape.Replace(link.Url, (Match m) => {
                 return Regex.Escape(m.Value);
             });
+
 
             List<string> dupeCheck = new List<string>();
             Regex compile = new Regex(@"((:\w+)|\*)");
@@ -209,37 +235,43 @@ public class TeakLinkAttribute : System.Attribute
                 return String.Format("(?<{0}>[^/?#]+)", m.Value.Substring(1));
             });
 
-            // Check for duplicate capture group names
-            List<string> duplicates = dupeCheck
-                .GroupBy(i => i)
-                .Where(g => g.Count() > 1)
-                .Select(g => g.Key)
-                .ToList();
-            if(duplicates.Count() > 0)
+            if(!noValidate)
             {
-                throw new ArgumentException(String.Format("Duplicate variable name '{0}'.\nMethod: {1}", duplicates[0], DebugStringForMethodInfo(method)));
+                // Check for duplicate capture group names
+                List<string> duplicates = dupeCheck
+                    .GroupBy(i => i)
+                    .Where(g => g.Count() > 1)
+                    .Select(g => g.Key)
+                    .ToList();
+                if(duplicates.Count() > 0)
+                {
+                    throw new ArgumentException(String.Format("Duplicate variable name '{0}'.\nMethod: {1}", duplicates[0], DebugStringForMethodInfo(method)));
+                }
             }
 
             link.Regex = new Regex(pattern);
             link.MethodParams = methodParams;
             link.MethodInfo = method;
 
-            // Check for special case where method has only one parameter named 'params' of type Dictionary<string, object>
-            if(link.MethodParams.ContainsKey("parameters"))
+            if(!noValidate)
             {
-                if(link.MethodParams["parameters"].ParameterType != typeof(Dictionary<string, object>))
+                // Check for special case where method has only one parameter named 'params' of type Dictionary<string, object>
+                if(link.MethodParams.ContainsKey("parameters"))
                 {
-                    throw new ArgumentException(String.Format("Parameter passing by 'parameters' must use type Dictionary<string, object>.\nMethod: {0}", DebugStringForMethodInfo(method)));
-                }
-            }
-            else
-            {
-                foreach(string groupName in link.Regex.GetGroupNames())
-                {
-                    if(groupName == "0") continue;
-                    if(!link.MethodParams.ContainsKey(groupName))
+                    if(link.MethodParams["parameters"].ParameterType != typeof(Dictionary<string, object>))
                     {
-                        throw new ArgumentException(String.Format("TeakLink missing parameter name '{0}'\nMethod: {1}", groupName, DebugStringForMethodInfo(method)));
+                        throw new ArgumentException(String.Format("Parameter passing by 'parameters' must use type Dictionary<string, object>.\nMethod: {0}", DebugStringForMethodInfo(method)));
+                    }
+                }
+                else
+                {
+                    foreach(string groupName in link.Regex.GetGroupNames())
+                    {
+                        if(groupName == "0") continue;
+                        if(!link.MethodParams.ContainsKey(groupName))
+                        {
+                            throw new ArgumentException(String.Format("TeakLink missing parameter name '{0}'\nMethod: {1}", groupName, DebugStringForMethodInfo(method)));
+                        }
                     }
                 }
             }
@@ -259,28 +291,31 @@ public class TeakLinkAttribute : System.Attribute
                 throw new NotSupportedException(String.Format("Method must be declared 'static' if it is not on a MonoBehaviour.\nMethod: {0}", DebugStringForMethodInfo(method)));
             }
 
-            // Check for duplicate routes
-            string dupeRouteCheck = link.Url;
-            foreach(string groupName in link.Regex.GetGroupNames())
+            if(!noValidate)
             {
-                if(groupName == "0") continue;
-                dupeRouteCheck = dupeRouteCheck.Replace(String.Format(":{0}", groupName), "");
-            }
-
-            foreach(KeyValuePair<Regex, TeakLinkAttribute> entry in TeakLinkAttribute.Links)
-            {
-                string emptyVarRoute = entry.Value.Url;
-                foreach(string groupName in entry.Key.GetGroupNames())
+                // Check for duplicate routes
+                string dupeRouteCheck = link.Url;
+                foreach(string groupName in link.Regex.GetGroupNames())
                 {
                     if(groupName == "0") continue;
-                    emptyVarRoute = emptyVarRoute.Replace(String.Format(":{0}", groupName), "");
+                    dupeRouteCheck = dupeRouteCheck.Replace(String.Format(":{0}", groupName), "");
                 }
 
-                if(emptyVarRoute == dupeRouteCheck)
+                foreach(KeyValuePair<Regex, TeakLinkAttribute> entry in TeakLinkAttribute.Links)
                 {
-                    throw new ArgumentException(String.Format("TeakLink route for method {0}({1}) conflicts with route for method: {2}({3})",
-                        DebugStringForMethodInfo(link.MethodInfo), link.Url,
-                        DebugStringForMethodInfo(entry.Value.MethodInfo), entry.Value.Url));
+                    string emptyVarRoute = entry.Value.Url;
+                    foreach(string groupName in entry.Key.GetGroupNames())
+                    {
+                        if(groupName == "0") continue;
+                        emptyVarRoute = emptyVarRoute.Replace(String.Format(":{0}", groupName), "");
+                    }
+
+                    if(emptyVarRoute == dupeRouteCheck)
+                    {
+                        throw new ArgumentException(String.Format("TeakLink route for method {0}({1}) conflicts with route for method: {2}({3})",
+                            DebugStringForMethodInfo(link.MethodInfo), link.Url,
+                            DebugStringForMethodInfo(entry.Value.MethodInfo), entry.Value.Url));
+                    }
                 }
             }
 

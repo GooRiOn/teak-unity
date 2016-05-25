@@ -141,20 +141,27 @@ public partial class Teak : MonoBehaviour
             }
         }
 #else
-        FB.GetDeepLink((FBResult result) => {
-            if(!String.IsNullOrEmpty(result.Text))
+
+#   if UNITY_ANDROID
+        AndroidJavaClass teak = new AndroidJavaClass("io.teak.sdk.Teak");
+        string deepLink = teak.GetStatic<string>("launchedFromDeepLink");
+#   elif UNITY_IPHONE
+        string deepLink = null; // TODO: iOS
+#   else
+        string deepLink = null;
+#endif
+        if(!String.IsNullOrEmpty(deepLink))
+        {
+            try
             {
-                try
-                {
-                    Uri deepLinkUri = new Uri(result.Text);
-                    TeakLinkAttribute.ProcessUri(deepLinkUri);
-                }
-                catch(Exception e)
-                {
-                    Debug.LogError(e.ToString());
-                }
+                Uri deepLinkUri = new Uri(deepLink);
+                TeakLinkAttribute.ProcessUri(deepLinkUri);
             }
-        });
+            catch(Exception e)
+            {
+                Debug.LogError(e.ToString());
+            }
+        }
 #endif
     }
 
@@ -206,7 +213,7 @@ public partial class Teak : MonoBehaviour
     void Awake()
     {
         Debug.Log("Teak SDK Version: " + Teak.Version);
-        TeakLinkAttribute.ProcessAnnotatedMethods();
+        TeakLinkAttribute.LoadDeepLinks();
         DontDestroyOnLoad(this);
     }
 
