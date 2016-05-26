@@ -124,16 +124,22 @@ public partial class Teak : MonoBehaviour
     /// In the Unity Editor, this function will navigate to the destination in Simulate Deep Link
     /// in the Teak settings (if applicable).
     /// </remarks>
-    public void NavigateToDeepLink()
+    public string NavigateToDeepLink()
     {
+        string ret = null;
+
 #if UNITY_EDITOR
         if(TeakSettings.SimulateDeepLink &&
             !String.IsNullOrEmpty(TeakSettings.SimulatedDeepLink))
         {
             try
             {
-                Uri deepLinkUri = new Uri(String.Format("unityeditor:/{0}", TeakSettings.SimulatedDeepLink));
-                TeakLinkAttribute.ProcessUri(deepLinkUri);
+                string deepLink = String.Format("unityeditor:/{0}", TeakSettings.SimulatedDeepLink);
+                Uri deepLinkUri = new Uri(deepLink);
+                if(TeakLinkAttribute.ProcessUri(deepLinkUri))
+                {
+                    ret = deepLink;
+                }
             }
             catch(Exception e)
             {
@@ -146,16 +152,20 @@ public partial class Teak : MonoBehaviour
         AndroidJavaClass teak = new AndroidJavaClass("io.teak.sdk.Teak");
         string deepLink = teak.GetStatic<string>("launchedFromDeepLink");
 #   elif UNITY_IPHONE
-        string deepLink = null; // TODO: iOS
+        string deepLink = Marshal.PtrToStringAnsi(TeakLaunchedFromDeepLink());
 #   else
         string deepLink = null;
 #endif
         if(!String.IsNullOrEmpty(deepLink))
         {
+            Debug.Log("[Teak] Trying deep link: " + deepLink);
             try
             {
                 Uri deepLinkUri = new Uri(deepLink);
-                TeakLinkAttribute.ProcessUri(deepLinkUri);
+                if(TeakLinkAttribute.ProcessUri(deepLinkUri))
+                {
+                    ret = deepLink;
+                }
             }
             catch(Exception e)
             {
@@ -163,6 +173,7 @@ public partial class Teak : MonoBehaviour
             }
         }
 #endif
+        return ret;
     }
 
     public delegate void LaunchedFromNotification(TeakNotification notif);
@@ -205,6 +216,9 @@ public partial class Teak : MonoBehaviour
 
     [DllImport ("__Internal")]
     private static extern IntPtr TeakLaunchedFromTeakNotifId();
+
+    [DllImport ("__Internal")]
+    private static extern IntPtr TeakLaunchedFromDeepLink();
 #endif
     /// @endcond
 

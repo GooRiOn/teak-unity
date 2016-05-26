@@ -18,6 +18,7 @@ extern const char* AppControllerClassName;
 
 // From TeakHooks.m
 extern void Teak_Plant(Class appDelegateClass, NSString* appId, NSString* appSecret);
+extern void TeakSetDebugOutputEnabled(int enabled);
 
 __attribute__((constructor))
 static void teak_init()
@@ -25,4 +26,7 @@ static void teak_init()
    NSString* appId = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TeakAppId"];
    NSString* apiKey = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TeakApiKey"];
    Teak_Plant(NSClassFromString([NSString stringWithUTF8String:AppControllerClassName]), appId, apiKey);
+
+   // Uncomment the subsequent line to enable debug output from the native Teak lib
+   //TeakSetDebugOutputEnabled(1);
 }
