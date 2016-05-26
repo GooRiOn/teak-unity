@@ -11,6 +11,7 @@ public class MainMenu : MonoBehaviour
 #endif
     string teakUserId = null;
     string teakSdkVersion = null;
+    string teakDeepLinkLaunch = null;
 
     void Start()
     {
@@ -35,7 +36,15 @@ public class MainMenu : MonoBehaviour
         }
         else
         {
-            Teak.Instance.NavigateToDeepLink();
+            string deepLink = Teak.Instance.NavigateToDeepLink();
+            if(!string.IsNullOrEmpty(deepLink))
+            {
+                teakDeepLinkLaunch = "Deep Link: " + deepLink;
+            }
+            else
+            {
+                teakDeepLinkLaunch = null;
+            }
         }
     }
 
@@ -101,6 +110,7 @@ public class MainMenu : MonoBehaviour
 
         GUILayout.Label(teakSdkVersion);
         GUILayout.Label(teakUserId);
+        GUILayout.Label(teakDeepLinkLaunch);
 
         // FB Login
         if(FB.IsLoggedIn)
