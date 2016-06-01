@@ -25,9 +25,6 @@ public class TeakUnityPlayerNativeActivity extends UnityPlayerNativeActivity
 {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // TODO: Only in development mode?
-        Teak.qaInterface = new TeakUnityQAInterface();
-
         Teak.onCreate(this);
         super.onCreate(savedInstanceState);
     }

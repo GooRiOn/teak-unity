@@ -19,7 +19,6 @@
 using UnityEngine;
 
 using System;
-using System.Net;
 using System.Text;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -227,39 +226,6 @@ public partial class Teak : MonoBehaviour
     [DllImport ("__Internal")]
     private static extern IntPtr TeakLaunchedFromDeepLink();
 #endif
-
-    void RemoteQAEvent(string eventJson)
-    {
-        if(string.IsNullOrEmpty(eventJson)) return;
-
-        //Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        object sock = Activator.CreateInstance(_socketType, Enum.Parse(_addressFamilyType, "InterNetwork"), Enum.Parse(_socketTypeType, "Dgram"), Enum.Parse(_protocolTypeType, "Udp"));
-
-        IPEndPoint iep = new IPEndPoint(IPAddress.Broadcast, 9050);
-        byte[] data = Encoding.ASCII.GetBytes(eventJson);
-
-        //sock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
-        _socket_SetSocketOption.Invoke(sock, new object [] { Enum.Parse(_socketOptionLevelType, "Socket"), Enum.Parse(_socketOptionNameType, "Broadcast"), 1 });
-
-        //sock.SendTo(data, iep);
-        _socket_SendTo.Invoke(sock, new object [] { data, iep });
-
-        //sock.Close();
-        _socket_Close.Invoke(sock, null);
-    }
-
-    void BroadcastRemoteQA()
-    {
-#if UNITY_EDITOR
-        string clientId = null;
-#elif UNITY_ANDROID
-        AndroidJavaClass teak = new AndroidJavaClass("io.teak.sdk.TeakUnityQAInterface");
-        string clientId = teak.CallStatic<string>("getClientIdentifier");
-#elif UNITY_IPHONE
-        string clientId = null; // TODO
-#endif
-        RemoteQAEvent(clientId);
-    }
     /// @endcond
 
     #region MonoBehaviour
@@ -273,19 +239,6 @@ public partial class Teak : MonoBehaviour
 
     void Start()
     {
-        if(Debug.isDebugBuild)
-        {
-            SetupForRemoteQA();
-            //StartCoroutine("BroadcastRemoteQA");
-            InvokeRepeating("BroadcastRemoteQA", 0f, 2.0f);
-#if UNITY_EDITOR
-#elif UNITY_ANDROID
-            AndroidJavaClass teak = new AndroidJavaClass("io.teak.sdk.TeakUnityQAInterface");
-            teak.CallStatic("sendEventBacklog");
-#elif UNITY_IPHONE
-#endif
-        }
-
 #if UNITY_ANDROID
         // Try and find an active store plugin
         if(Type.GetType("OpenIABEventManager, Assembly-CSharp-firstpass") != null)
