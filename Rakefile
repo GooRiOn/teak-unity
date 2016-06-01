@@ -52,3 +52,34 @@ namespace :unity do
     end
   end
 end
+
+desc "Build Native Android Unity Library"
+task :android => "android:build"
+namespace :android do
+  task :build do
+    begin
+      Dir.chdir('AndroidLibBuild') do
+        sh "ant"
+      end
+    rescue => error
+      puts "Native Android Unity Library build failed: #{error}"
+    end
+  end
+end
+
+desc "Build Native iOS Unity Library"
+task :ios => "ios:build"
+namespace :ios do
+  task :build do
+    begin
+      Dir.chdir('../teak-ios') do
+        sh "xcodebuild -project Teak.xcodeproj -sdk iphoneos -scheme Teak -configuration Release CONFIGURATION_BUILD_DIR=./build"
+        Dir.chdir('build') do
+          FileUtils.cp "libTeak.a", "../../teak-unity/Assets/Teak/Plugins/iOS/"
+        end
+      end
+    rescue => error
+      puts "Native Android Unity Library build failed: #{error}"
+    end
+  end
+end
