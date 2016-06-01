@@ -29,7 +29,8 @@ public class TeakPostProcessBuild
     [PostProcessBuild(100)]
     public static void OnPostprocessBuild(BuildTarget target, string pathToBuildProject)
     {
-#if UNITY_IPHONE
+        if(target != BuildTarget.iPhone) return;
+
         string objCPath = Application.dataPath + "/Teak/Plugins/iOS";
         Process proc = new Process();
         proc.StartInfo.FileName = "python";
@@ -43,6 +44,5 @@ public class TeakPostProcessBuild
         if(!String.IsNullOrEmpty(errors))
             UnityEngine.Debug.LogError(errors);
         proc.WaitForExit();
-#endif
     }
 }
