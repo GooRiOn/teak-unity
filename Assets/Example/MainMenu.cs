@@ -12,6 +12,7 @@ public class MainMenu : MonoBehaviour
     string teakUserId = null;
     string teakSdkVersion = null;
     string teakDeepLinkLaunch = null;
+    string teakScheduledNotification = null;
 
     void Start()
     {
@@ -79,7 +80,7 @@ public class MainMenu : MonoBehaviour
         Debug.Log("Launched from Teak Notification: " + notif);
         if(notif.HasReward)
         {
-            StartCoroutine(notif.ConsumeNotification((TeakNotification.Reward reward) =>{
+            StartCoroutine(notif.ConsumeNotification((TeakNotification.Reward reward) => {
                 Debug.Log("Got Reward, status: " + reward.Status);
                 if(reward.Status == TeakNotification.Reward.RewardStatus.GrantReward)
                 {
@@ -112,19 +113,6 @@ public class MainMenu : MonoBehaviour
         GUILayout.Label(teakUserId);
         GUILayout.Label(teakDeepLinkLaunch);
 
-        // FB Login
-        if(FB.IsLoggedIn)
-        {
-            GUILayout.Label("Facebook UserId: " + FB.UserId);
-        }
-        else
-        {
-            if(GUILayout.Button("Login With Facebook", GUILayout.Height(buttonHeight)))
-            {
-                FB.Login("public_profile,email,user_friends");
-            }
-        }
-
 #if UNITY_IOS
         if(pushTokenString != null)
         {
@@ -138,6 +126,37 @@ public class MainMenu : MonoBehaviour
             }
         }
 #endif
+
+        if(FB.IsLoggedIn)
+        {
+            GUILayout.Label("Facebook UserId: " + FB.UserId);
+        }
+        else
+        {
+            if(GUILayout.Button("Login With Facebook", GUILayout.Height(buttonHeight)))
+            {
+                FB.Login("public_profile,email,user_friends");
+            }
+        }
+
+        if(teakScheduledNotification == null)
+        {
+            if(GUILayout.Button("Schedule Notification", GUILayout.Height(buttonHeight)))
+            {
+                StartCoroutine(TeakNotification.ScheduleNotification("test", "Test notification", 10, (string scheduleId) => {
+                    teakScheduledNotification = scheduleId;
+                }));
+            }
+        }
+        else
+        {
+            if(GUILayout.Button("Cancel Notification " + teakScheduledNotification, GUILayout.Height(buttonHeight)))
+            {
+                StartCoroutine(TeakNotification.CancelScheduledNotification(teakScheduledNotification, (string scheduleId) => {
+                    teakScheduledNotification = null;
+                }));
+            }
+        }
 
         GUILayout.EndArea();
     }

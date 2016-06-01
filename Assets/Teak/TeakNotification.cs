@@ -245,15 +245,53 @@ public partial class TeakNotification
     }
 
     // Returns an id that can be used to cancel a scheduled notification
-    public static string ScheduleNotification(string creativeId, string defaultMessage, long delayInSeconds)
+    public static IEnumerator ScheduleNotification(string creativeId, string defaultMessage, long delayInSeconds, System.Action<string> callback)
     {
-        return "temporary-code-notification-id";
+        string ret = null;
+#if UNITY_EDITOR
+        yield return null;
+#elif UNITY_ANDROID
+        AndroidJavaClass teakNotification = new AndroidJavaClass("io.teak.sdk.TeakNotification");
+        AndroidJavaObject future = teakNotification.CallStatic<AndroidJavaObject>("scheduleNotification", creativeId, defaultMessage, delayInSeconds);
+        if(future != null)
+        {
+            while(!future.Call<bool>("isDone")) yield return null;
+            ret = future.Call<string>("get");
+        }
+#elif UNITY_IPHONE
+        IntPtr notif = TeakNotificationSchedule(creativeId, defaultMessage, delayInSeconds);
+        if(notif != IntPtr.Zero)
+        {
+            while(!TeakNotificationIsCompleted(notif)) yield return null;
+            ret = Marshal.PtrToStringAnsi(TeakNotificationGetTeakNotifId(notif));
+        }
+#endif
+        callback(string.IsNullOrEmpty(ret) ? null : ret);
     }
 
     // Cancel an existing notification
-    public static bool CancelScheduledNotification(string scheduleId)
+    public static IEnumerator CancelScheduledNotification(string scheduleId, System.Action<string> callback)
     {
-        return true;
+        string ret = null;
+#if UNITY_EDITOR
+        yield return null;
+#elif UNITY_ANDROID
+        AndroidJavaClass teakNotification = new AndroidJavaClass("io.teak.sdk.TeakNotification");
+        AndroidJavaObject future = teakNotification.CallStatic<AndroidJavaObject>("cancelNotification", scheduleId);
+        if(future != null)
+        {
+            while(!future.Call<bool>("isDone")) yield return null;
+            ret = future.Call<string>("get");
+        }
+#elif UNITY_IPHONE
+        IntPtr notif = TeakNotificationCancel(scheduleId);
+        if(notif != IntPtr.Zero)
+        {
+            while(!TeakNotificationIsCompleted(notif)) yield return null;
+            ret = Marshal.PtrToStringAnsi(TeakNotificationGetTeakNotifId(notif));
+        }
+#endif
+        callback(string.IsNullOrEmpty(ret) ? null : ret);
     }
 
     /// @cond hide_from_doxygen
@@ -277,8 +315,7 @@ public partial class TeakNotification
             ret = new TeakNotification(notif);
         }
 #endif
-
-        ret.mTeakNotifId = teakNotifId;
+        if(ret != null) ret.mTeakNotifId = teakNotifId;
 
         return ret;
     }
@@ -313,7 +350,19 @@ public partial class TeakNotification
     private static extern IntPtr TeakNotificationFromTeakNotifId(string teakNotifId);
 
     [DllImport ("__Internal")]
+    private static extern IntPtr TeakNotificationSchedule(string creativeId, string message, long delay);
+
+    [DllImport ("__Internal")]
+    private static extern IntPtr TeakNotificationCancel(string scheduleId);
+
+    [DllImport ("__Internal")]
     private static extern IntPtr TeakNotificationConsume(IntPtr notif);
+
+    [DllImport ("__Internal")]
+    private static extern bool TeakNotificationIsCompleted(IntPtr notif);
+
+    [DllImport ("__Internal")]
+    private static extern IntPtr TeakNotificationGetTeakNotifId(IntPtr notif);
 
     [DllImport ("__Internal")]
     private static extern bool TeakNotificationHasReward(IntPtr notif);
