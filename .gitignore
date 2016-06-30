@@ -27,6 +27,10 @@ Assets/Plugins/Android/res.meta
 Assets/Plugins/Android/res/values.meta
 Assets/Plugins/Android/res/values/teak.xml*
 
+# Teak binaries
+Assets/Plugins/Android/teak.jar*
+Assets/Teak/Plugins/iOS/libTeak.a*
+
 Teak.unitypackage
 
 AndroidBuild/
