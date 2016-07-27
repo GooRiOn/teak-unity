@@ -22,6 +22,7 @@ Assets/Plugins/Android/facebook.meta
 Assets/Plugins/Android/bolts.jar*
 Assets/Plugins/Android/android-support-v4.jar*
 Assets/Plugins/Android/AndroidManifest.xml*
+Assets/Plugins/Android/google-play-services.jar*
 
 Assets/Plugins/Android/res.meta
 Assets/Plugins/Android/res/values.meta

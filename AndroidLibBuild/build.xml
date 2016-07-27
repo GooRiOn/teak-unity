@@ -9,12 +9,10 @@
 
     <!-- Native Lib -->
     <target name="android_native" description="Build Teak Android Library">
-        <exec executable="gradle" failonerror="true" dir="../../teak-android/">
-            <arg line="assemble"/>
-        </exec>
+        <exec executable="./compile" failonerror="true" dir="../../teak-android/"/>
 
         <mkdir dir="./androidtemp"/>
-        <copy file="../../teak-android/build/libs/teak.jar" tofile="./androidtemp/teak.jar" overwrite="true"/>
+        <copy file="../../teak-android/build/libs/teak-api_gteq_21.jar" tofile="./androidtemp/teak.jar" overwrite="true"/>
     </target>
 
     <!-- Unity JAR -->
