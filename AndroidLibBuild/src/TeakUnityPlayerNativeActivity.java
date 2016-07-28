@@ -27,6 +27,7 @@ public class TeakUnityPlayerNativeActivity extends UnityPlayerNativeActivity
     protected void onCreate(Bundle savedInstanceState) {
         Teak.onCreate(this);
         super.onCreate(savedInstanceState);
+        Unity.initialize();
     }
 
     @Override

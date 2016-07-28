@@ -22,6 +22,7 @@
         <javac target="1.6" source="1.6" srcdir="./src" destdir="./androidtemp/classes" includeantruntime="false" verbose="true">
             <classpath>
                 <pathelement location="${android.sdk}/android.jar"/>
+                <pathelement location="../Assets/Plugins/Android/android-support-v4.jar"/>
                 <pathelement location="${unity.sdk}/PlaybackEngines/AndroidPlayer/release/bin/classes.jar"/>
                 <pathelement location="./androidtemp/teak.jar"/>
             </classpath>
