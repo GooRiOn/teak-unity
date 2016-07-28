@@ -154,14 +154,9 @@ public partial class Teak : MonoBehaviour
         }
 #else
 
-#   if UNITY_ANDROID
-        AndroidJavaClass teak = new AndroidJavaClass("io.teak.sdk.Teak");
-        string deepLink = teak.GetStatic<string>("launchedFromDeepLink");
-#   elif UNITY_IPHONE
-        string deepLink = Marshal.PtrToStringAnsi(TeakLaunchedFromDeepLink());
-#   else
+        // TODO: HAX! Need to grab deep link from event
         string deepLink = null;
-#endif
+
         if(!String.IsNullOrEmpty(deepLink))
         {
             Debug.Log("[Teak] Trying deep link: " + deepLink);
@@ -182,7 +177,7 @@ public partial class Teak : MonoBehaviour
         return ret;
     }
 
-    public delegate void LaunchedFromNotification(TeakNotification notif);
+    public delegate void LaunchedFromNotification(string rewardJson);
     public event LaunchedFromNotification OnLaunchedFromNotification;
 
     /// @cond hide_from_doxygen
@@ -219,20 +214,23 @@ public partial class Teak : MonoBehaviour
 
     [DllImport ("__Internal")]
     private static extern void TeakTrackEvent(string actionId, string objectTypeId, string objectInstanceId);
-
-    [DllImport ("__Internal")]
-    private static extern IntPtr TeakLaunchedFromTeakNotifId();
-
-    [DllImport ("__Internal")]
-    private static extern IntPtr TeakLaunchedFromDeepLink();
 #endif
     /// @endcond
+
+    #region UnitySendMessage
+    /// @cond hide_from_doxygen
+    void NotificationLaunch(string json)
+    {
+        OnLaunchedFromNotification(json);
+    }
+    /// @endcond
+    #endregion
 
     #region MonoBehaviour
     /// @cond hide_from_doxygen
     void Awake()
     {
-        Debug.Log("Teak SDK Version: " + Teak.Version);
+        Debug.Log("[Teak] Unity SDK Version: " + Teak.Version);
         TeakLinkAttribute.LoadDeepLinks();
         DontDestroyOnLoad(this);
     }
@@ -275,12 +273,7 @@ public partial class Teak : MonoBehaviour
 #if UNITY_EDITOR
         if(TeakSettings.SimulateOpenedWithNotification)
         {
-            TeakNotification notif = TeakNotification.FromTeakNotifId("simulated");
-            if(notif != null)
-            {
-                // Send event
-                OnLaunchedFromNotification(notif);
-            }
+            OnLaunchedFromNotification(TeakSettings.SimulatedTeakRewardJson);
         }
 #endif
     }
@@ -295,23 +288,6 @@ public partial class Teak : MonoBehaviour
         else
         {
             // Resume
-#if UNITY_EDITOR
-            string launchedFromTeakNotifId = null;
-#elif UNITY_ANDROID
-            AndroidJavaClass teak = new AndroidJavaClass("io.teak.sdk.Teak");
-            string launchedFromTeakNotifId = teak.GetStatic<string>("launchedFromTeakNotifId");
-#elif UNITY_IPHONE
-            string launchedFromTeakNotifId = Marshal.PtrToStringAnsi(TeakLaunchedFromTeakNotifId());
-#endif
-            if(!string.IsNullOrEmpty(launchedFromTeakNotifId))
-            {
-                TeakNotification notif = TeakNotification.FromTeakNotifId(launchedFromTeakNotifId);
-                if(notif != null)
-                {
-                    // Send event
-                    OnLaunchedFromNotification(notif);
-                }
-            }
         }
     }
 #endif

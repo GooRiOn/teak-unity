@@ -171,27 +171,21 @@ public class TeakSettingsEditor : Editor
             TeakSettings.SimulateRewardReply = EditorGUILayout.ToggleLeft(simulateRewardContent, TeakSettings.SimulateRewardReply, GUILayout.ExpandWidth(true));
             if(TeakSettings.SimulateRewardReply)
             {
-                GUIContent simulateRewardStatusContent = new GUIContent("Reward Status [?]",  "The Teak Reward Status that will be simulated.");
-                TeakSettings.SimulatedTeakRewardStatus = (TeakNotification.Reward.RewardStatus)EditorGUILayout.EnumPopup(simulateRewardStatusContent, TeakSettings.SimulatedTeakRewardStatus);
-
-                if(TeakSettings.SimulatedTeakRewardStatus == TeakNotification.Reward.RewardStatus.GrantReward)
+                GUIContent simulateRewardJsonContent = new GUIContent("Reward Payload [?]",  "The contents of the Teak Reward JSON that will be simulated.");
+                SerializedProperty rewardEntries = serializedObject.FindProperty("mRewardEntries");
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.PropertyField(rewardEntries, simulateRewardJsonContent, true);
+                if(EditorGUI.EndChangeCheck())
                 {
-                    GUIContent simulateRewardJsonContent = new GUIContent("Reward Payload [?]",  "The contents of the Teak Reward JSON that will be simulated.");
-                    SerializedProperty rewardEntries = serializedObject.FindProperty("mRewardEntries");
-                    EditorGUI.BeginChangeCheck();
-                    EditorGUILayout.PropertyField(rewardEntries, simulateRewardJsonContent, true);
-                    if(EditorGUI.EndChangeCheck())
+                    serializedObject.ApplyModifiedProperties();
+                    if(TeakSettings.RewardEntries != null)
                     {
-                        serializedObject.ApplyModifiedProperties();
-                        if(TeakSettings.RewardEntries != null)
+                        Dictionary<string, object> json = new Dictionary<string, object>();
+                        foreach(TeakSettings.RewardEntry entry in TeakSettings.RewardEntries)
                         {
-                            Dictionary<string, object> json = new Dictionary<string, object>();
-                            foreach(TeakSettings.RewardEntry entry in TeakSettings.RewardEntries)
-                            {
-                                json[entry.key] = entry.count;
-                            }
-                            TeakSettings.SimulatedTeakRewardJson = Json.Serialize(json);
+                            json[entry.key] = entry.count;
                         }
+                        TeakSettings.SimulatedTeakRewardJson = Json.Serialize(json);
                     }
                 }
             }

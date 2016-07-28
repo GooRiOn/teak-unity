@@ -216,21 +216,6 @@ public class TeakSettings : ScriptableObject
 #endif
     }
 
-    public static TeakNotification.Reward.RewardStatus SimulatedTeakRewardStatus
-    {
-        get { return Instance.mSimulateTeakRewardStatus; }
-#if UNITY_EDITOR
-        set
-        {
-            if(value != Instance.mSimulateTeakRewardStatus)
-            {
-                Instance.mSimulateTeakRewardStatus = value;
-                DirtyEditor();
-            }
-        }
-#endif
-    }
-
     public static string SimulatedTeakRewardJson
     {
         get { return Instance.mSimulatedTeakRewardJson; }
@@ -337,8 +322,6 @@ public class TeakSettings : ScriptableObject
     private bool mSimulateRewardReply = false;
     [SerializeField]
     private string mSimulateTeakRewardId = "";
-    [SerializeField]
-    private TeakNotification.Reward.RewardStatus mSimulateTeakRewardStatus = TeakNotification.Reward.RewardStatus.GrantReward;
     [SerializeField]
     private string mSimulatedTeakRewardJson = "";
     [SerializeField]

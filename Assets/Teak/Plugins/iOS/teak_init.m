@@ -18,7 +18,48 @@ extern const char* AppControllerClassName;
 
 // From TeakHooks.m
 extern void Teak_Plant(Class appDelegateClass, NSString* appId, NSString* appSecret);
-extern void TeakSetDebugOutputEnabled(int enabled);
+
+// From TeakCExtern.m
+extern void* TeakRewardRewardForId(NSString* teakRewardId);
+extern BOOL TeakRewardIsCompleted(void* notif);
+extern const char* TeakRewardGetJson(void* reward);
+
+// From Teak.m
+extern NSString* const TeakNotificationAppLaunch;
+
+// Unity
+extern void UnitySendMessage(const char*, const char*, const char*);
+
+void checkTeakNotifLaunch(NSDictionary* userInfo)
+{
+   // TODO: userInfo also can contain a 'deepLink' key
+   NSString* teakRewardId = [userInfo objectForKey:@"teakRewardId"];
+   if(teakRewardId != nil)
+   {
+      void* reward = TeakRewardRewardForId(teakRewardId);
+      if(reward != nil)
+      {
+         __block NSObject* o = CFBridgingRetain(reward);
+         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+            while(!TeakRewardIsCompleted(reward))
+            {
+               sleep(1);
+            }
+
+            UnitySendMessage("TeakGameObject", "NotificationLaunch", TeakRewardGetJson(o));
+            CFRelease(o);
+         });
+      }
+      else
+      {
+         UnitySendMessage("TeakGameObject", "NotificationLaunch", "");
+      }
+   }
+   else
+   {
+      UnitySendMessage("TeakGameObject", "NotificationLaunch", "");
+   }
+}
 
 __attribute__((constructor))
 static void teak_init()
@@ -27,6 +68,10 @@ static void teak_init()
    NSString* apiKey = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TeakApiKey"];
    Teak_Plant(NSClassFromString([NSString stringWithUTF8String:AppControllerClassName]), appId, apiKey);
 
-   // Uncomment the subsequent line to enable debug output from the native Teak lib
-   //TeakSetDebugOutputEnabled(1);
+   [[NSNotificationCenter defaultCenter] addObserverForName:TeakNotificationAppLaunch
+                                                     object:nil
+                                                      queue:nil
+                                                 usingBlock:^(NSNotification* notification) {
+                                                    checkTeakNotifLaunch(notification.userInfo);
+                                                 }];
 }

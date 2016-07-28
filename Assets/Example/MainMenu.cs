@@ -75,19 +75,9 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    void OnLaunchedFromNotification(TeakNotification notif)
+    void OnLaunchedFromNotification(string json)
     {
-        Debug.Log("Launched from Teak Notification: " + notif);
-        if(notif.HasReward)
-        {
-            StartCoroutine(notif.ConsumeNotification((TeakNotification.Reward reward) => {
-                Debug.Log("Got Reward, status: " + reward.Status);
-                if(reward.Status == TeakNotification.Reward.RewardStatus.GrantReward)
-                {
-                    Debug.Log("Reward JSON: " + reward.RewardJson);
-                }
-            }));
-        }
+        Debug.Log("Launched from Teak Notification: " + json);
     }
 
 #if UNITY_IOS
