@@ -19,11 +19,6 @@ extern const char* AppControllerClassName;
 // From TeakHooks.m
 extern void Teak_Plant(Class appDelegateClass, NSString* appId, NSString* appSecret);
 
-// From TeakCExtern.m
-extern void* TeakRewardRewardForId(NSString* teakRewardId);
-extern BOOL TeakRewardIsCompleted(void* notif);
-extern const char* TeakRewardGetJson(void* reward);
-
 // From Teak.m
 extern NSString* const TeakNotificationAppLaunch;
 
@@ -32,32 +27,31 @@ extern void UnitySendMessage(const char*, const char*, const char*);
 
 void checkTeakNotifLaunch(NSDictionary* userInfo)
 {
-   // TODO: userInfo also can contain a 'deepLink' key
-   NSString* teakRewardId = [userInfo objectForKey:@"teakRewardId"];
-   if(teakRewardId != nil)
-   {
-      void* reward = TeakRewardRewardForId(teakRewardId);
-      if(reward != nil)
-      {
-         __block NSObject* o = CFBridgingRetain(reward);
-         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
-            while(!TeakRewardIsCompleted(reward))
-            {
-               sleep(1);
-            }
+   NSMutableDictionary* eventDataDictionary = [NSMutableDictionary dictionary];
 
-            UnitySendMessage("TeakGameObject", "NotificationLaunch", TeakRewardGetJson(o));
-            CFRelease(o);
-         });
-      }
-      else
-      {
-         UnitySendMessage("TeakGameObject", "NotificationLaunch", "");
-      }
-   }
-   else
+   NSDictionary* teakReward = [userInfo objectForKey:@"teakReward"];
+   if(teakReward != nil && teakReward != [NSNull null])
    {
-      UnitySendMessage("TeakGameObject", "NotificationLaunch", "");
+      [eventDataDictionary setObject:teakReward forKey:@"reward"];
+   }
+
+   NSURL* teakDeepLink = [userInfo objectForKey:@"teakDeepLink"];
+   if(teakDeepLink != nil && teakDeepLink != [NSNull null])
+   {
+      [eventDataDictionary setObject:[teakDeepLink absoluteString] forKey:@"deepLink"];
+   }
+
+   NSError* error = nil;
+   NSData* jsonData = [NSJSONSerialization dataWithJSONObject:eventDataDictionary
+                                                      options:0
+                                                        error:&error];
+
+   if (error != nil) {
+      NSLog(@"[Teak:Unity] Error converting to JSON: %@", error);
+      UnitySendMessage("TeakGameObject", "NotificationLaunch", "{}");
+   } else {
+      NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+      UnitySendMessage("TeakGameObject", "NotificationLaunch", [jsonString UTF8String]);
    }
 }
 

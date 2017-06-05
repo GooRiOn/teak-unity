@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="iOS Build Scripts" default="all">
+
+    <!-- Config -->
+    <property file="build.config"/>
+    <property environment="env"/>
+
+    <!-- All -->
+    <target name="all" depends="ios" description=""/>
+
+    <!-- iOS -->
+    <target name="ios" description="Build iOS Library">
+        <property name="ios.temp.path" location="./temp/"/>
+        <delete dir="${ios.temp.path}"/>
+        <mkdir dir="${ios.temp.path}"/>
+
+        <exec executable="curl" failonerror="true" dir="${ios.temp.path}">
+            <arg line="-o Teak.framework.zip"/>
+            <arg line="https://s3.amazonaws.com/teak-build-artifacts/ios/Teak.framework.zip"/>
+        </exec>
+
+        <!-- unzip task does not seem to keep simlinks, do it with exec instead -->
+        <exec executable="unzip" failonerror="true" dir="${ios.temp.path}">
+            <arg line="Teak.framework.zip"/>
+        </exec>
+
+        <copy file="${ios.temp.path}/Teak.framework/Teak" tofile="../Assets/Teak/Plugins/iOS/libTeak.a" overwrite="true"/>
+    </target>
+</project>

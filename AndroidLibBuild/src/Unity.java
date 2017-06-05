@@ -14,14 +14,17 @@
  */
 package io.teak.sdk;
 
+import org.json.JSONObject;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
+import android.os.Bundle;
 
 import java.lang.reflect.Method;
-import java.util.concurrent.Future;
+import java.util.HashMap;
 
 class Unity {
     private static final String LOG_TAG = "Teak:Unity";
@@ -71,31 +74,29 @@ class Unity {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (TeakNotification.LAUNCHED_FROM_NOTIFICATION_INTENT.equals(action)) {
+                Bundle bundle = intent.getExtras();
+                String eventData = "{}";
                 try {
-                    String teakRewardId = intent.getStringExtra("teakRewardId");
-                    if(teakRewardId != null) {
-                        final Future<TeakNotification.Reward> rewardFuture = TeakNotification.Reward.rewardFromRewardId(teakRewardId);
-                        if(rewardFuture != null) {
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    String eventData = "";
-                                    try {
-                                        TeakNotification.Reward reward = rewardFuture.get();
-                                        eventData = reward.originalJson.toString();
-                                    } catch(Exception e) {
-                                        Log.e(LOG_TAG, Log.getStackTraceString(e));
-                                    } finally {
-                                        Unity.UnitySendMessage("TeakGameObject", "NotificationLaunch", eventData);
-                                    }
-                                }
-                            }).start();
-                        } else {
-                            Unity.UnitySendMessage("TeakGameObject", "NotificationLaunch", "");
-                        }
+                    HashMap<String, Object> eventDataDict = new HashMap<String, Object>();
+
+                    HashMap<String, Object> teakReward = (HashMap<String, Object>) bundle.getSerializable("teakReward");
+                    if (teakReward != null) {
+                        eventDataDict.put("reward", teakReward);
                     }
+
+                    String teakDeepLink = bundle.getString("teakDeepLink");
+                    if (teakDeepLink != null) {
+                        eventDataDict.put("deepLink", teakDeepLink);
+                    }
+
+                    if (teakDeepLink != null) {
+                        eventDataDict.put("deepLink", teakDeepLink);
+                    }
+                    eventData = new JSONObject(eventDataDict).toString();
                 } catch(Exception e) {
                     Log.e(LOG_TAG, Log.getStackTraceString(e));
+                } finally {
+                    Unity.UnitySendMessage("TeakGameObject", "NotificationLaunch", eventData);
                 }
             }
         }

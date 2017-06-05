@@ -3,37 +3,44 @@
 
     <!-- Config -->
     <property file="build.config"/>
+    <property environment="env"/>
 
     <!-- All -->
     <target name="all" depends="android_native,unity" description="Full build"/>
 
     <!-- Native Lib -->
     <target name="android_native" description="Build Teak Android Library">
-        <exec executable="./compile" failonerror="true" dir="../../teak-android/"/>
-
+        <delete dir="./androidtemp"/>
         <mkdir dir="./androidtemp"/>
-        <copy file="../../teak-android/build/libs/teak-api_gteq_21.jar" tofile="./androidtemp/teak.jar" overwrite="true"/>
+        <exec executable="curl" failonerror="true" dir="./androidtemp">
+            <arg line="-o teak.zip"/>
+            <arg line="https://s3.amazonaws.com/teak-build-artifacts/android/teak.zip"/>
+        </exec>
+        <mkdir dir="./androidtemp/zip"/>
+        <unzip src="./androidtemp/teak.zip" dest="./androidtemp/zip"/>
+
+        <copy todir="./androidtemp/zip/res/">
+            <fileset dir="../Assets/Plugins/Android/"/>
+        </copy>
+
+        <unzip src="./androidtemp/zip/teak/teak.jar" dest="./androidtemp/zip"/>
+
+        <mkdir dir="./androidtemp/classes"/>
+        <copydir src="./androidtemp/zip/io" dest="./androidtemp/classes/io"/>
     </target>
 
     <!-- Unity JAR -->
     <target name="unity" description="Build Unity Android Library">
-        <mkdir dir="./androidtemp/classes"/>
-
         <javac target="1.6" source="1.6" srcdir="./src" destdir="./androidtemp/classes" includeantruntime="false" verbose="true">
             <classpath>
-                <pathelement location="${android.sdk}/android.jar"/>
+                <pathelement location="${env.ANDROID_SDK_ROOT}/platforms/android-23/android.jar"/>
                 <pathelement location="../Assets/Plugins/Android/android-support-v4.jar"/>
                 <pathelement location="${unity.sdk}/PlaybackEngines/AndroidPlayer/release/bin/classes.jar"/>
                 <pathelement location="./androidtemp/teak.jar"/>
             </classpath>
         </javac>
 
-        <mkdir dir="./androidtemp/zip"/>
-        <unzip src="./androidtemp/teak.jar" dest="./androidtemp/zip"/>
-        <copydir src="./androidtemp/zip/io" dest="./androidtemp/classes/io"/>
-
         <jar basedir="./androidtemp/classes" destfile="../Assets/Plugins/Android/teak.jar"/>
-        <delete dir="./androidtemp"/>
     </target>
 
 </project>
