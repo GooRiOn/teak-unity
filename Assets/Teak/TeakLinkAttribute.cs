@@ -231,7 +231,7 @@ public class TeakLinkAttribute : System.Attribute
                     throw new NotSupportedException(String.Format("'splat' functionality is not supported by TeakLinks.\nMethod: {0}", DebugStringForMethodInfo(method)));
                     // return "(?<splat>.*?)";
                 }
-                 dupeCheck.Add(m.Value.Substring(1));
+                dupeCheck.Add(m.Value.Substring(1));
                 return String.Format("(?<{0}>[^/?#]+)", m.Value.Substring(1));
             });
 
