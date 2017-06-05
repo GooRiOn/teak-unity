@@ -37,41 +37,7 @@ public class MainMenu : MonoBehaviour
         }
         else
         {
-            string deepLink = Teak.Instance.NavigateToDeepLink();
-            if(!string.IsNullOrEmpty(deepLink))
-            {
-                teakDeepLinkLaunch = "Deep Link: " + deepLink;
-            }
-            else
-            {
-                teakDeepLinkLaunch = null;
-            }
-        }
-    }
-
-    [TeakLink("/store/:page/:sku")]
-    void OpenIAPStore(string sku, string page)
-    {
-        Debug.Log("OpenIAPStore called with sku: " + sku);
-    }
-
-    [TeakLink("/iap/:foo/:bar/:baz")]
-    void TestDictionary(Dictionary<string, object> parameters)
-    {
-        Debug.Log("TestDictionary called...");
-        foreach(var kvp in parameters)
-        {
-            Debug.Log(kvp.Key + " = " + kvp.Value);
-        }
-    }
-
-    [TeakLink("/mixed/:foo")]
-    void TestMixed(string foo, Dictionary<string, object> parameters)
-    {
-        Debug.Log("TestDictionary called with foo: " + foo + " and parameters...");
-        foreach(var kvp in parameters)
-        {
-            Debug.Log(kvp.Key + " = " + kvp.Value);
+            // Resume
         }
     }
 

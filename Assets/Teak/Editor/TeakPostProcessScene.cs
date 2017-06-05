@@ -45,11 +45,6 @@ public class TeakPostProcessScene
                 Debug.LogError("Teak API Key needs to be assigned in the Edit/Teak menu.");
             }
 
-            if(!TeakSettings.AppValid)
-            {
-                Debug.LogWarning("Your Teak settings have not been validated. Click 'Validate Settings' in the Edit/Teak menu.");
-            }
-
             Directory.CreateDirectory(Path.Combine(Application.dataPath, "Plugins/Android/res/values"));
             XDocument doc = new XDocument(
                 new XElement("resources", 

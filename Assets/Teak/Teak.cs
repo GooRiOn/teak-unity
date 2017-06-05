@@ -117,66 +117,6 @@ public partial class Teak : MonoBehaviour
 #endif
     }
 
-    /// <summary>
-    /// Navigate to the deep link with which your game was launched.
-    /// </summary>
-    /// <remarks>
-    /// You should call this function once your game is fully initialized and ready to
-    /// for navigation to the deep-linked content. If there is no deep link available
-    /// this function will simply return without performing any actions.
-    ///
-    /// If you are using the Facebook SDK, FB.Init() must be completed before calling this function.
-    ///
-    /// In the Unity Editor, this function will navigate to the destination in Simulate Deep Link
-    /// in the Teak settings (if applicable).
-    /// </remarks>
-    public string NavigateToDeepLink()
-    {
-        string ret = null;
-
-#if UNITY_EDITOR
-        if(TeakSettings.SimulateDeepLink &&
-            !String.IsNullOrEmpty(TeakSettings.SimulatedDeepLink))
-        {
-            try
-            {
-                string deepLink = String.Format("unityeditor:/{0}", TeakSettings.SimulatedDeepLink);
-                Uri deepLinkUri = new Uri(deepLink);
-                if(TeakLinkAttribute.ProcessUri(deepLinkUri))
-                {
-                    ret = deepLink;
-                }
-            }
-            catch(Exception e)
-            {
-                Debug.LogError(e.ToString());
-            }
-        }
-#else
-
-        // TODO: HAX! Need to grab deep link from event
-        string deepLink = null;
-
-        if(!String.IsNullOrEmpty(deepLink))
-        {
-            Debug.Log("[Teak] Trying deep link: " + deepLink);
-            try
-            {
-                Uri deepLinkUri = new Uri(deepLink);
-                if(TeakLinkAttribute.ProcessUri(deepLinkUri))
-                {
-                    ret = deepLink;
-                }
-            }
-            catch(Exception e)
-            {
-                Debug.LogError(e.ToString());
-            }
-        }
-#endif
-        return ret;
-    }
-
     public delegate void LaunchedFromNotification(string rewardJson);
     public event LaunchedFromNotification OnLaunchedFromNotification;
 
@@ -231,7 +171,6 @@ public partial class Teak : MonoBehaviour
     void Awake()
     {
         Debug.Log("[Teak] Unity SDK Version: " + Teak.Version);
-        TeakLinkAttribute.LoadDeepLinks();
         DontDestroyOnLoad(this);
     }
 
@@ -267,13 +206,6 @@ public partial class Teak : MonoBehaviour
         else
         {
             Debug.LogWarning("[Teak] No known store plugin found.");
-        }
-#endif
-
-#if UNITY_EDITOR
-        if(TeakSettings.SimulateOpenedWithNotification)
-        {
-            OnLaunchedFromNotification(TeakSettings.SimulatedTeakRewardJson);
         }
 #endif
     }
