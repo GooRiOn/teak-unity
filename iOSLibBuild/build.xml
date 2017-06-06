@@ -4,13 +4,19 @@
     <!-- Config -->
     <property file="build.config"/>
     <property environment="env"/>
+    <property name="ios.temp.path" location="./temp/"/>
 
     <!-- All -->
-    <target name="all" depends="ios" description=""/>
+    <target name="all" depends="ios_download" description=""/>
+    <target name="local" depends="ios_local" description=""/>
 
-    <!-- iOS -->
-    <target name="ios" description="Build iOS Library">
-        <property name="ios.temp.path" location="./temp/"/>
+    <target name="ios_local" description="Download iOS Library">
+        <exec executable="./compile" failonerror="true" dir="../../teak-ios/"/>
+
+        <copy file="../../teak-ios/build/Release-iphoneos/libTeak.a" tofile="../Assets/Teak/Plugins/iOS/libTeak.a" overwrite="true"/>
+    </target>
+
+    <target name="ios_download" description="Download iOS Library">
         <delete dir="${ios.temp.path}"/>
         <mkdir dir="${ios.temp.path}"/>
 

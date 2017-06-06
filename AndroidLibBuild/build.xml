@@ -6,16 +6,29 @@
     <property environment="env"/>
 
     <!-- All -->
-    <target name="all" depends="android_native,unity" description="Full build"/>
+    <target name="all" depends="android_download,android_native,unity" description="Full build"/>
 
-    <!-- Native Lib -->
-    <target name="android_native" description="Build Teak Android Library">
+    <!-- Local, for development -->
+    <target name="local" depends="android_local,android_native,unity" description="Full build"/>
+
+    <target name="android_download">
         <delete dir="./androidtemp"/>
         <mkdir dir="./androidtemp"/>
         <exec executable="curl" failonerror="true" dir="./androidtemp">
             <arg line="-o teak.zip"/>
             <arg line="https://s3.amazonaws.com/teak-build-artifacts/android/teak.zip"/>
         </exec>
+    </target>
+
+    <target name="android_local">
+        <delete dir="./androidtemp"/>
+        <mkdir dir="./androidtemp"/>
+        <exec executable="./compile" failonerror="true" dir="../../teak-android/"/>
+
+        <copy file="../../teak-android/build/distributions/teak-release.zip" tofile="./androidtemp/teak.zip" overwrite="true"/>
+    </target>
+
+    <target name="android_native" description="Build Teak Android Library">
         <mkdir dir="./androidtemp/zip"/>
         <unzip src="./androidtemp/teak.zip" dest="./androidtemp/zip"/>
 
@@ -26,7 +39,9 @@
         <unzip src="./androidtemp/zip/teak/teak.jar" dest="./androidtemp/zip"/>
 
         <mkdir dir="./androidtemp/classes"/>
-        <copydir src="./androidtemp/zip/io" dest="./androidtemp/classes/io"/>
+        <copy todir="./androidtemp/classes/io">
+            <fileset dir="./androidtemp/zip/io"/>
+        </copy>
     </target>
 
     <!-- Unity JAR -->
