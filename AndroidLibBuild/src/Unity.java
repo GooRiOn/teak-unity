@@ -115,17 +115,7 @@ class Unity {
                 String eventData = "{}";
                 try {
                     HashMap<String, Object> eventDataDict = new HashMap<String, Object>();
-
-                    HashMap<String, Object> teakReward = (HashMap<String, Object>) bundle.getSerializable("teakReward");
-                    if (teakReward != null) {
-                        eventDataDict.put("reward", teakReward);
-                    }
-
-                    String teakDeepLink = bundle.getString("teakDeepLink");
-                    if (teakDeepLink != null) {
-                        eventDataDict.put("deepLink", teakDeepLink);
-                    }
-
+                    // TODO: In the future this dict may include more things.
                     eventData = new JSONObject(eventDataDict).toString();
                 } catch(Exception e) {
                     Log.e(LOG_TAG, Log.getStackTraceString(e));

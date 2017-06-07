@@ -200,6 +200,8 @@ public partial class Teak : MonoBehaviour
     void NotificationLaunch(string jsonString)
     {
         Dictionary<string, object> json = Json.Deserialize(jsonString) as Dictionary<string, object>;
+        json.Remove("teakReward");
+        json.Remove("teakDeepLink");
         OnLaunchedFromNotification(json);
     }
 
