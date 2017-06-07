@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 /*
  * Copyright (c) 2012 Calvin Rien
  *
@@ -33,7 +32,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace TeakEditor.MiniJSON {
+namespace MiniJSON.Teak {
     // Example usage:
     //
     //  using UnityEngine;
@@ -548,4 +547,3 @@ namespace TeakEditor.MiniJSON {
         }
     }
 }
-#endif

@@ -27,8 +27,6 @@ using System.Runtime.InteropServices;
 using System.IO;
 using System.Net;
 using System.Text;
-
-using TeakEditor.MiniJSON;
 #endif
 #endregion
 

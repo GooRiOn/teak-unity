@@ -13,6 +13,13 @@ print('Adding Teak App Id and Api Key entries to Info.plist')
 plist_data = plistlib.readPlist(os.path.join(path, 'Info.plist'))
 plist_data["TeakAppId"] = appId
 plist_data["TeakApiKey"] = apiKey
+
+new_dict = {'CFBundleTypeRole': 'Editor', 'CFBundleURLSchemes': ['teak' + appId]}
+if "CFBundleURLTypes" in plist_data:
+    plist_data["CFBundleURLTypes"].append(new_dict.copy())
+else:
+    plist_data["CFBundleURLTypes"] = [new_dict]
+
 plistlib.writePlist(plist_data, os.path.join(path, 'Info.plist'))
 
 project = XcodeProject.Load(path + '/Unity-iPhone.xcodeproj/project.pbxproj')

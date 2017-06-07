@@ -2,6 +2,8 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+using MiniJSON.Teak;
+
 public class MainMenu : MonoBehaviour
 {
     public int buttonHeight = 150;
@@ -13,6 +15,13 @@ public class MainMenu : MonoBehaviour
     string teakSdkVersion = null;
     string teakDeepLinkLaunch = null;
     string teakScheduledNotification = null;
+
+    void Awake()
+    {
+        Teak.Instance.RegisterRoute("/store/:sku", "Store", "Open the store to an SKU", (Dictionary<string, object> parameters) => {
+            Debug.Log("Got store deep link: " + Json.Serialize(parameters));
+        });
+    }
 
     void Start()
     {
@@ -26,7 +35,9 @@ public class MainMenu : MonoBehaviour
 #endif
 
         Teak.Instance.IdentifyUser(teakUserId);
+
         Teak.Instance.OnLaunchedFromNotification += OnLaunchedFromNotification;
+        Teak.Instance.OnReward += OnReward;
     }
 
     void OnApplicationPause(bool isPaused)
@@ -41,9 +52,14 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    void OnLaunchedFromNotification(string json)
+    void OnLaunchedFromNotification(Dictionary<string, object> notificationPayload)
     {
-        Debug.Log("Launched from Teak Notification: " + json);
+        Debug.Log("OnLaunchedFromNotification: " + Json.Serialize(notificationPayload));
+    }
+
+    void OnReward(Dictionary<string, object> notificationPayload)
+    {
+        Debug.Log("OnReward: " + Json.Serialize(notificationPayload));
     }
 
 #if UNITY_IOS

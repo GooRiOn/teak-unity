@@ -25,8 +25,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
-
-using TeakEditor.MiniJSON;
 #endregion
 
 [InitializeOnLoad]

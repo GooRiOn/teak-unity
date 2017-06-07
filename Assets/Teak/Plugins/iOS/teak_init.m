@@ -21,28 +21,23 @@ extern void Teak_Plant(Class appDelegateClass, NSString* appId, NSString* appSec
 
 // From Teak.m
 extern NSString* const TeakNotificationAppLaunch;
+extern NSString* const TeakOnReward;
+
+typedef void (^TeakLinkBlock)(NSDictionary* _Nonnull parameters);
+extern void TeakRegisterRoute(const char* route, const char* name, const char* description, TeakLinkBlock block);
+
+extern void TeakRunNSOperation(NSOperation* op);
+extern void TeakAssignWaitForDeepLinkOperation(NSOperation* waitForDeepLinkOp);
 
 // Unity
 extern void UnitySendMessage(const char*, const char*, const char*);
 
+NSOperation* waitForDeepLinkOperation = nil;
+
 void checkTeakNotifLaunch(NSDictionary* userInfo)
 {
-   NSMutableDictionary* eventDataDictionary = [NSMutableDictionary dictionary];
-
-   NSDictionary* teakReward = [userInfo objectForKey:@"teakReward"];
-   if(teakReward != nil && teakReward != [NSNull null])
-   {
-      [eventDataDictionary setObject:teakReward forKey:@"reward"];
-   }
-
-   NSURL* teakDeepLink = [userInfo objectForKey:@"teakDeepLink"];
-   if(teakDeepLink != nil && teakDeepLink != [NSNull null])
-   {
-      [eventDataDictionary setObject:[teakDeepLink absoluteString] forKey:@"deepLink"];
-   }
-
    NSError* error = nil;
-   NSData* jsonData = [NSJSONSerialization dataWithJSONObject:eventDataDictionary
+   NSData* jsonData = [NSJSONSerialization dataWithJSONObject:userInfo
                                                       options:0
                                                         error:&error];
 
@@ -55,6 +50,44 @@ void checkTeakNotifLaunch(NSDictionary* userInfo)
    }
 }
 
+void teakOnReward(NSDictionary* userInfo)
+{
+   NSError* error = nil;
+   NSData* jsonData = [NSJSONSerialization dataWithJSONObject:userInfo
+                                                      options:0
+                                                        error:&error];
+
+   if (error != nil) {
+      NSLog(@"[Teak:Unity] Error converting to JSON: %@", error);
+   } else {
+      NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+      UnitySendMessage("TeakGameObject", "RewardClaimAttempt", [jsonString UTF8String]);
+   }
+}
+
+void TeakUnityReadyForDeepLinks()
+{
+   TeakRunNSOperation(waitForDeepLinkOperation);
+}
+
+void TeakUnityRegisterRoute(const char* route, const char* name, const char* description)
+{
+   NSString* nsRoute = [NSString stringWithUTF8String:route];
+   TeakRegisterRoute(route, name, description, ^(NSDictionary * _Nonnull parameters) {
+      NSError* error = nil;
+      NSData* jsonData = [NSJSONSerialization dataWithJSONObject:@{@"route" : nsRoute, @"parameters" : parameters}
+                                                         options:0
+                                                           error:&error];
+
+      if (error != nil) {
+         NSLog(@"[Teak:Unity] Error converting to JSON: %@", error);
+      } else {
+         NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+         UnitySendMessage("TeakGameObject", "DeepLink", [jsonString UTF8String]);
+      }
+   });
+}
+
 __attribute__((constructor))
 static void teak_init()
 {
@@ -62,10 +95,21 @@ static void teak_init()
    NSString* apiKey = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TeakApiKey"];
    Teak_Plant(NSClassFromString([NSString stringWithUTF8String:AppControllerClassName]), appId, apiKey);
 
+   waitForDeepLinkOperation = [NSBlockOperation blockOperationWithBlock:^{
+   }];
+   TeakAssignWaitForDeepLinkOperation(waitForDeepLinkOperation);
+
    [[NSNotificationCenter defaultCenter] addObserverForName:TeakNotificationAppLaunch
                                                      object:nil
                                                       queue:nil
                                                  usingBlock:^(NSNotification* notification) {
                                                     checkTeakNotifLaunch(notification.userInfo);
+                                                 }];
+
+   [[NSNotificationCenter defaultCenter] addObserverForName:TeakOnReward
+                                                     object:nil
+                                                      queue:nil
+                                                 usingBlock:^(NSNotification* notification) {
+                                                    teakOnReward(notification.userInfo);
                                                  }];
 }

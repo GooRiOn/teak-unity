@@ -23,10 +23,8 @@ using System.Text;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-#if UNITY_EDITOR
-using TeakEditor.MiniJSON;
+using MiniJSON.Teak;
 using System.Collections.Generic;
-#endif
 #endregion
 
 /// <summary>
@@ -117,8 +115,42 @@ public partial class Teak : MonoBehaviour
 #endif
     }
 
-    public delegate void LaunchedFromNotification(string rewardJson);
-    public event LaunchedFromNotification OnLaunchedFromNotification;
+    /// <summary>
+    /// Delegate used by OnLaunchedFromNotification and OnReward
+    /// </summary>
+    /// <param name="parameters">A Dictionary containing reward or other information sent with the event.</param>
+    public delegate void TeakEventListener(Dictionary<string, object> parameters);
+
+    /// <summary>
+    /// An event which gets fired when the app is launched via a push notification.
+    /// </summary>
+    public event TeakEventListener OnLaunchedFromNotification;
+
+    /// <summary>
+    /// An event which gets fired when a Teak Reward has been processed (successfully or unsuccessfully).
+    /// </summary>
+    public event TeakEventListener OnReward;
+
+    /// <summary>
+    /// Method used to register a deep link route.
+    /// </summary>
+    public void RegisterRoute(string route, string name, string description, Action<Dictionary<string, object>> action)
+    {
+        mDeepLinkRoutes[route] = action;
+#if UNITY_EDITOR
+        Debug.Log("[Teak] RegisterRoute(): " + route + " - " + name + " - " + description);
+#elif UNITY_ANDROID
+        AndroidJavaClass teakUnity = new AndroidJavaClass("io.teak.sdk.Unity");
+        teakUnity.CallStatic("registerRoute", route, name, description);
+#elif UNITY_IPHONE
+        TeakUnityRegisterRoute(route, name, description);
+#endif
+    }
+
+    /// @cond hide_from_doxygen
+    private static Teak mInstance;
+    Dictionary<string, Action<Dictionary<string, object>>> mDeepLinkRoutes = new Dictionary<string, Action<Dictionary<string, object>>>();
+    /// @endcond
 
     /// @cond hide_from_doxygen
 #if UNITY_ANDROID
@@ -154,14 +186,48 @@ public partial class Teak : MonoBehaviour
 
     [DllImport ("__Internal")]
     private static extern void TeakTrackEvent(string actionId, string objectTypeId, string objectInstanceId);
+
+    [DllImport ("__Internal")]
+    private static extern void TeakUnityRegisterRoute(string route, string name, string description);
+
+    [DllImport ("__Internal")]
+    private static extern void TeakUnityReadyForDeepLinks();
 #endif
     /// @endcond
 
     #region UnitySendMessage
     /// @cond hide_from_doxygen
-    void NotificationLaunch(string json)
+    void NotificationLaunch(string jsonString)
     {
+        Dictionary<string, object> json = Json.Deserialize(jsonString) as Dictionary<string, object>;
         OnLaunchedFromNotification(json);
+    }
+
+    void RewardClaimAttempt(string jsonString)
+    {
+        Dictionary<string, object> json = Json.Deserialize(jsonString) as Dictionary<string, object>;
+        OnReward(json);
+    }
+
+    void DeepLink(string jsonString)
+    {
+        Dictionary<string, object> json = Json.Deserialize(jsonString) as Dictionary<string, object>;
+        string route = json["route"] as string;
+        if (mDeepLinkRoutes.ContainsKey(route))
+        {
+            try
+            {
+                mDeepLinkRoutes[route](json["parameters"] as Dictionary<string, object>);
+            }
+            catch(Exception e)
+            {
+                Debug.LogError("[Teak] Error executing Action for route: " + route + "\n" + e.Message);
+            }
+        }
+        else
+        {
+            Debug.LogError("[Teak] Unable to find Action for route: " + route);
+        }
     }
     /// @endcond
     #endregion
@@ -176,6 +242,13 @@ public partial class Teak : MonoBehaviour
 
     void Start()
     {
+#if UNITY_ANDROID
+        AndroidJavaClass teakUnity = new AndroidJavaClass("io.teak.sdk.Unity");
+        teakUnity.CallStatic("readyForDeepLinks");
+#elif UNITY_IPHONE
+        TeakUnityReadyForDeepLinks();
+#endif
+
 #if UNITY_ANDROID
         // Try and find an active store plugin
         if(Type.GetType("OpenIABEventManager, Assembly-CSharp-firstpass") != null)
@@ -209,20 +282,6 @@ public partial class Teak : MonoBehaviour
         }
 #endif
     }
-
-#if UNITY_IPHONE || UNITY_ANDROID
-    void OnApplicationPause(bool isPaused)
-    {
-        if(isPaused)
-        {
-            // Pause
-        }
-        else
-        {
-            // Resume
-        }
-    }
-#endif
 
     void OnApplicationQuit()
     {
