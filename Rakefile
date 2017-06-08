@@ -4,17 +4,19 @@ CLEAN.include "**/.DS_Store"
 desc "Build Unity package"
 task :default
 
+UNITY_HOME="#{ENV['UNITY_HOME'] || '/Applications/Unity'}"
+
 #
 # Helper methods
 #
 def unity(*args)
   # Run Unity.
-  sh "/Applications/Unity/Unity.app/Contents/MacOS/Unity #{args.join(' ')}"
+  sh "#{UNITY_HOME}/Unity.app/Contents/MacOS/Unity #{args.join(' ')}"
 end
 
 def unity?
   # Return true if we can run Unity.
-  File.exist? "/Applications/Unity/Unity.app/Contents/MacOS/Unity"
+  File.exist? "#{UNITY_HOME}/Unity.app/Contents/MacOS/Unity"
 end
 
 # Docs task
