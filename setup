@@ -12,8 +12,7 @@ fi
 
 if [ "$(which ant)" == "" ]; then brew install ant; fi
 if [ "$(which android)" == "" ]; then
-  # Warning: /usr/local is not writable, sudo is needed to move the Caskroom.
-  sudo brew cask install android-sdk
+  brew cask install android-sdk
 fi
 
 sdkmanager "build-tools;23.0.2"
