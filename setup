@@ -15,9 +15,6 @@ if [ "$(which android)" == "" ]; then
   brew cask install android-sdk
 fi
 
-ANDROID_HOME=/usr/local/share/android-sdk
-export ANDROID_HOME
-
 sdkmanager "build-tools;23.0.2"
 sdkmanager "platforms;android-23"
 sdkmanager "extras;google;m2repository"
@@ -27,9 +24,7 @@ if [ "$(which aws)" == "" ]; then brew install awscli; fi
 
 if [ ! -f ~/Unity/Unity.app/Contents/MacOS/Unity ]; then
   curl -o unity-4.7.2.dmg http://download.unity3d.com/download_unity/unity-4.7.2.dmg
+  hdiutil attach unity-4.7.2.dmg
   sudo installer -dumplog -package /Volumes/Unity\ Installer/Unity.pkg -target /
   mv /Applications/Unity ~/Unity
 fi
-
-UNITY_HOME=~/Unity
-export UNITY_HOME
