@@ -50,7 +50,7 @@
             <classpath>
                 <pathelement location="${env.ANDROID_SDK_ROOT}/platforms/android-23/android.jar"/>
                 <pathelement location="../Assets/Plugins/Android/android-support-v4.jar"/>
-                <pathelement location="${unity.sdk}/PlaybackEngines/AndroidPlayer/release/bin/classes.jar"/>
+                <pathelement location="${env.UNITY_HOME}/Unity.app/Contents/PlaybackEngines/AndroidPlayer/release/bin/classes.jar"/>
                 <pathelement location="./androidtemp/teak.jar"/>
             </classpath>
         </javac>
