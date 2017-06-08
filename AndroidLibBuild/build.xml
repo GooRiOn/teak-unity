@@ -49,7 +49,7 @@
         <javac target="1.6" source="1.6" srcdir="./src" destdir="./androidtemp/classes" includeantruntime="false" verbose="true">
             <classpath>
                 <pathelement location="${env.ANDROID_SDK_ROOT}/platforms/android-23/android.jar"/>
-                <pathelement location="../Assets/Plugins/Android/android-support-v4.jar"/>
+                <pathelement location="${env.ANDROID_SDK_ROOT}/extras/android/m2repository/com/android/support/support-v4/18.0.0/support-v4-18.0.0.jar"/>
                 <pathelement location="${env.UNITY_HOME}/Unity.app/Contents/PlaybackEngines/AndroidPlayer/release/bin/classes.jar"/>
                 <pathelement location="./androidtemp/teak.jar"/>
             </classpath>
