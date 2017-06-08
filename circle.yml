@@ -2,7 +2,7 @@ machine:
   xcode:
     version: 8.2.1
   environment:
-    ANDROID_HOME: /usr/local/share/android-sdk
+    ANDROID_SDK_ROOT: /usr/local/share/android-sdk
     UNITY_HOME: ~/Unity
 test:
   override:
