@@ -46,7 +46,7 @@ namespace :unity do
     project_path = File.expand_path("./")
     package_path = File.expand_path("./Teak.unitypackage")
     begin
-      unity "-quit -batchmode -projectPath #{project_path} -executeMethod TeakPackageBuilder.BuildUnityPackage"
+      unity "-quit -batchmode -nographics -projectPath #{project_path} -executeMethod TeakPackageBuilder.BuildUnityPackage"
       sh "python extractunitypackage.py Teak.unitypackage _temp_pkg/"
       FileUtils.rm_rf("_temp_pkg")
     rescue => error
