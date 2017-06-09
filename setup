@@ -29,4 +29,4 @@ if [ ! -f ~/Unity/Unity.app/Contents/MacOS/Unity ]; then
   mv /Applications/Unity ~/Unity
 fi
 
-if [ ! -f /Library/Application\ Support/Unity ]; then sudo mkdir /Library/Application\ Support/Unity; fi
+sudo mkdir -p /Library/Application\ Support/Unity
