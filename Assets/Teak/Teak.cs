@@ -51,7 +51,7 @@ public partial class Teak : MonoBehaviour
                     if(teakGameObject == null)
                     {
                         teakGameObject = new GameObject("TeakGameObject");
-                        teakGameObject.AddComponent("Teak");
+                        teakGameObject.AddComponent<Teak>();
                     }
                     mInstance = teakGameObject.GetComponent<Teak>();
                 }

@@ -29,7 +29,11 @@ public class TeakPostProcessBuild
     [PostProcessBuild(100)]
     public static void OnPostprocessBuild(BuildTarget target, string pathToBuildProject)
     {
+#if UNITY_5
+        if(target != BuildTarget.iOS) return;
+#else
         if(target != BuildTarget.iPhone) return;
+#endif
 
         string objCPath = Application.dataPath + "/Teak/Plugins/iOS";
         Process proc = new Process();
