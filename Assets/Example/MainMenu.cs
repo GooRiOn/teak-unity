@@ -99,6 +99,7 @@ public class MainMenu : MonoBehaviour
         }
 #endif
 
+#if !UNITY_EDITOR
         if(FB.IsLoggedIn)
         {
             GUILayout.Label("Facebook UserId: " + FB.UserId);
@@ -110,6 +111,7 @@ public class MainMenu : MonoBehaviour
                 FB.Login("public_profile,email,user_friends");
             }
         }
+#endif
 
         if(teakScheduledNotification == null)
         {
