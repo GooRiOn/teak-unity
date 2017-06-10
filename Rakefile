@@ -46,7 +46,9 @@ namespace :unity do
     project_path = File.expand_path("./")
     package_path = File.expand_path("./Teak.unitypackage")
     begin
-      unity "-quit -batchmode -nographics -projectPath #{project_path} -executeMethod TeakPackageBuilder.BuildUnityPackage"
+      unity "-quit -batchmode -nographics -projectPath #{project_path} -executeMethod TeakPackageBuilder.BuildUnityPackage" do |ok, status|
+        ok or fail "Unity build failed #{`cat ~/Library/Logs/Unity/Editor.log`}"
+      end
       sh "python extractunitypackage.py Teak.unitypackage _temp_pkg/"
       FileUtils.rm_rf("_temp_pkg")
     rescue => error
@@ -61,7 +63,9 @@ namespace :android do
   task :build do
     begin
       Dir.chdir('AndroidLibBuild') do
-        sh "ant"
+        sh "ant" do |ok, status|
+          ok or fail "AndroidLibBuild failed"
+        end
       end
     rescue => error
       puts "Native Android Unity Library build failed: #{error}"
@@ -75,7 +79,9 @@ namespace :ios do
   task :build do
     begin
       Dir.chdir('iOSLibBuild') do
-        sh "ant"
+        sh "ant" do |ok, status|
+          ok or fail "iOSLibBuild failed"
+        end
       end
     rescue => error
       puts "Native iOS Unity Library build failed: #{error}"
