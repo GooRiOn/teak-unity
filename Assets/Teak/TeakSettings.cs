@@ -23,7 +23,6 @@ using UnityEngine;
 
 #if UNITY_EDITOR
 using UnityEditor;
-using TeakEditor;
 #endif
 #endregion
 
