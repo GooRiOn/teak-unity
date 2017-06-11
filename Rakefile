@@ -57,35 +57,3 @@ namespace :unity do
     end
   end
 end
-
-desc "Build Native Android Unity Library"
-task :android => "android:build"
-namespace :android do
-  task :build do
-    begin
-      Dir.chdir('AndroidLibBuild') do
-        sh "ant" do |ok, status|
-          ok or fail "AndroidLibBuild failed"
-        end
-      end
-    rescue => error
-      puts "Native Android Unity Library build failed: #{error}"
-    end
-  end
-end
-
-desc "Build Native iOS Unity Library"
-task :ios => "ios:build"
-namespace :ios do
-  task :build do
-    begin
-      Dir.chdir('iOSLibBuild') do
-        sh "ant" do |ok, status|
-          ok or fail "iOSLibBuild failed"
-        end
-      end
-    rescue => error
-      puts "Native iOS Unity Library build failed: #{error}"
-    end
-  end
-end

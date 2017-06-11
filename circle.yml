@@ -6,8 +6,8 @@ machine:
     UNITY_HOME: /Users/distiller/Unity
 test:
   override:
-  - rake ios
-  - rake android
+  - (cd iOSLibBuild; ant)
+  - (cd AndroidLibBuild; ant)
   - rake
 dependencies:
   # override:
