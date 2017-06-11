@@ -49,6 +49,7 @@ namespace :unity do
       unity "-quit -batchmode -nographics -projectPath #{project_path} -executeMethod TeakPackageBuilder.BuildUnityPackage" do |ok, status|
         ok or fail "Unity build failed #{`cat ~/Library/Logs/Unity/Editor.log`}"
       end
+      puts "#{`cat ~/Library/Logs/Unity/Editor.log`}"
       sh "python extractunitypackage.py Teak.unitypackage _temp_pkg/"
       FileUtils.rm_rf("_temp_pkg")
     rescue => error
