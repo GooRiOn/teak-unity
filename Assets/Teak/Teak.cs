@@ -244,7 +244,9 @@ public partial class Teak : MonoBehaviour
 
     void Start()
     {
-#if UNITY_ANDROID
+#if UNITY_EDITOR
+        // Nothing currently
+#elif UNITY_ANDROID
         AndroidJavaClass teakUnity = new AndroidJavaClass("io.teak.sdk.Unity");
         teakUnity.CallStatic("readyForDeepLinks");
 #elif UNITY_IPHONE
