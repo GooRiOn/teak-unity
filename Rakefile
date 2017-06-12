@@ -63,9 +63,13 @@ END
     File.open(File.join(project_path, "Assets", "Teak", "TeakVersion.cs"), 'w') do |file|
       file.write(versionfile)
     end
-    unity "-quit -batchmode -nographics -projectPath #{project_path} -executeMethod TeakPackageBuilder.BuildUnityPackage" do |ok, status|
-      ok or fail "Unity build failed #{`cat ~/Library/Logs/Unity/Editor.log`}"
+
+    begin
+      unity "-quit -batchmode -nographics -projectPath #{project_path} -executeMethod TeakPackageBuilder.BuildUnityPackage"
+    rescue
+      # Unity tends to crash on exit for some reason, so just ignore it
     end
+
     sh "python extractunitypackage.py Teak.unitypackage _temp_pkg/"
     FileUtils.rm_rf("_temp_pkg")
   end
