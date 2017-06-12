@@ -6,16 +6,16 @@ machine:
     UNITY_HOME: /Users/distiller/Unity
 test:
   override:
-  - (cd iOSLibBuild; ant)
-  - (cd AndroidLibBuild; ant)
-  - rake
+    - (cd iOSLibBuild; ant)
+    - (cd AndroidLibBuild; ant)
+    - rake
 dependencies:
   # override:
   pre:
-  # Remove 'Warning: File /Users/distiller/.android/repositories.cfg could not be loaded'
-  - mkdir ~/.android/
-  - echo "count=0" > ~/.android/repositories.cfg
-  - ./setup
+    # Remove 'Warning: File /Users/distiller/.android/repositories.cfg could not be loaded'
+    - mkdir ~/.android/
+    - echo "count=0" > ~/.android/repositories.cfg
+    - ./setup
   # bundler:
   #   without: [production, osx]
   cache_directories:
