@@ -26,10 +26,10 @@ import android.os.Bundle;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.HashMap;
-
+import java.util.UUID;
 import java.util.concurrent.FutureTask;
 
-class Unity {
+public class Unity {
     private static final String LOG_TAG = "Teak:Unity";
 
     private static Method unitySendMessage;
@@ -57,7 +57,93 @@ class Unity {
         }
     }
 
+    public static void popupFeedPost(String objectInstanceId, String objectPropertiesJson, final String callbackId) {
+        // Convert JSON to map
+        Map<String, Object> objectProperties = null;
+        if (objectProperties != null && !objectProperties.equals("null")) {
+            try {
+                objectProperties = Helpers.jsonToMap(new JSONObject(objectPropertiesJson));
+            } catch (Exception ignored) {
+            }
+        }
+
+        Teak.facebookPost(objectInstanceId, objectProperties, new Teak.FacebookPostCallback() {
+            @Override
+            public void completed(JSONObject teakResponse, JSONObject facebookResponse) {
+                JSONObject json = new JSONObject();
+                try {
+                    json.put("callbackId", callbackId);
+                    json.put("teakResponse", teakResponse);
+                    json.put("facebookResponse", facebookResponse);
+                } catch (Exception ignored){
+                }
+                Unity.UnitySendMessage("TeakGameObject", "PopupFeedPostCallback", json.toString());
+            }
+        });
+    }
+
+    private static Map<String, Teak.FacebookPostCallback> facebookPostCallbacks = new HashMap<String, Teak.FacebookPostCallback>();
+    public static void facebookWrapperCallback(String id, String jsonReply) {
+        Teak.FacebookPostCallback callback = Unity.facebookPostCallbacks.get(id);
+        JSONObject fbResponse = null;
+        try {
+            fbResponse = new JSONObject(jsonReply);
+        } catch (Exception ignored) {
+        }
+
+        if (callback != null) {
+            callback.completed(null, fbResponse);
+            facebookPostCallbacks.remove(id);
+        }
+    }
+
+    static class UnityFacebookInterface implements FacebookInterface.PlatformInterface {
+        public boolean showDialog(final Bundle parameters, final Teak.FacebookPostCallback callback) {
+            if (true) {
+                String callbackId = UUID.randomUUID().toString();
+                facebookPostCallbacks.put(callbackId, callback);
+
+                JSONObject messageData = new JSONObject();
+                JSONObject fb_data = new JSONObject();
+                try {
+                    for (String key : parameters.keySet()) {
+                        fb_data.put(key, parameters.get(key));
+                    }
+                    messageData.put("callbackId", callbackId);
+                    messageData.put("fb_data", fb_data);
+                } catch (Exception ignored) {
+                }
+                Unity.UnitySendMessage("TeakGameObject", "ShowFacebookShareDialog", messageData.toString());
+                return true;
+            }
+            return false;
+        }
+
+        public void makeGraphFeedPost(final Bundle parameters, final boolean dialogFallback, final Teak.FacebookPostCallback callback) {
+            String callbackId = UUID.randomUUID().toString();
+            facebookPostCallbacks.put(callbackId, callback);
+
+            JSONObject messageData = new JSONObject();
+            JSONObject fb_data = new JSONObject();
+            try {
+                for (String key : parameters.keySet()) {
+                    fb_data.put(key, parameters.get(key));
+                }
+                messageData.put("callbackId", callbackId);
+                messageData.put("fb_data", fb_data);
+            } catch (Exception ignored) {
+            }
+            Unity.UnitySendMessage("TeakGameObject", "MakeGraphFeedPost", messageData.toString());
+        }
+    }
+
     public static void initialize() {
+        if (Teak.facebookInterface != null) {
+            Teak.facebookInterface.setPlatformInterface(new UnityFacebookInterface());
+        } else {
+            Log.e(LOG_TAG, "Teak.facebookInterface is null, initialization order is incorrect.");
+        }
+
         IntentFilter filter = new IntentFilter();
         filter.addAction(Teak.REWARD_CLAIM_ATTEMPT);
         filter.addAction(Teak.LAUNCHED_FROM_NOTIFICATION_INTENT);

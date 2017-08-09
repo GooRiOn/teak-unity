@@ -147,9 +147,31 @@ public partial class Teak : MonoBehaviour
 #endif
     }
 
+    /// <summary>
+    /// Feed Post
+    /// </summary>
+    public void FeedPost(string objectInstanceId, Dictionary<string, object> objectProperties = null, Action<Dictionary<string, object>> callback = null)
+    {
+        string callbackId = System.DateTime.Now.ToString();
+        if(callback != null)
+        {
+            mFeedPostCallbacks[callbackId] = callback;
+        }
+
+#if UNITY_EDITOR
+        Debug.Log("[Teak] PopupFeedPost");
+#elif UNITY_ANDROID
+        AndroidJavaClass teakUnity = new AndroidJavaClass("io.teak.sdk.Unity");
+        teakUnity.CallStatic("popupFeedPost", objectInstanceId, Json.Serialize(objectProperties), callbackId);
+#elif UNITY_IPHONE
+
+#endif
+    }
+
     /// @cond hide_from_doxygen
     private static Teak mInstance;
     Dictionary<string, Action<Dictionary<string, object>>> mDeepLinkRoutes = new Dictionary<string, Action<Dictionary<string, object>>>();
+    Dictionary<string, Action<Dictionary<string, object>>> mFeedPostCallbacks = new Dictionary<string, Action<Dictionary<string, object>>>();
     /// @endcond
 
     /// @cond hide_from_doxygen
@@ -197,6 +219,70 @@ public partial class Teak : MonoBehaviour
 
     #region UnitySendMessage
     /// @cond hide_from_doxygen
+    void ShowFacebookShareDialog(string jsonString)
+    {
+        if(FB.IsLoggedIn) // TODO: Reflection?
+        {
+            Dictionary<string, object> json = Json.Deserialize(jsonString) as Dictionary<string, object>;
+            Dictionary<string, object> fb_data = json["fb_data"] as Dictionary<string, object>;
+            FB.Feed("" /* toID */, fb_data["link"] as string, fb_data["name"] as string, fb_data["caption"] as string, fb_data["description"] as string, fb_data["picture"] as string,
+                "" /* mediaSource */, "" /* actionName */, "" /* actionLink */, "" /* reference */, null /* properties */,
+                (FBResult result) => {
+                    if (result.Error != null)
+                    {
+                        Debug.LogError(result.Error);
+                    }
+
+#if UNITY_EDITOR
+    // Nothing currently
+#elif UNITY_ANDROID
+                    AndroidJavaClass teakUnity = new AndroidJavaClass("io.teak.sdk.Unity");
+                    teakUnity.CallStatic("facebookWrapperCallback", json["callbackId"] as string, result.Text);
+#elif UNITY_IPHONE
+    // TODO
+#endif
+                });
+        }
+    }
+
+    void PopupFeedPostCallback(string jsonString)
+    {
+        Dictionary<string, object> json = Json.Deserialize(jsonString) as Dictionary<string, object>;
+        string callbackId = json["callbackId"] as string;
+
+        if (mFeedPostCallbacks.ContainsKey(callbackId))
+        {
+            mFeedPostCallbacks[callbackId](json);
+            mFeedPostCallbacks.Remove(callbackId);
+        }
+    }
+
+    void MakeGraphFeedPost(string jsonString)
+    {
+        Dictionary<string, object> json = Json.Deserialize(jsonString) as Dictionary<string, object>;
+        Dictionary<string, object> fb_data_json = json["fb_data"] as Dictionary<string, object>;
+
+        // Delete 'method' attribute to not overwrite HTTP method
+        fb_data_json.Remove("method");
+
+        WWWForm fb_data = new WWWForm();
+        foreach(KeyValuePair<string, object> entry in fb_data_json)
+        {
+            fb_data.AddField(entry.Key, entry.Value.ToString());
+        }
+
+        FB.API("/me/feed", Facebook.HttpMethod.POST, (FBResult result) => {
+#if UNITY_EDITOR
+    // Nothing currently
+#elif UNITY_ANDROID
+            AndroidJavaClass teakUnity = new AndroidJavaClass("io.teak.sdk.Unity");
+            teakUnity.CallStatic("facebookWrapperCallback", json["callbackId"] as string, result.Text);
+#elif UNITY_IPHONE
+    // TODO
+#endif
+        }, fb_data);
+    }
+
     void NotificationLaunch(string jsonString)
     {
         Dictionary<string, object> json = Json.Deserialize(jsonString) as Dictionary<string, object>;

@@ -103,12 +103,18 @@ public class MainMenu : MonoBehaviour
         if(FB.IsLoggedIn)
         {
             GUILayout.Label("Facebook UserId: " + FB.UserId);
+            if(GUILayout.Button("Feed Post", GUILayout.Height(buttonHeight)))
+            {
+                Teak.Instance.FeedPost("test_post", null, (Dictionary<string,object> responses) => {
+                    Debug.Log(Json.Serialize(responses));
+                });
+            }
         }
         else
         {
             if(GUILayout.Button("Login With Facebook", GUILayout.Height(buttonHeight)))
             {
-                FB.Login("public_profile,email,user_friends");
+                FB.Login("public_profile,email,user_friends,publish_actions");
             }
         }
 #endif
