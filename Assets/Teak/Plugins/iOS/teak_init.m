@@ -23,16 +23,54 @@ extern void Teak_Plant(Class appDelegateClass, NSString* appId, NSString* appSec
 extern NSString* const TeakNotificationAppLaunch;
 extern NSString* const TeakOnReward;
 
+extern NSDictionary* TeakWrapperSDK;
+
 typedef void (^TeakLinkBlock)(NSDictionary* _Nonnull parameters);
 extern void TeakRegisterRoute(const char* route, const char* name, const char* description, TeakLinkBlock block);
 
 extern void TeakRunNSOperation(NSOperation* op);
 extern void TeakAssignWaitForDeepLinkOperation(NSOperation* waitForDeepLinkOp);
 
+// TeakNotification
+extern NSObject* TeakNotificationSchedule(const char* creativeId, const char* message, uint64_t delay);
+extern NSObject* TeakNotificationCancel(const char* scheduleId);
+
 // Unity
 extern void UnitySendMessage(const char*, const char*, const char*);
 
+extern NSString* TeakUnitySDKVersion;
+
 NSOperation* waitForDeepLinkOperation = nil;
+
+void TeakRelease(id ptr)
+{
+#if __has_feature(objc_arc)
+   id thing = (__bridge_transfer id)ptr;
+   thing = nil;
+#else
+   [ptr release];
+#endif
+}
+
+void* TeakNotificationSchedule_Retained(const char* creativeId, const char* message, uint64_t delay)
+{
+#if __has_feature(objc_arc)
+   void* notif = (__bridge_retained void*)TeakNotificationSchedule(creativeId, message, delay);
+   return notif;
+#else
+   return [TeakNotificationSchedule(creativeId, message, delay) retain];
+#endif
+}
+
+void* TeakNotificationCancel_Retained(const char* scheduleId)
+{
+#if __has_feature(objc_arc)
+   void* notif = (__bridge_retained void*)TeakNotificationCancel(scheduleId);
+   return notif;
+#else
+   return [TeakNotificationCancel(scheduleId) retain];
+#endif
+}
 
 void checkTeakNotifLaunch(NSDictionary* userInfo)
 {
@@ -91,6 +129,8 @@ void TeakUnityRegisterRoute(const char* route, const char* name, const char* des
 __attribute__((constructor))
 static void teak_init()
 {
+   TeakWrapperSDK = @{@"unity" : TeakUnitySDKVersion};
+
    NSString* appId = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TeakAppId"];
    NSString* apiKey = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TeakApiKey"];
    Teak_Plant(NSClassFromString([NSString stringWithUTF8String:AppControllerClassName]), appId, apiKey);

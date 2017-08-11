@@ -30,8 +30,6 @@ import java.util.HashMap;
 import java.util.concurrent.FutureTask;
 
 class Unity {
-    private static final String LOG_TAG = "Teak:Unity";
-
     private static Method unitySendMessage;
 
     private static FutureTask<Void> deepLinksReadyTask;
@@ -47,12 +45,9 @@ class Unity {
 
             Class<?> unityPlayerClass = Class.forName("com.unity3d.player.UnityPlayer");
             Unity.unitySendMessage = unityPlayerClass.getMethod("UnitySendMessage", String.class, String.class, String.class);
-            if (Teak.isDebug) {
-                Log.d(LOG_TAG, "Teak Unity extensions successfully enabled.");
-            }
         } catch (Exception e) {
             if (Teak.isDebug) {
-                Log.e(LOG_TAG, Log.getStackTraceString(e));
+                Teak.log.exception(e);
             }
         }
     }
@@ -64,7 +59,7 @@ class Unity {
         if (Teak.localBroadcastManager != null) {
             Teak.localBroadcastManager.registerReceiver(broadcastReceiver, filter);
         } else {
-            Log.e(LOG_TAG, "Teak.localBroadcastManager is null, initialization order is incorrect.");
+            Log.e("Teak:Unity", "Teak.localBroadcastManager is null, initialization order is incorrect.");
         }
     }
 
@@ -81,7 +76,7 @@ class Unity {
             try {
                 Unity.unitySendMessage.invoke(null, gameObject, method, message);
             } catch (Exception e) {
-                Log.e(LOG_TAG, Log.getStackTraceString(e));
+                Teak.log.exception(e);
             }
         }
     }
@@ -97,12 +92,12 @@ class Unity {
                         eventData.put("parameters", new JSONObject(parameters));
                         Unity.UnitySendMessage("TeakGameObject", "DeepLink", eventData.toString());
                     } catch (Exception e) {
-                        Log.e(LOG_TAG, Log.getStackTraceString(e));
+                        Teak.log.exception(e);
                     }
                 }
             });
         } catch(Exception e) {
-            Log.e(LOG_TAG, Log.getStackTraceString(e));
+            Teak.log.exception(e);
         }
     }
 
@@ -118,7 +113,7 @@ class Unity {
                     // TODO: In the future this dict may include more things.
                     eventData = new JSONObject(eventDataDict).toString();
                 } catch(Exception e) {
-                    Log.e(LOG_TAG, Log.getStackTraceString(e));
+                    Teak.log.exception(e);
                 } finally {
                     Unity.UnitySendMessage("TeakGameObject", "NotificationLaunch", eventData);
                 }
@@ -131,7 +126,7 @@ class Unity {
                         Unity.UnitySendMessage("TeakGameObject", "RewardClaimAttempt", eventData);
                     }
                 } catch(Exception e) {
-                    Log.e(LOG_TAG, Log.getStackTraceString(e));
+                    Teak.log.exception(e);
                 }
             }
         }

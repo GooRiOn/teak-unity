@@ -6,7 +6,7 @@ using MiniJSON.Teak;
 
 public class MainMenu : MonoBehaviour
 {
-    public int buttonHeight = 150;
+    public int buttonHeight = 250;
 
 #if UNITY_IOS
     string pushTokenString = null;
@@ -55,6 +55,7 @@ public class MainMenu : MonoBehaviour
     void OnLaunchedFromNotification(Dictionary<string, object> notificationPayload)
     {
         Debug.Log("OnLaunchedFromNotification: " + Json.Serialize(notificationPayload));
+        teakScheduledNotification = null; // To get the UI back
     }
 
     void OnReward(Dictionary<string, object> notificationPayload)
@@ -115,9 +116,30 @@ public class MainMenu : MonoBehaviour
 
         if(teakScheduledNotification == null)
         {
-            if(GUILayout.Button("Schedule Notification", GUILayout.Height(buttonHeight)))
+            if(GUILayout.Button("Simple Notification", GUILayout.Height(buttonHeight)))
             {
-                StartCoroutine(TeakNotification.ScheduleNotification("test", "Test notification", 10, (string scheduleId) => {
+                StartCoroutine(TeakNotification.ScheduleNotification("test_none", "Simple push notification", 10, (string scheduleId) => {
+                    teakScheduledNotification = scheduleId;
+                }));
+            }
+
+            if(GUILayout.Button("Deep Link", GUILayout.Height(buttonHeight)))
+            {
+                StartCoroutine(TeakNotification.ScheduleNotification("test_deeplink", "Push notification with deep link", 10, (string scheduleId) => {
+                    teakScheduledNotification = scheduleId;
+                }));
+            }
+
+            if(GUILayout.Button("Reward", GUILayout.Height(buttonHeight)))
+            {
+                StartCoroutine(TeakNotification.ScheduleNotification("test_reward", "Push notification with reward", 10, (string scheduleId) => {
+                    teakScheduledNotification = scheduleId;
+                }));
+            }
+
+            if(GUILayout.Button("Reward + Deep Link", GUILayout.Height(buttonHeight)))
+            {
+                StartCoroutine(TeakNotification.ScheduleNotification("test_rewarddeeplink", "Push notification with reward and deep link", 10, (string scheduleId) => {
                     teakScheduledNotification = scheduleId;
                 }));
             }

@@ -27,6 +27,9 @@ Assets/Plugins/Android/google-play-services.jar*
 Assets/Plugins/Android/res.meta
 Assets/Plugins/Android/res/values.meta
 Assets/Plugins/Android/res/values/teak.xml*
+Assets/Plugins/Android/res/values/teak_unity_version.xml*
+
+Assets/Teak/Plugins/iOS/teak_version.m*
 
 # Teak binaries
 Assets/Plugins/Android/teak.jar*

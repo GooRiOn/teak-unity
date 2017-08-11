@@ -56,6 +56,7 @@ public class TeakPackageBuilder : Editor
             "Assets/Plugins/Android/res/layout/teak_big_notif_image_text.xml",
             "Assets/Plugins/Android/res/layout/teak_notif_no_title.xml",
             "Assets/Plugins/Android/res/values/teak_styles.xml",
+            "Assets/Plugins/Android/res/values/teak_unity_version.xml",
             "Assets/Plugins/Android/res/values-v21/teak_styles.xml"
         };
         AssetDatabase.ExportPackage(assetPaths, "Teak.unitypackage", ExportPackageOptions.Recurse | ExportPackageOptions.IncludeDependencies);

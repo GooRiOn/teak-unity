@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="io_teak_wrapper_sdk_name">unity</string>
+  <string name="io_teak_wrapper_sdk_version">@@@</string>
+</resources>

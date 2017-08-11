@@ -7,8 +7,8 @@
     <property name="ios.temp.path" location="./temp/"/>
 
     <!-- All -->
-    <target name="all" depends="ios_download" description=""/>
-    <target name="local" depends="ios_local" description=""/>
+    <target name="all" depends="ios_download,ios" description=""/>
+    <target name="local" depends="ios_local,ios" description=""/>
 
     <target name="ios_local" description="Download iOS Library">
         <exec executable="./compile" failonerror="true" dir="../../teak-ios/"/>
@@ -31,5 +31,17 @@
         </exec>
 
         <copy file="${ios.temp.path}/Teak.framework/Teak" tofile="../Assets/Teak/Plugins/iOS/libTeak.a" overwrite="true"/>
+    </target>
+
+    <target name="ios" description="">
+        <copy file="./teak_version.m.template"
+              tofile="../Assets/Teak/Plugins/iOS/teak_version.m" overwrite="true"/>
+        <exec executable="git" failonerror="true" dir="..">
+            <arg line='describe'/>
+            <arg line='--tags'/>
+            <redirector outputproperty="sdk.gitversion"/>
+        </exec>
+        <replace file="../Assets/Teak/Plugins/iOS/teak_version.m"
+                 token="@@@" value="${sdk.gitversion}"/>
     </target>
 </project>

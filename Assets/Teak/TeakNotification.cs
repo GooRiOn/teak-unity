@@ -50,11 +50,12 @@ public partial class TeakNotification
             ret = future.Call<string>("get");
         }
 #elif UNITY_IPHONE
-        IntPtr notif = TeakNotificationSchedule(creativeId, defaultMessage, delayInSeconds);
+        IntPtr notif = TeakNotificationSchedule_Retained(creativeId, defaultMessage, delayInSeconds);
         if(notif != IntPtr.Zero)
         {
             while(!TeakNotificationIsCompleted(notif)) yield return null;
             ret = Marshal.PtrToStringAnsi(TeakNotificationGetTeakNotifId(notif));
+            TeakRelease(notif);
         }
 #endif
         callback(string.IsNullOrEmpty(ret) ? null : ret);
@@ -75,11 +76,12 @@ public partial class TeakNotification
             ret = future.Call<string>("get");
         }
 #elif UNITY_IPHONE
-        IntPtr notif = TeakNotificationCancel(scheduleId);
+        IntPtr notif = TeakNotificationCancel_Retained(scheduleId);
         if(notif != IntPtr.Zero)
         {
             while(!TeakNotificationIsCompleted(notif)) yield return null;
             ret = Marshal.PtrToStringAnsi(TeakNotificationGetTeakNotifId(notif));
+            TeakRelease(notif);
         }
 #endif
         callback(string.IsNullOrEmpty(ret) ? null : ret);
@@ -88,10 +90,13 @@ public partial class TeakNotification
     /// @cond hide_from_doxygen
 #if UNITY_IOS
     [DllImport ("__Internal")]
-    private static extern IntPtr TeakNotificationSchedule(string creativeId, string message, long delay);
+    private static extern IntPtr TeakNotificationSchedule_Retained(string creativeId, string message, long delay);
 
     [DllImport ("__Internal")]
-    private static extern IntPtr TeakNotificationCancel(string scheduleId);
+    private static extern IntPtr TeakNotificationCancel_Retained(string scheduleId);
+
+    [DllImport ("__Internal")]
+    private static extern void TeakRelease(IntPtr obj);
 
     [DllImport ("__Internal")]
     private static extern bool TeakNotificationIsCompleted(IntPtr notif);

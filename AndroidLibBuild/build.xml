@@ -32,9 +32,19 @@
         <mkdir dir="./androidtemp/zip"/>
         <unzip src="./androidtemp/teak.zip" dest="./androidtemp/zip"/>
 
-        <copy todir="./androidtemp/zip/res/">
-            <fileset dir="../Assets/Plugins/Android/"/>
+        <copy todir="../Assets/Plugins/Android/res/">
+            <fileset dir="./androidtemp/zip/res/"/>
         </copy>
+
+        <copy file="./teak_unity_version.xml.template"
+              tofile="../Assets/Plugins/Android/res/values/teak_unity_version.xml" overwrite="true"/>
+        <exec executable="git" failonerror="true" dir="..">
+            <arg line='describe'/>
+            <arg line='--tags'/>
+            <redirector outputproperty="sdk.gitversion"/>
+        </exec>
+        <replace file="../Assets/Plugins/Android/res/values/teak_unity_version.xml"
+                 token="@@@" value="${sdk.gitversion}"/>
 
         <unzip src="./androidtemp/zip/teak/teak.jar" dest="./androidtemp/zip"/>
 
