@@ -34,6 +34,8 @@ public class TeakPostProcessBuild
 #else
         if(target != BuildTarget.iPhone) return;
 #endif
+        // Expand full path since otherwise the path seems to be relative if using BuildPipeline.BuildPlayer
+        pathToBuildProject = System.IO.Path.GetFullPath(pathToBuildProject);
 
         string objCPath = Application.dataPath + "/Teak/Plugins/iOS";
         Process proc = new Process();
