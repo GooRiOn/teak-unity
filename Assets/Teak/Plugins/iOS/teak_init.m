@@ -45,8 +45,9 @@ NSOperation* waitForDeepLinkOperation = nil;
 void TeakRelease(id ptr)
 {
 #if __has_feature(objc_arc)
-   id thing = (__bridge_transfer id)ptr;
-   thing = nil;
+   void *retainedThing = (__bridge void *)ptr;
+   id unretainedThing = (__bridge_transfer id)retainedThing;
+   unretainedThing = nil;
 #else
    [ptr release];
 #endif

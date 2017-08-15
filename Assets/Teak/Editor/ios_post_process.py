@@ -33,20 +33,24 @@ project.add_file_if_doesnt_exist('System/Library/Frameworks/AdSupport.framework'
 print('Adding libsqlite3.tbd')
 project.add_file_if_doesnt_exist('usr/lib/libsqlite3.tbd', tree='SDKROOT')
 
-files_in_dir = os.listdir(fileToAddPath)
-for f in files_in_dir:
-    if not f.startswith('.'): #ignore .DS_STORE
-        pathname = os.path.join(fileToAddPath, f)
-        fileName, fileExtension = os.path.splitext(pathname)
-        if not fileExtension == '.meta': #ignore .meta as it is under asset server
-            print('Adding ' + pathname + ' as ' + teak_cp_path + os.path.basename(pathname))
-            if os.path.isfile(pathname):
-                shutil.copy2(pathname, teak_cp_path)
-                project.add_file_if_doesnt_exist(teak_cp_path + os.path.basename(pathname))
-            if os.path.isdir(pathname):
-                shutil.copy2(pathname, teak_cp_path)
-                project.add_folder(teak_cp_path + os.path.basename(pathname), excludes=["^.*\.meta$"])
-
-if project.modified:
-    project.backup()
-    project.save()
+try:
+    files_in_dir = os.listdir(fileToAddPath)
+    for f in files_in_dir:
+        if not f.startswith('.'): #ignore .DS_STORE
+            pathname = os.path.join(fileToAddPath, f)
+            fileName, fileExtension = os.path.splitext(pathname)
+            if not fileExtension == '.meta': #ignore .meta as it is under asset server
+                print('Adding ' + pathname + ' as ' + teak_cp_path + os.path.basename(pathname))
+                if os.path.isfile(pathname):
+                    shutil.copy2(pathname, teak_cp_path)
+                    project.add_file_if_doesnt_exist(teak_cp_path + os.path.basename(pathname))
+                if os.path.isdir(pathname):
+                    shutil.copy2(pathname, teak_cp_path)
+                    project.add_folder(teak_cp_path + os.path.basename(pathname), excludes=["^.*\.meta$"])
+except OSError as e:
+    # May want to check if e is actually no such file, and re-throw if not
+    pass
+finally:
+    if project.modified:
+        project.backup()
+        project.save()
