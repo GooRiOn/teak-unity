@@ -8,13 +8,8 @@ Integrating Teak in Unity
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :hidden:
 
+   unity
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. include:: unity.rst
