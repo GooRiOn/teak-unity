@@ -7,6 +7,7 @@ Android
 Make Teak your Main Activity
 ----------------------------
 .. highlight:: xml
+
 The easiest way to get Teak working on Android is to edit your ``Assets/Plugins/Android/AndroidManifest.xml`` and change the main activity from::
 
     <activity android:name="com.unity3d.player.UnityPlayerNativeActivity" android:label="@string/app_name">
@@ -24,6 +25,7 @@ Otherwise Add Teak to your Main Activity
 If you can't change your main activity, then you need to add the Teak initialization calls into your custom activity.
 
 .. highlight:: java
+
 Import Teak into your main activity::
 
     import io.teak.sdk.Teak;
@@ -96,6 +98,7 @@ It means that the ``res/values/teak.xml`` file was not found. See below...
 Edit res/values/teak.xml
 ------------------------
 .. highlight:: xml
+
 The Teak Editor scripts for Unity will attempt to manage this file for you, if your build environment needs to provide the file itself, this is what it should look like::
 
     <?xml version="1.0" encoding="utf-8"?>

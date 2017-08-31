@@ -16,6 +16,7 @@
 #endregion
 
 #region References
+/// @cond hide_from_doxygen
 using UnityEngine;
 
 using System;
@@ -28,6 +29,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 #endif
+/// @endcond
 #endregion
 
 /// <summary>

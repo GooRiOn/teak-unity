@@ -1,6 +1,7 @@
 Working with Notifications, Rewards and Deep Links inside Unity
 ====================================================================
 .. highlight:: csharp
+
 Push Notifications and Local Notifications
 ------------------------------------------
 Whenever your game is launched via a push notification, or local notification Teak will let you know by sending out an event to all listeners.

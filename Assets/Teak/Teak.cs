@@ -16,6 +16,7 @@
 #endregion
 
 #region References
+/// @cond hide_from_doxygen
 using UnityEngine;
 
 using System;
@@ -25,6 +26,7 @@ using System.Runtime.InteropServices;
 
 using MiniJSON.Teak;
 using System.Collections.Generic;
+/// @endcond
 #endregion
 
 /// <summary>
@@ -134,6 +136,10 @@ public partial class Teak : MonoBehaviour
     /// <summary>
     /// Method used to register a deep link route.
     /// </summary>
+    /// <param name="route">The route for this deep link.</param>
+    /// <param name="name">The name of this deep link, used in the Teak dashboard.</param>
+    /// <param name="description">A description for what this deep link does, used in the Teak dashboard.</param>
+    /// <param name="action">A function, or lambda to execute when this deep link is invoked via a notification or web link.</param>
     public void RegisterRoute(string route, string name, string description, Action<Dictionary<string, object>> action)
     {
         mDeepLinkRoutes[route] = action;

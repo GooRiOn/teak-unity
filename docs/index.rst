@@ -14,6 +14,7 @@ Getting started with Teak on Unity
    android
    ios
    working-with-unity
+   api
 
 Hey there!
 

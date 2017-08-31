@@ -44,6 +44,7 @@ Just click the **Validate Settings** button, and it will confirm that the settin
 Tell Teak how to Identify The Current User
 ------------------------------------------
 .. highlight:: csharp
+
 Call the **IdentifyUser** function and pass it a string which uniquely identifies the current user::
 
     Teak.Instance.IdentifyUser("a unique user identifier");

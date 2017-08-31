@@ -3,6 +3,7 @@ iOS
 Edit Info.plist
 ------------------------
 .. highlight:: xml
+
 The Teak Editor scripts for Unity will attempt to manage this file for you, if your build environment needs to provide the file itself, this is what it should look like::
 
     <key>CFBundleURLTypes</key>
