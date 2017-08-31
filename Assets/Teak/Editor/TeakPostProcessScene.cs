@@ -45,6 +45,8 @@ public class TeakPostProcessScene
                 Debug.LogError("Teak API Key needs to be assigned in the Edit/Teak menu.");
             }
 
+            throw new System.Exception("TODO: Make this read existing so people can customize stuff.");
+
             Directory.CreateDirectory(Path.Combine(Application.dataPath, "Plugins/Android/res/values"));
             XDocument doc = new XDocument(
                 new XElement("resources", 
