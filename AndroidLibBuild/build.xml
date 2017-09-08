@@ -32,7 +32,7 @@
         <mkdir dir="./androidtemp/zip"/>
         <unzip src="./androidtemp/teak.zip" dest="./androidtemp/zip"/>
 
-        <copy todir="../Assets/Plugins/Android/res/">
+        <copy todir="../Assets/Plugins/Android/res/" overwrite="true">
             <fileset dir="./androidtemp/zip/res/"/>
         </copy>
 
