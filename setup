@@ -26,6 +26,7 @@ if [ ! -f ~/Unity/Unity.app/Contents/MacOS/Unity ]; then
   curl -o unity-4.7.2.dmg http://download.unity3d.com/download_unity/unity-4.7.2.dmg
   hdiutil attach unity-4.7.2.dmg
   sudo installer -dumplog -package /Volumes/Unity\ Installer/Unity.pkg -target /
+  rm -fr ~/Unity
   mv /Applications/Unity ~/Unity
 fi
 
