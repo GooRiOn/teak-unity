@@ -32,7 +32,7 @@ public class TeakUnityPlayerNativeActivity extends UnityPlayerNativeActivity
 
     @Override
     protected void onNewIntent(Intent intent) {
-        Teak.onNewIntent(intent);
+        setIntent(intent);
         super.onNewIntent(intent);
     }
 
