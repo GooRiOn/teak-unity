@@ -261,27 +261,35 @@ public partial class Teak : MonoBehaviour
 
 #if UNITY_ANDROID
         // Try and find an active store plugin
-        if(Type.GetType("OpenIABEventManager, Assembly-CSharp-firstpass") != null)
+        Type onePF = Type.GetType("OpenIABEventManager, Assembly-CSharp-firstpass");
+        if(onePF == null) onePF = Type.GetType("OpenIABEventManager, Assembly-CSharp");
+
+        Type prime31 = Type.GetType("Prime31.GoogleIABManager, Assembly-CSharp-firstpass");
+        if(prime31 == null) prime31 = Type.GetType("Prime31.GoogleIABManager, Assembly-CSharp");
+
+        if(onePF != null)
         {
             Debug.Log("[Teak] Found OpenIAB, adding event handlers.");
-            Type onePF = Type.GetType("OpenIABEventManager, Assembly-CSharp-firstpass");
             EventInfo successEvent = onePF.GetEvent("purchaseSucceededEvent");
             EventInfo failEvent = onePF.GetEvent("purchaseFailedEvent");
 
             Type purchase = Type.GetType("OnePF.Purchase, Assembly-CSharp-firstpass");
+            if(purchase == null) purchase = Type.GetType("OnePF.Purchase, Assembly-CSharp");
+
             MethodInfo magic = GetType().GetMethod("OpenIABPurchaseSucceded", BindingFlags.NonPublic | BindingFlags.Instance).MakeGenericMethod(purchase);
             successEvent.AddEventHandler(null, Delegate.CreateDelegate(successEvent.EventHandlerType, this, magic));
             failEvent.AddEventHandler(null, Delegate.CreateDelegate(failEvent.EventHandlerType, this, "OpenIABPurchaseFailed"));
         }
-        else if(Type.GetType("Prime31.GoogleIABManager, Assembly-CSharp-firstpass") != null)
+        else if(prime31 != null)
         {
             Debug.Log("[Teak] Found Prime31, adding event handlers.");
-            Type prime31 = Type.GetType("Prime31.GoogleIABManager, Assembly-CSharp-firstpass");
 
             EventInfo successEvent = prime31.GetEvent("purchaseSucceededEvent");
             EventInfo failEvent = prime31.GetEvent("purchaseFailedEvent");
 
             Type purchase = Type.GetType("Prime31.GooglePurchase, Assembly-CSharp-firstpass");
+            if(purchase == null) purchase = Type.GetType("Prime31.GooglePurchase, Assembly-CSharp");
+
             MethodInfo magic = GetType().GetMethod("Prime31PurchaseSucceded", BindingFlags.NonPublic | BindingFlags.Instance).MakeGenericMethod(purchase);
             successEvent.AddEventHandler(null, Delegate.CreateDelegate(successEvent.EventHandlerType, this, magic));
             failEvent.AddEventHandler(null, Delegate.CreateDelegate(failEvent.EventHandlerType, this, "Prime31PurchaseFailed"));
