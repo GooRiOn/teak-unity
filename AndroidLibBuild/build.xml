@@ -60,7 +60,8 @@
             <classpath>
                 <pathelement location="${env.ANDROID_SDK_ROOT}/platforms/android-23/android.jar"/>
                 <pathelement location="${env.ANDROID_SDK_ROOT}/extras/android/m2repository/com/android/support/support-v4/18.0.0/support-v4-18.0.0.jar"/>
-                <pathelement location="${env.UNITY_HOME}/Unity.app/Contents/PlaybackEngines/AndroidPlayer/release/bin/classes.jar"/>
+                <pathelement location="${env.UNITY_HOME}/Unity.app/Contents/PlaybackEngines/AndroidPlayer/release/bin/classes.jar"/> <!-- Unity 4 Location -->
+                <pathelement location="${env.UNITY_HOME}/PlaybackEngines/AndroidPlayer/Variations/mono/Development/Classes/classes.jar"/> <!-- Unity 5 Location -->
                 <pathelement location="./androidtemp/teak.jar"/>
             </classpath>
         </javac>
