@@ -41,7 +41,7 @@ public partial class TeakNotification
     public static IEnumerator ScheduleNotification(string creativeId, string defaultMessage, long delayInSeconds, System.Action<string> callback)
     {
         string ret = null;
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_WEBGL
         yield return null;
 #elif UNITY_ANDROID
         AndroidJavaClass teakNotification = new AndroidJavaClass("io.teak.sdk.TeakNotification");
@@ -67,7 +67,7 @@ public partial class TeakNotification
     public static IEnumerator CancelScheduledNotification(string scheduleId, System.Action<string> callback)
     {
         string ret = null;
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_WEBGL
         yield return null;
 #elif UNITY_ANDROID
         AndroidJavaClass teakNotification = new AndroidJavaClass("io.teak.sdk.TeakNotification");
