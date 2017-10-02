@@ -29,7 +29,7 @@ import java.util.HashMap;
 
 import java.util.concurrent.FutureTask;
 
-class Unity {
+class TeakUnity {
     private static Method unitySendMessage;
 
     private static FutureTask<Void> deepLinksReadyTask;
@@ -44,7 +44,7 @@ class Unity {
             Teak.waitForDeepLink = deepLinksReadyTask;
 
             Class<?> unityPlayerClass = Class.forName("com.unity3d.player.UnityPlayer");
-            Unity.unitySendMessage = unityPlayerClass.getMethod("UnitySendMessage", String.class, String.class, String.class);
+            TeakUnity.unitySendMessage = unityPlayerClass.getMethod("UnitySendMessage", String.class, String.class, String.class);
         } catch (Exception e) {
             if (Teak.isDebug) {
                 Teak.log.exception(e);
@@ -68,13 +68,13 @@ class Unity {
     }
 
     public static boolean isAvailable() {
-        return Unity.unitySendMessage != null;
+        return TeakUnity.unitySendMessage != null;
     }
 
     public static void UnitySendMessage(String gameObject, String method, String message) {
-        if (Unity.isAvailable()) {
+        if (TeakUnity.isAvailable()) {
             try {
-                Unity.unitySendMessage.invoke(null, gameObject, method, message);
+                TeakUnity.unitySendMessage.invoke(null, gameObject, method, message);
             } catch (Exception e) {
                 Teak.log.exception(e);
             }
@@ -87,10 +87,12 @@ class Unity {
                 @Override
                 public void call(Map<String, Object> parameters) {
                     try {
-                        JSONObject eventData = new JSONObject();
-                        eventData.put("route", route);
-                        eventData.put("parameters", new JSONObject(parameters));
-                        Unity.UnitySendMessage("TeakGameObject", "DeepLink", eventData.toString());
+                        if (TeakUnity.isAvailable()) {
+                            JSONObject eventData = new JSONObject();
+                            eventData.put("route", route);
+                            eventData.put("parameters", new JSONObject(parameters));
+                            TeakUnity.UnitySendMessage("TeakGameObject", "DeepLink", eventData.toString());
+                        }
                     } catch (Exception e) {
                         Teak.log.exception(e);
                     }
@@ -110,20 +112,25 @@ class Unity {
                 String eventData = "{}";
                 try {
                     HashMap<String, Object> eventDataDict = new HashMap<String, Object>();
-                    // TODO: In the future this dict may include more things.
+
+                    if (bundle.getString("teakScheduleName") != null) eventDataDict.put("teakScheduleName", bundle.getString("teakScheduleName"));
+                    if (bundle.getString("teakCreativeName") != null) eventDataDict.put("teakCreativeName", bundle.getString("teakCreativeName"));
+
                     eventData = new JSONObject(eventDataDict).toString();
                 } catch(Exception e) {
                     Teak.log.exception(e);
                 } finally {
-                    Unity.UnitySendMessage("TeakGameObject", "NotificationLaunch", eventData);
+                    if (TeakUnity.isAvailable()) {
+                        TeakUnity.UnitySendMessage("TeakGameObject", "NotificationLaunch", eventData);
+                    }
                 }
             } else if (Teak.REWARD_CLAIM_ATTEMPT.equals(action)) {
                 Bundle bundle = intent.getExtras();
                 try {
                     HashMap<String, Object> reward = (HashMap<String, Object>) bundle.getSerializable("reward");
-                    if (reward != null) {
+                    if (TeakUnity.isAvailable() && reward != null) {
                         String eventData = new JSONObject(reward).toString();
-                        Unity.UnitySendMessage("TeakGameObject", "RewardClaimAttempt", eventData);
+                        TeakUnity.UnitySendMessage("TeakGameObject", "RewardClaimAttempt", eventData);
                     }
                 } catch(Exception e) {
                     Teak.log.exception(e);

@@ -19,11 +19,26 @@ import android.util.Log;
 import android.os.Bundle;
 import android.content.Intent;
 
-public class TeakUnityPlayerNativeActivity extends TeakUnityPlayerActivity
+import com.unity3d.player.UnityPlayerActivity;
+
+public class TeakUnityPlayerActivity extends UnityPlayerActivity
 {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.e("Teak", "TeakUnityPlayerNativeActivity has been deprecated, please update your AndroidManifest to use TeakUnityPlayerActivity instead");
+        Teak.onCreate(this);
         super.onCreate(savedInstanceState);
+        TeakUnity.initialize();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        setIntent(intent);
+        super.onNewIntent(intent);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Teak.onActivityResult(requestCode, resultCode, data);
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }
