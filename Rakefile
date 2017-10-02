@@ -6,12 +6,14 @@ task :default
 
 UNITY_HOME="#{ENV['UNITY_HOME'] || '/Applications/Unity'}"
 
+PROJECT_PATH = Rake.application.original_dir
+
 #
 # Helper methods
 #
 def unity(*args)
   # Run Unity.
-  sh "#{UNITY_HOME}/Unity.app/Contents/MacOS/Unity #{args.join(' ')}"
+  sh "#{UNITY_HOME}/Unity.app/Contents/MacOS/Unity -logFile #{PROJECT_PATH}/unity.log #{args.join(' ')}"
 end
 
 def unity?
