@@ -146,7 +146,7 @@ public partial class Teak : MonoBehaviour
 #if UNITY_EDITOR
         Debug.Log("[Teak] RegisterRoute(): " + route + " - " + name + " - " + description);
 #elif UNITY_ANDROID
-        AndroidJavaClass teakUnity = new AndroidJavaClass("io.teak.sdk.Unity");
+        AndroidJavaClass teakUnity = new AndroidJavaClass("io.teak.sdk.TeakUnity");
         teakUnity.CallStatic("registerRoute", route, name, description);
 #elif UNITY_IPHONE
         TeakUnityRegisterRoute(route, name, description);
@@ -253,7 +253,7 @@ public partial class Teak : MonoBehaviour
 #if UNITY_EDITOR
         // Nothing currently
 #elif UNITY_ANDROID
-        AndroidJavaClass teakUnity = new AndroidJavaClass("io.teak.sdk.Unity");
+        AndroidJavaClass teakUnity = new AndroidJavaClass("io.teak.sdk.TeakUnity");
         teakUnity.CallStatic("readyForDeepLinks");
 #elif UNITY_IPHONE
         TeakUnityReadyForDeepLinks();
