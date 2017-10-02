@@ -33,12 +33,6 @@ public class MainMenu : MonoBehaviour
         teakUserId = SystemInfo.deviceUniqueIdentifier;
         teakSdkVersion = "Teak SDK Version: " + Teak.Version;
 
-#if !UNITY_EDITOR
-        FB.Init(() => {
-            Debug.Log("Facebook initialized.");
-        });
-#endif
-
         Teak.Instance.IdentifyUser(teakUserId);
 
         Teak.Instance.OnLaunchedFromNotification += OnLaunchedFromNotification;
@@ -109,20 +103,6 @@ public class MainMenu : MonoBehaviour
 #else
                 NotificationServices.RegisterForRemoteNotificationTypes(RemoteNotificationType.Alert |  RemoteNotificationType.Badge |  RemoteNotificationType.Sound);
 #endif
-            }
-        }
-#endif
-
-#if !UNITY_EDITOR
-        if(FB.IsLoggedIn)
-        {
-            GUILayout.Label("Facebook UserId: " + FB.UserId);
-        }
-        else
-        {
-            if(GUILayout.Button("Login With Facebook", GUILayout.Height(buttonHeight)))
-            {
-                FB.Login("public_profile,email,user_friends");
             }
         }
 #endif

@@ -13,11 +13,6 @@ obj/
 Assets/Resources/TeakSettings.*
 Assets/Teak/TeakVersion.cs*
 
-# Facebook SDK
-Assets/Facebook*
-Assets/Examples/
-Assets/Plugins/Android/facebook/
-Assets/Plugins/Android/facebook.meta
 Assets/Plugins/Android/bolts.jar*
 Assets/Plugins/Android/android-support-v4.jar*
 Assets/Plugins/Android/AndroidManifest.xml*
