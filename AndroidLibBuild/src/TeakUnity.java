@@ -111,17 +111,7 @@ class TeakUnity {
                 Bundle bundle = intent.getExtras();
                 String eventData = "{}";
                 try {
-                    HashMap<String, Object> eventDataDict = new HashMap<String, Object>();
-
-                    if (bundle.getString("teakRewardId") != null) {
-                        eventDataDict.put("incentivized", true);
-                        eventDataDict.put("teakRewardId", bundle.getString("teakRewardId"));
-                    } else {
-                        eventDataDict.put("incentivized", false);
-                    }
-                    if (bundle.getString("teakScheduleName") != null) eventDataDict.put("teakScheduleName", bundle.getString("teakScheduleName"));
-                    if (bundle.getString("teakCreativeName") != null) eventDataDict.put("teakCreativeName", bundle.getString("teakCreativeName"));
-
+                    HashMap<String, Object> eventDataDict = (HashMap<String, Object>) bundle.getSerializable("eventData");
                     eventData = new JSONObject(eventDataDict).toString();
                 } catch(Exception e) {
                     Teak.log.exception(e);
