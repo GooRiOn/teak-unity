@@ -73,9 +73,12 @@ void* TeakNotificationCancel_Retained(const char* scheduleId)
 #endif
 }
 
-void checkTeakNotifLaunch(NSDictionary* userInfo)
+void checkTeakNotifLaunch(NSDictionary* inUserInfo)
 {
    NSError* error = nil;
+
+   NSMutableDictionary* userInfo = [NSMutableDictionary dictionaryWithDictionary:inUserInfo];
+   userInfo[@"incentivized"] = userInfo[@"teakRewardId"] == nil ? @NO : @YES;
    NSData* jsonData = [NSJSONSerialization dataWithJSONObject:userInfo
                                                       options:0
                                                         error:&error];
