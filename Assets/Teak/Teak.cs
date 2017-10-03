@@ -229,7 +229,7 @@ public partial class Teak : MonoBehaviour
             }
             catch(Exception e)
             {
-                Debug.LogError("[Teak] Error executing Action for route: " + route + "\n" + e.Message);
+                Debug.LogError("[Teak] Error executing Action for route: " + route + "\n" + e.ToString());
             }
         }
         else
