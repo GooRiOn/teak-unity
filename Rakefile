@@ -74,7 +74,12 @@ END
       # Unity tends to crash on exit for some reason, so just ignore it
     end
 
-    sh "python extractunitypackage.py Teak.unitypackage _temp_pkg/"
-    FileUtils.rm_rf("_temp_pkg")
+    begin
+      sh "python extractunitypackage.py Teak.unitypackage2 _temp_pkg/"
+      FileUtils.rm_rf("_temp_pkg")
+    rescue
+      sh ">&2 cat unity.log"
+      raise "Unity build failed"
+    end
   end
 end
