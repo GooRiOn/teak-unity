@@ -24,6 +24,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
+using MiniJSON.Teak;
+
 #if UNITY_EDITOR
 using System.IO;
 using System.Net;
@@ -38,9 +40,10 @@ using System.Text;
 public partial class TeakNotification
 {
     // Returns an id that can be used to cancel a scheduled notification
-    public static IEnumerator ScheduleNotification(string creativeId, string defaultMessage, long delayInSeconds, System.Action<string> callback)
+    public static IEnumerator ScheduleNotification(string creativeId, string defaultMessage, long delayInSeconds, System.Action<string, string> callback)
     {
-        string ret = null;
+        string data = null;
+        string status = null;
 #if UNITY_EDITOR || UNITY_WEBGL
         yield return null;
 #elif UNITY_ANDROID
@@ -49,24 +52,37 @@ public partial class TeakNotification
         if(future != null)
         {
             while(!future.Call<bool>("isDone")) yield return null;
-            ret = future.Call<string>("get");
+
+            try
+            {
+                Dictionary<string, object> json = Json.Deserialize(future.Call<string>("get")) as Dictionary<string, object>;
+                data = json["data"] as string;
+                status = json["status"] as string;
+            }
+            catch
+            {
+                status = "error.internal";
+                data = null;
+            }
         }
 #elif UNITY_IPHONE
         IntPtr notif = TeakNotificationSchedule_Retained(creativeId, defaultMessage, delayInSeconds);
         if(notif != IntPtr.Zero)
         {
             while(!TeakNotificationIsCompleted(notif)) yield return null;
-            ret = Marshal.PtrToStringAnsi(TeakNotificationGetTeakNotifId(notif));
+            data = Marshal.PtrToStringAnsi(TeakNotificationGetTeakNotifId(notif));
+            status = Marshal.PtrToStringAnsi(TeakNotificationGetStatus(notif));
             TeakRelease(notif);
         }
 #endif
-        callback(string.IsNullOrEmpty(ret) ? null : ret);
+        callback(string.IsNullOrEmpty(data) ? null : data, string.IsNullOrEmpty(status) ? null : status);
     }
 
     // Cancel an existing notification
-    public static IEnumerator CancelScheduledNotification(string scheduleId, System.Action<string> callback)
+    public static IEnumerator CancelScheduledNotification(string scheduleId, System.Action<string, string> callback)
     {
-        string ret = null;
+        string data = null;
+        string status = null;
 #if UNITY_EDITOR || UNITY_WEBGL
         yield return null;
 #elif UNITY_ANDROID
@@ -75,18 +91,67 @@ public partial class TeakNotification
         if(future != null)
         {
             while(!future.Call<bool>("isDone")) yield return null;
-            ret = future.Call<string>("get");
+            try
+            {
+                Dictionary<string, object> json = Json.Deserialize(future.Call<string>("get")) as Dictionary<string, object>;
+                data = json["data"] as string;
+                status = json["status"] as string;
+            }
+            catch
+            {
+                status = "error.internal";
+                data = null;
+            }
         }
 #elif UNITY_IPHONE
         IntPtr notif = TeakNotificationCancel_Retained(scheduleId);
         if(notif != IntPtr.Zero)
         {
             while(!TeakNotificationIsCompleted(notif)) yield return null;
-            ret = Marshal.PtrToStringAnsi(TeakNotificationGetTeakNotifId(notif));
+            data = Marshal.PtrToStringAnsi(TeakNotificationGetTeakNotifId(notif));
+            status = Marshal.PtrToStringAnsi(TeakNotificationGetStatus(notif));
             TeakRelease(notif);
         }
 #endif
-        callback(string.IsNullOrEmpty(ret) ? null : ret);
+        callback(string.IsNullOrEmpty(data) ? null : data, string.IsNullOrEmpty(status) ? null : status);
+    }
+
+    // Cancel all scheduled notification
+    public static IEnumerator CancelAllScheduledNotifications(System.Action<string, string> callback)
+    {
+        string data = null;
+        string status = null;
+#if UNITY_EDITOR || UNITY_WEBGL
+        yield return null;
+#elif UNITY_ANDROID
+        AndroidJavaClass teakNotification = new AndroidJavaClass("io.teak.sdk.TeakNotification");
+        AndroidJavaObject future = teakNotification.CallStatic<AndroidJavaObject>("cancelAll");
+        if(future != null)
+        {
+            while(!future.Call<bool>("isDone")) yield return null;
+            try
+            {
+                Dictionary<string, object> json = Json.Deserialize(future.Call<string>("get")) as Dictionary<string, object>;
+                data = Json.Serialize(json["data"]);
+                status = json["status"] as string;
+            }
+            catch
+            {
+                status = "error.internal";
+                data = null;
+            }
+        }
+#elif UNITY_IPHONE
+        IntPtr notif = TeakNotificationCancelAll_Retained();
+        if(notif != IntPtr.Zero)
+        {
+            while(!TeakNotificationIsCompleted(notif)) yield return null;
+            data = Marshal.PtrToStringAnsi(TeakNotificationGetTeakNotifId(notif));
+            status = Marshal.PtrToStringAnsi(TeakNotificationGetStatus(notif));
+            TeakRelease(notif);
+        }
+#endif
+        callback(string.IsNullOrEmpty(data) ? null : data, string.IsNullOrEmpty(status) ? null : status);
     }
 
     /// @cond hide_from_doxygen
@@ -98,6 +163,9 @@ public partial class TeakNotification
     private static extern IntPtr TeakNotificationCancel_Retained(string scheduleId);
 
     [DllImport ("__Internal")]
+    private static extern IntPtr TeakNotificationCancelAll_Retained();
+
+    [DllImport ("__Internal")]
     private static extern void TeakRelease(IntPtr obj);
 
     [DllImport ("__Internal")]
@@ -105,6 +173,9 @@ public partial class TeakNotification
 
     [DllImport ("__Internal")]
     private static extern IntPtr TeakNotificationGetTeakNotifId(IntPtr notif);
+
+    [DllImport ("__Internal")]
+    private static extern IntPtr TeakNotificationGetStatus(IntPtr notif);
 #endif
     /// @endcond
 }

@@ -12,7 +12,7 @@ public class PatchIL2CPPConfig
     [PostProcessBuild(100)]
     public static void OnPostprocessBuild(BuildTarget target, string pathToBuildProject)
     {
-        if(target != BuildTarget.iPhone) return;
+        if(target != BuildTarget.iOS) return;
 
         Process proc = new Process();
         proc.StartInfo.FileName = "patch";

@@ -34,6 +34,7 @@ extern void TeakAssignWaitForDeepLinkOperation(NSOperation* waitForDeepLinkOp);
 // TeakNotification
 extern NSObject* TeakNotificationSchedule(const char* creativeId, const char* message, uint64_t delay);
 extern NSObject* TeakNotificationCancel(const char* scheduleId);
+extern NSObject* TeakNotificationCancelAll();
 
 // Unity
 extern void UnitySendMessage(const char*, const char*, const char*);
@@ -70,6 +71,16 @@ void* TeakNotificationCancel_Retained(const char* scheduleId)
    return notif;
 #else
    return [TeakNotificationCancel(scheduleId) retain];
+#endif
+}
+
+void* TeakNotificationCancelAll_Retained()
+{
+#if __has_feature(objc_arc)
+   void* notif = (__bridge_retained void*)TeakNotificationCancelAll();
+   return notif;
+#else
+   return [TeakNotificationCancelAll() retain];
 #endif
 }
 
