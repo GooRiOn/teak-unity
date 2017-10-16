@@ -1,3 +1,8 @@
+#if UNITY_3_5 || UNITY_4_0 || UNITY_4_1 || UNITY_4_2 || UNITY_4_3 || UNITY_4_5 || UNITY_4_6 || UNITY_4_7
+#else
+#  define UNITY_5
+#endif
+
 #region References
 using UnityEditor;
 using UnityEditor.Callbacks;
@@ -12,7 +17,11 @@ public class PatchIL2CPPConfig
     [PostProcessBuild(100)]
     public static void OnPostprocessBuild(BuildTarget target, string pathToBuildProject)
     {
+#if UNITY_5
         if(target != BuildTarget.iOS) return;
+#else
+        if(target != BuildTarget.iPhone) return;
+#endif
 
         Process proc = new Process();
         proc.StartInfo.FileName = "patch";
