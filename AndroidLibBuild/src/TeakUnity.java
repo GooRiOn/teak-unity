@@ -46,7 +46,7 @@ class TeakUnity {
             Class<?> unityPlayerClass = Class.forName("com.unity3d.player.UnityPlayer");
             TeakUnity.unitySendMessage = unityPlayerClass.getMethod("UnitySendMessage", String.class, String.class, String.class);
         } catch (Exception e) {
-            if (Teak.isDebug) {
+            if (Teak.debugConfiguration.isDebug()) {
                 Teak.log.exception(e);
             }
         }
