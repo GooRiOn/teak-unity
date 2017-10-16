@@ -12,7 +12,7 @@ test:
 dependencies:
   # override:
   pre:
-  - brew update # Fixes Homebrew must be run under Ruby 2.3!
+    - brew update # Fixes Homebrew must be run under Ruby 2.3!
     # Remove 'Warning: File /Users/distiller/.android/repositories.cfg could not be loaded'
     - mkdir ~/.android/
     - echo "count=0" > ~/.android/repositories.cfg
