@@ -21,7 +21,6 @@ dependencies:
   #   without: [production, osx]
   cache_directories:
     - ~/Library/Caches/Homebrew/
-    - ~/Unity
 checkout:
   post:
     - git fetch --tags

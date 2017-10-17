@@ -31,6 +31,7 @@ Assets/Teak/Plugins/iOS/libTeak.a*
 AndroidLibBuild/androidtemp
 
 Teak.unitypackage
+unity.log
 
 AndroidBuild/
 iOSBuild/

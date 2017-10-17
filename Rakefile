@@ -75,7 +75,7 @@ END
     end
 
     begin
-      sh "python extractunitypackage.py Teak.unitypackage2 _temp_pkg/"
+      sh "python extractunitypackage.py Teak.unitypackage _temp_pkg/"
       FileUtils.rm_rf("_temp_pkg")
     rescue
       sh ">&2 cat unity.log"

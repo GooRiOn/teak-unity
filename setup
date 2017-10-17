@@ -4,9 +4,8 @@ IFS=$'\n\t'
 
 brew tap caskroom/cask
 
-# TODO: Ensure both Brew and Caskroom are set up.
 if [ "$(which java)" == "" ]; then
-  echo "ERROR: Install JDK first.  Maybe use 'brew cask install java'.  Leaving this to you in case you want to handle this differently."
+  brew cask install caskroom/versions/java8
   exit 1
 fi
 
@@ -22,12 +21,7 @@ sdkmanager "extras;android;m2repository"
 
 if [ "$(which aws)" == "" ]; then brew install awscli; fi
 
-if [ ! -f ~/Unity/Unity.app/Contents/MacOS/Unity ]; then
-  curl -o unity-4.7.2.dmg http://download.unity3d.com/download_unity/unity-4.7.2.dmg
-  hdiutil attach unity-4.7.2.dmg
-  sudo installer -dumplog -package /Volumes/Unity\ Installer/Unity.pkg -target /
-  rm -fr ~/Unity
-  mv /Applications/Unity ~/Unity
+# Install Unity 5
+if [ "$(which unity)" == "" ]; then
+  brew cask install unity
 fi
-
-sudo mkdir -p /Library/Application\ Support/Unity
