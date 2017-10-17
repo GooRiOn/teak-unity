@@ -3,7 +3,7 @@ machine:
     version: 8.2.1
   environment:
     ANDROID_SDK_ROOT: /usr/local/share/android-sdk
-    UNITY_HOME: /Users/distiller/Unity
+    UNITY_HOME: /Applications/Unity
 test:
   override:
     - (cd iOSLibBuild; ant)
