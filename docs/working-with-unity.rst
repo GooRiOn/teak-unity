@@ -104,7 +104,7 @@ Parameters
     ``callback`` - The callback to be called after the notification is scheduled
 
 Callback
-    The callback takes two string parameters. The first parameter indicates the status of the call, and the second contains any data from the call. The status can be one of
+    The callback takes two string parameters. The first parameter contains any data from the call, and the second indicates the status of the call. The status can be one of
         ``ok`` - The notification was successfully scheduled
 
         ``invalid_device`` - The current device has not been registered with Teak
@@ -125,7 +125,7 @@ Parameters
     ``scheduleId`` - The id received from the ``ScheduleNotification()`` callback
 
 Callback
-    The callback takes two string parameters. The first parameter indicates the status of the call, and the second contains any data from the call. The status can be one of
+    The callback takes two string parameters. The first parameter contains any data from the call, and the second indicates the status of the call. The status can be one of
         ``ok`` - The notification was successfully cancelled
 
         ``error.internal`` - An unknown error occurred and the call should be retried
@@ -139,7 +139,7 @@ To cancel all previously scheduled local notifications, use::
     IEnumerator TeaKNotification.CancelAllScheduledNotifications(System.Action<string, string> callback)
 
 Callback
-    The callback takes two string parameters. The first parameter indicates the status of the call, and the second contains any data from the call. The status can be one of
+    The callback takes two string parameters. The first parameter contains any data from the call, and the second indicates the status of the call. The status can be one of
         ``ok`` The request was succesfully processed
 
         ``invalid_device`` The current device has not been registered with Teak. This is likely caused by ```identifyUser()``` not being called
