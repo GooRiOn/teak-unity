@@ -113,7 +113,7 @@ Callback
 
         ``error.internal`` - An unknown error occurred and the call should be retried
 
-    If the call succeeded, the data in the second string will be an opaque identifer that can be passed to ``CancelScheduledNotification`` to cancel the notification.
+    If the call succeeded, the data in the first string will be an opaque identifer that can be passed to ``CancelScheduledNotification`` to cancel the notification.
 
 Canceling a Local Notification
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -130,7 +130,7 @@ Callback
 
         ``error.internal`` - An unknown error occurred and the call should be retried
 
-    If the call succeeded, the data in the second string will the ``scheduleId`` that was canceled
+    If the call succeeded, the data in the first string will the ``scheduleId`` that was canceled
 
 Canceling all Local Notifications
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -146,7 +146,7 @@ Callback
 
         ``error.internal`` An unexpected error occurred and the request should be retried
 
-    If status is ``ok`` then the second string will be a JSON encoded array. Each entry in the array will be a
+    If status is ``ok`` then the first string will be a JSON encoded array. Each entry in the array will be a
     dictionary with ``scheduleId`` and ``creativeId`` entries. ``scheduleId`` is the id originally received from the
     ``TeakNotification.ScheduleNotification`` call. ``creativeId`` is the ``creativeId`` originally passed to
     ``TeakNotification.ScheduleNotification()``
