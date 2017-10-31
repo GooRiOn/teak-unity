@@ -10,11 +10,11 @@ Make Teak your Main Activity
 
 The easiest way to get Teak working on Android is to edit your ``Assets/Plugins/Android/AndroidManifest.xml`` and change the main activity from::
 
-    <activity android:name="com.unity3d.player.UnityPlayerNativeActivity" android:label="@string/app_name">
+    <activity android:name="com.unity3d.player.UnityPlayerActivity" android:label="@string/app_name">
 
 to::
 
-    <activity android:name="io.teak.sdk.TeakUnityPlayerNativeActivity" android:label="@string/app_name">
+    <activity android:name="io.teak.sdk.wrapper.unity.TeakUnityPlayerActivity" android:label="@string/app_name">
 
 .. note:: This should work just fine for most games. You can go right to :ref:`skip-to-edit-teak-xml`
 

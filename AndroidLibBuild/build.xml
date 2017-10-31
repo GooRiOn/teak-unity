@@ -6,10 +6,10 @@
     <property environment="env"/>
 
     <!-- All -->
-    <target name="all" depends="android_download,android_native,unity" description="Full build"/>
+    <target name="all" depends="android_download,android_native" description="Full build"/>
 
     <!-- Local, for development -->
-    <target name="local" depends="android_local,android_native,unity" description="Full build"/>
+    <target name="local" depends="android_local,android_native" description="Full build"/>
 
     <target name="android_download">
         <delete dir="./androidtemp"/>
@@ -23,12 +23,11 @@
     <target name="android_local">
         <delete dir="./androidtemp"/>
         <mkdir dir="./androidtemp"/>
-        <exec executable="./compile" failonerror="true" dir="../../teak-android/"/>
 
         <copy file="../../teak-android/build/distributions/teak-release.zip" tofile="./androidtemp/teak.zip" overwrite="true"/>
     </target>
 
-    <target name="android_native" description="Build Teak Android Library">
+    <target name="android_native" description="Copy Teak Android Library and Resources">
         <mkdir dir="./androidtemp/zip"/>
         <unzip src="./androidtemp/teak.zip" dest="./androidtemp/zip"/>
 
@@ -46,27 +45,7 @@
         <replace file="../Assets/Plugins/Android/res/values/teak_unity_version.xml"
                  token="@@@" value="${sdk.gitversion}"/>
 
-        <unzip src="./androidtemp/zip/teak/teak.jar" dest="./androidtemp/zip"/>
-
-        <mkdir dir="./androidtemp/classes"/>
-        <copy todir="./androidtemp/classes/io">
-            <fileset dir="./androidtemp/zip/io"/>
-        </copy>
+        <copy file="./androidtemp/zip/teak/teak.jar"
+              tofile="../Assets/Plugins/Android/teak.jar" overwrite="true"/>
     </target>
-
-    <!-- Unity JAR -->
-    <target name="unity" description="Build Unity Android Library">
-        <javac target="1.6" source="1.6" srcdir="./src" destdir="./androidtemp/classes" includeantruntime="false" verbose="true">
-            <classpath>
-                <pathelement location="${env.ANDROID_SDK_ROOT}/platforms/android-23/android.jar"/>
-                <pathelement location="${env.ANDROID_SDK_ROOT}/extras/android/m2repository/com/android/support/support-v4/18.0.0/support-v4-18.0.0.jar"/>
-                <pathelement location="${env.UNITY_HOME}/Unity.app/Contents/PlaybackEngines/AndroidPlayer/release/bin/classes.jar"/> <!-- Unity 4 Location -->
-                <pathelement location="${env.UNITY_HOME}/PlaybackEngines/AndroidPlayer/Variations/mono/Development/Classes/classes.jar"/> <!-- Unity 5 Location -->
-                <pathelement location="./androidtemp/teak.jar"/>
-            </classpath>
-        </javac>
-
-        <jar basedir="./androidtemp/classes" destfile="../Assets/Plugins/Android/teak.jar"/>
-    </target>
-
 </project>
