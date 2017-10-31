@@ -4,19 +4,15 @@ IFS=$'\n\t'
 
 brew tap caskroom/cask
 
-if [ "$(which java)" == "" ]; then
-  brew cask install caskroom/versions/java8
-fi
-
 if [ "$(which ant)" == "" ]; then brew install ant; fi
 if [ "$(which android)" == "" ]; then
-  brew cask install android-sdk
+  #brew cask install android-sdk
 fi
 
-sdkmanager "build-tools;23.0.2"
-sdkmanager "platforms;android-23"
-sdkmanager "extras;google;m2repository"
-sdkmanager "extras;android;m2repository"
+#sdkmanager "build-tools;23.0.2"
+#sdkmanager "platforms;android-23"
+#sdkmanager "extras;google;m2repository"
+#sdkmanager "extras;android;m2repository"
 
 if [ "$(which aws)" == "" ]; then brew install awscli; fi
 
