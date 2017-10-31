@@ -1,6 +1,6 @@
 machine:
   xcode:
-    version: 8.2.1
+    version: 9.0
   environment:
     ANDROID_SDK_ROOT: /usr/local/share/android-sdk
     UNITY_HOME: /Applications/Unity

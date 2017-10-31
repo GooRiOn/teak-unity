@@ -46,9 +46,7 @@ class TeakUnity {
             Class<?> unityPlayerClass = Class.forName("com.unity3d.player.UnityPlayer");
             TeakUnity.unitySendMessage = unityPlayerClass.getMethod("UnitySendMessage", String.class, String.class, String.class);
         } catch (Exception e) {
-            if (Teak.debugConfiguration.isDebug()) {
-                Teak.log.exception(e);
-            }
+            Teak.log.exception(e);
         }
     }
 
@@ -56,11 +54,7 @@ class TeakUnity {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Teak.REWARD_CLAIM_ATTEMPT);
         filter.addAction(Teak.LAUNCHED_FROM_NOTIFICATION_INTENT);
-        if (Teak.localBroadcastManager != null) {
-            Teak.localBroadcastManager.registerReceiver(broadcastReceiver, filter);
-        } else {
-            Log.e("Teak:Unity", "Teak.localBroadcastManager is null, initialization order is incorrect.");
-        }
+        Teak.Instance.objectFactory.getTeakCore().registerLocalBroadcastReceiver(broadcastReceiver, filter);
     }
 
     public static void readyForDeepLinks() {
@@ -83,7 +77,7 @@ class TeakUnity {
 
     public static void registerRoute(final String route, final String name, final String description) {
         try {
-            DeepLink.registerRoute(route, name, description, new DeepLink.Call() {
+            Teak.registerDeepLink(route, name, description, new Teak.DeepLink() {
                 @Override
                 public void call(Map<String, Object> parameters) {
                     try {

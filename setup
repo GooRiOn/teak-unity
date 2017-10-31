@@ -6,7 +6,6 @@ brew tap caskroom/cask
 
 if [ "$(which java)" == "" ]; then
   brew cask install caskroom/versions/java8
-  exit 1
 fi
 
 if [ "$(which ant)" == "" ]; then brew install ant; fi
