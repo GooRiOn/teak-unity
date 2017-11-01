@@ -9,12 +9,8 @@ test:
     - (cd AndroidLibBuild; ant)
     - rake
 dependencies:
-  # override:
   pre:
-    - brew update # Fixes Homebrew must be run under Ruby 2.3!
     - ./setup
-  # bundler:
-  #   without: [production, osx]
   cache_directories:
     - ~/Library/Caches/Homebrew/
 checkout:

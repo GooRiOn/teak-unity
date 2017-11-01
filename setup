@@ -3,11 +3,12 @@ set -euo pipefail
 IFS=$'\n\t'
 
 brew tap caskroom/cask
+brew update
 
 if [ "$(which ant)" == "" ]; then brew install ant; fi
-if [ "$(which android)" == "" ]; then
+#if [ "$(which android)" == "" ]; then
   #brew cask install android-sdk
-fi
+#fi
 
 #sdkmanager "build-tools;23.0.2"
 #sdkmanager "platforms;android-23"
