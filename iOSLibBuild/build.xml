@@ -3,6 +3,7 @@
 
     <!-- Config -->
     <property file="build.config"/>
+    <property file="../native.config"/>
     <property environment="env"/>
     <property name="ios.temp.path" location="./temp/"/>
 
@@ -22,7 +23,7 @@
 
         <exec executable="curl" failonerror="true" dir="${ios.temp.path}">
             <arg line="-o Teak.framework.zip"/>
-            <arg line="https://s3.amazonaws.com/teak-build-artifacts/ios/Teak.framework.zip"/>
+            <arg line="https://s3.amazonaws.com/teak-build-artifacts/ios/Teak-${version.ios}.framework.zip"/>
         </exec>
 
         <!-- unzip task does not seem to keep simlinks, do it with exec instead -->

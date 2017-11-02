@@ -3,6 +3,7 @@
 
     <!-- Config -->
     <property file="build.config"/>
+    <property file="../native.config"/>
     <property environment="env"/>
 
     <!-- All -->
@@ -16,7 +17,7 @@
         <mkdir dir="./androidtemp"/>
         <exec executable="curl" failonerror="true" dir="./androidtemp">
             <arg line="-o teak.zip"/>
-            <arg line="https://s3.amazonaws.com/teak-build-artifacts/android/teak.zip"/>
+            <arg line="https://s3.amazonaws.com/teak-build-artifacts/android/teak-${version.android}.zip"/>
         </exec>
     </target>
 
